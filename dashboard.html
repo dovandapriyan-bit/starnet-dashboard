@@ -1,78 +1,144 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF--8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Starnet💫 Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
   <style>
     body { background: #f4f6f9; }
     .navbar-brand { font-weight: bold; }
     .card { border-radius: 15px; }
+    h2 { margin-top: 40px; }
+    table { width: 100%; margin-top: 15px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+    th { background: #007bff; color: white; }
   </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Starnet💫</a>
+      <a class="navbar-brand" href="#">Starnet💫 Dashboard</a>
       <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
     </div>
   </nav>
 
-  <!-- Dashboard Content -->
   <div class="container mt-4">
-    <h2>Selamat datang, <span id="user-email"></span></h2>
-    <p>📊 Berikut ringkasan Starnet💫 hari ini:</p>
+    <h3>Halo, <span id="user-email"></span> 👋</h3>
+    <p>Selamat datang di pusat kendali Starnet💫</p>
 
+    <!-- Ringkasan -->
     <div class="row mt-4">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card shadow p-3">
           <h5>👥 Total User</h5>
           <p class="fs-4 fw-bold">120</p>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card shadow p-3">
-          <h5>💰 Tagihan Bulan Ini</h5>
+          <h5>💰 Pendapatan Bulan Ini</h5>
           <p class="fs-4 fw-bold">Rp 8.500.000</p>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card shadow p-3">
           <h5>📡 Status Jaringan</h5>
-          <p class="fs-4 fw-bold text-success">Online ✅</p>
+          <p class="fs-5 fw-bold text-success">Online ✅</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow p-3">
+          <h5>⚠️ Gangguan Aktif</h5>
+          <p class="fs-4 fw-bold text-danger">3</p>
         </div>
       </div>
     </div>
+
+    <!-- User Management -->
+    <h2>📋 User Management</h2>
+    <table>
+      <tr><th>Nama</th><th>Username</th><th>Paket</th><th>Status</th><th>Aksi</th></tr>
+      <tr><td>Andi</td><td>andi123</td><td>10Mbps</td><td>Aktif</td><td>Edit</td></tr>
+      <tr><td>Budi</td><td>budi88</td><td>20Mbps</td><td>Nonaktif</td><td>Edit</td></tr>
+    </table>
+
+    <!-- Paket Internet -->
+    <h2>📦 Paket Internet</h2>
+    <table>
+      <tr><th>Paket</th><th>Bandwidth</th><th>Harga</th><th>Masa Aktif</th></tr>
+      <tr><td>10Mbps</td><td>10 Mbps</td><td>Rp 100.000</td><td>30 Hari</td></tr>
+      <tr><td>20Mbps</td><td>20 Mbps</td><td>Rp 150.000</td><td>30 Hari</td></tr>
+    </table>
+
+    <!-- Billing -->
+    <h2>💳 Billing</h2>
+    <table>
+      <tr><th>ID</th><th>Nama</th><th>Paket</th><th>Periode</th><th>Status</th></tr>
+      <tr><td>INV001</td><td>Andi</td><td>10Mbps</td><td>Agustus 2025</td><td>Lunas</td></tr>
+      <tr><td>INV002</td><td>Budi</td><td>20Mbps</td><td>Agustus 2025</td><td>Belum Bayar</td></tr>
+    </table>
+
+    <!-- Prorata -->
+    <h2>📅 Prorata Pelanggan Baru</h2>
+    <table>
+      <tr><th>Nama</th><th>Paket</th><th>Tgl Daftar</th><th>Biaya Normal</th><th>Biaya Prorata</th></tr>
+      <tr><td>Cici</td><td>20Mbps</td><td>15-08-2025</td><td>Rp 150.000</td><td>Rp 75.000</td></tr>
+    </table>
+
+    <!-- Teknisi -->
+    <h2>👷 Data Teknisi</h2>
+    <table>
+      <tr><th>Nama</th><th>Nomor HP</th><th>Keahlian</th><th>Status</th></tr>
+      <tr><td>Rudi</td><td>0812345678</td><td>Fiber Optic</td><td>Aktif</td></tr>
+      <tr><td>Doni</td><td>0823456789</td><td>Wireless</td><td>Nonaktif</td></tr>
+    </table>
+
+    <!-- Gangguan -->
+    <h2>⚠️ Data Gangguan</h2>
+    <table>
+      <tr><th>ID</th><th>Nama</th><th>Lokasi</th><th>Deskripsi</th><th>Status</th><th>Teknisi</th></tr>
+      <tr><td>G001</td><td>Andi</td><td>Jl. Merdeka</td><td>Internet Putus</td><td>Proses</td><td>Rudi</td></tr>
+      <tr><td>G002</td><td>Budi</td><td>Jl. Sudirman</td><td>Lemot</td><td>Menunggu</td><td>-</td></tr>
+    </table>
+
+    <!-- Material -->
+    <h2>📦 Material</h2>
+    <table>
+      <tr><th>Material</th><th>Stok</th><th>Satuan</th><th>Lokasi</th></tr>
+      <tr><td>Kabel FO</td><td>500</td><td>Meter</td><td>Gudang A</td></tr>
+      <tr><td>ONT</td><td>20</td><td>Unit</td><td>Gudang B</td></tr>
+      <tr><td>RJ45</td><td>200</td><td>Pack</td><td>Gudang A</td></tr>
+    </table>
   </div>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script>
-    // Firebase Config (gunakan punyamu!)
     const firebaseConfig = {
-      apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
-      authDomain: "dnt-network-7.firebaseapp.com",
-      projectId: "dnt-network-7",
-      storageBucket: "dnt-network-7.firebasestorage.app",
-      messagingSenderId: "761179668371",
-      appId: "1:761179668371:web:7d1468d0298041d4783266"
+      apiKey: "API_KEY_KAMU",
+      authDomain: "PROJECT_ID.firebaseapp.com",
+      projectId: "PROJECT_ID",
+      storageBucket: "PROJECT_ID.appspot.com",
+      messagingSenderId: "XXXX",
+      appId: "XXXX"
     };
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.getAuth(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-    firebase.onAuthStateChanged(auth, (user) => {
+    auth.onAuthStateChanged(user => {
       if (user) {
         document.getElementById("user-email").innerText = user.email;
       } else {
-        window.location.href = "index.html"; // redirect kalau belum login
+        window.location.href = "index.html";
       }
     });
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
-      firebase.signOut(auth).then(() => {
+      auth.signOut().then(() => {
         window.location.href = "index.html";
       });
     });
