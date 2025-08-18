@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌟 Starnet - Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      margin: 0;
+    }
+    button {
+      padding: 8px 15px;
+      background: #dc3545;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #a71d2a;
+    }
+    .role-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌟 Dashboard Starnet</h1>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <h2 id="welcome"></h2>
+
+  <div class="role-box" id="roleBox">
+    <p>Memeriksa role...</p>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Cek login status
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("welcome").innerText =
+          "👋 Selamat datang, " + user.email;
+
+        // Ambil role dari Firestore
+        db.collection("users").doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            document.getElementById("roleBox").innerHTML =
+              "🔑 Role kamu: <b>" + data.role + "</b>";
+          } else {
+            document.getElementById("roleBox").innerHTML =
+              "⚠️ Role belum ditentukan (hubungi admin)";
+          }
+        });
+      } else {
+        window.location.href = "/"; // kalau belum login
+      }
+    });
+
+    // Logout
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = "/";
+      });
+    }
+  </script>
+</body>
+</html>
