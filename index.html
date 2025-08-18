@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Starnetwork</title>
+  <title>Starnet 💫</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f5f5f5; }
     input, select, button { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #ccc; width: 80%; max-width: 300px; }
@@ -11,10 +11,13 @@
     button:hover { background: #0056b3; }
     .card { background: white; padding: 20px; margin: 10px auto; border-radius: 8px; max-width: 400px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     #dashboard { display: none; }
+    table { border-collapse: collapse; margin: 20px auto; width: 90%; max-width: 600px; background: white; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #007bff; color: white; }
   </style>
 </head>
 <body>
-  <h1>Starnet💫</h1>
+  <h1>💫 Starnet</h1>
 
   <!-- Login form -->
   <div id="login">
@@ -28,6 +31,8 @@
   <!-- Dashboard -->
   <div id="dashboard">
     <h2 id="welcome"></h2>
+
+    <!-- Panel khusus admin -->
     <div id="adminPanel" style="display:none;">
       <h3>Tambah Pelanggan</h3>
       <div class="card">
@@ -43,6 +48,22 @@
         <p id="hasil"></p>
       </div>
     </div>
+
+    <!-- Tabel daftar pelanggan -->
+    <h3>📋 Daftar Pelanggan</h3>
+    <table id="tabelPelanggan">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>No HP</th>
+          <th>Alamat</th>
+          <th>Paket</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="keluar()">Logout</button>
   </div>
 
@@ -50,7 +71,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut } 
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } 
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } 
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -93,13 +114,16 @@
         // tampilkan dashboard sesuai role
         document.getElementById("login").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        document.getElementById("welcome").innerText = "👋 Selamat datang, " + user.email + " (Role: " + role + ")";
+        document.getElementById("welcome").innerText = "👋 Selamat datang di Starnet, " + user.email + " (Role: " + role + ")";
 
         if (role === "admin") {
           document.getElementById("adminPanel").style.display = "block";
         } else {
           document.getElementById("adminPanel").style.display = "none";
         }
+
+        // load daftar pelanggan untuk semua role
+        loadPelanggan();
 
       } catch (error) {
         document.getElementById("status").innerText = "❌ Error: " + error.message;
@@ -116,26 +140,4 @@
 
     // Simpan pelanggan (khusus admin)
     window.simpanPelanggan = async function() {
-      const nama = document.getElementById("nama").value;
-      const nohp = document.getElementById("nohp").value;
-      const alamat = document.getElementById("alamat").value;
-      const paket = document.getElementById("paket").value;
-      const statusBayar = document.getElementById("statusBayar").value;
-
-      try {
-        await setDoc(doc(db, "pelanggan", nohp), {
-          nama: nama,
-          nohp: nohp,
-          alamat: alamat,
-          paket: paket,
-          status: statusBayar,
-          createdAt: new Date()
-        });
-        document.getElementById("hasil").innerText = "✅ Data pelanggan tersimpan!";
-      } catch (error) {
-        document.getElementById("hasil").innerText = "❌ Error: " + error.message;
-      }
-    }
-  </script>
-</body>
-</html>
+      const nama = document.getElementById("nama").va
