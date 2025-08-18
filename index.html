@@ -1,35 +1,58 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ISP Manager</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background: #f5f5f5; }
-    h1 { color: #333; }
-    button { padding: 10px 20px; font-size: 16px; border: none; border-radius: 8px; background: #007bff; color: white; cursor: pointer; margin: 10px; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f5f5f5; }
+    input, select, button { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #ccc; width: 80%; max-width: 300px; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
     button:hover { background: #0056b3; }
-    #status { margin-top: 30px; font-weight: bold; color: green; }
+    .card { background: white; padding: 20px; margin: 10px auto; border-radius: 8px; max-width: 400px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    #dashboard { display: none; }
   </style>
 </head>
 <body>
   <h1>🚀 ISP Manager</h1>
-  <p>Firebase Project <b>dnt-network-7</b></p>
-  
-  <!-- tombol cek -->
-  <button onclick="cekKoneksi()">Cek Koneksi Firebase</button>
-  <div id="status">Status: belum dicek</div>
 
-  <!-- tombol login -->
-  <button onclick="loginGoogle()">Login dengan Google</button>
-  <div id="user-info"></div>
+  <!-- Login form -->
+  <div id="login">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="daftar()">Daftar</button>
+    <button onclick="login()">Login</button>
+    <p id="status"></p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <h2>Tambah Pelanggan</h2>
+    <div class="card">
+      <input type="text" id="nama" placeholder="Nama Pelanggan"><br>
+      <input type="text" id="nohp" placeholder="No HP"><br>
+      <input type="text" id="alamat" placeholder="Alamat"><br>
+      <input type="text" id="paket" placeholder="Paket Internet"><br>
+      <select id="statusBayar">
+        <option value="Lunas">Lunas</option>
+        <option value="Belum">Belum</option>
+      </select><br>
+      <button onclick="simpanPelanggan()">Simpan</button>
+      <p id="hasil"></p>
+    </div>
+    <button onclick="keluar()">Logout</button>
+  </div>
 
   <script type="module">
+    // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } 
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc } 
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Config Firebase
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
       authDomain: "dnt-network-7.firebaseapp.com",
@@ -41,41 +64,66 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    const db = getFirestore(app);
 
-    // cek koneksi
-    window.cekKoneksi = function() {
+    // Daftar user baru
+    window.daftar = async function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
       try {
-        document.getElementById('status').innerText = "✅ Firebase terhubung (" + app.options.projectId + ")";
-      } catch (e) {
-        document.getElementById('status').innerText = "❌ Gagal terhubung ke Firebase";
-      }
-    }
-
-    // login Google
-    window.loginGoogle = async function() {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        document.getElementById('user-info').innerHTML = `
-          <p>✅ Login sukses!</p>
-          <p>Nama: ${user.displayName}</p>
-          <p>Email: ${user.email}</p>
-          <img src="${user.photoURL}" width="80" style="border-radius:50%">
-          <br><button onclick="keluar()">Logout</button>
-        `;
+        await createUserWithEmailAndPassword(auth, email, password);
+        document.getElementById("status").innerText = "✅ Akun berhasil dibuat!";
       } catch (error) {
-        alert("Login gagal: " + error.message);
+        document.getElementById("status").innerText = "❌ Error: " + error.message;
       }
     }
 
-    // logout
+    // Login user
+    window.login = async function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        document.getElementById("status").innerText = "✅ Login sukses!";
+        document.getElementById("login").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+      } catch (error) {
+        document.getElementById("status").innerText = "❌ Error: " + error.message;
+      }
+    }
+
+    // Logout user
     window.keluar = async function() {
       await signOut(auth);
-      document.getElementById('user-info').innerHTML = "<p>❌ Kamu sudah logout.</p>";
+      document.getElementById("login").style.display = "block";
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("status").innerText = "👋 Anda telah logout";
+    }
+
+    // Simpan pelanggan
+    window.simpanPelanggan = async function() {
+      const nama = document.getElementById("nama").value;
+      const nohp = document.getElementById("nohp").value;
+      const alamat = document.getElementById("alamat").value;
+      const paket = document.getElementById("paket").value;
+      const statusBayar = document.getElementById("statusBayar").value;
+
+      try {
+        await setDoc(doc(db, "pelanggan", nohp), {
+          nama: nama,
+          nohp: nohp,
+          alamat: alamat,
+          paket: paket,
+          status: statusBayar,
+          createdAt: new Date()
+        });
+        document.getElementById("hasil").innerText = "✅ Data pelanggan tersimpan!";
+      } catch (error) {
+        document.getElementById("hasil").innerText = "❌ Error: " + error.message;
+      }
     }
   </script>
 </body>
 </html>
+     
