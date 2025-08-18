@@ -3,84 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💫 Starnet - Dashboard</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <title>💫 Starnet Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      margin: 0;
-      padding: 20px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #2563eb;
-      color: white;
-      padding: 15px;
-      border-radius: 8px;
-    }
-    .header h2 {
-      margin: 0;
-    }
-    .content {
-      margin-top: 20px;
-    }
-    button {
-      padding: 8px 15px;
-      border: none;
-      background: #ef4444;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #dc2626;
-    }
+    body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h2 { color: #333; }
+    button { padding: 10px 15px; background: #dc3545; border: none; border-radius: 5px; color: white; cursor: pointer; }
+    button:hover { background: #a71d2a; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h2>💫 Starnet Dashboard</h2>
+  <div class="container">
+    <h2 id="welcome">Selamat datang di Starnet 🚀</h2>
+    <p>Kamu sudah berhasil login.</p>
     <button onclick="logout()">Logout</button>
   </div>
 
-  <div class="content">
-    <h3 id="welcome"></h3>
-    <p>Selamat datang di aplikasi Starnet. 🚀</p>
-  </div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 
   <script>
-    // 🔧 Ganti dengan Firebase config kamu
+    // 🔑 Ganti sama persis dengan config di index.html
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID"
+      apiKey: "API_KEY_ASLI",
+      authDomain: "PROJECT_ID.firebaseapp.com",
+      projectId: "PROJECT_ID",
+      storageBucket: "PROJECT_ID.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Cek status login
+    // Cek user login
     auth.onAuthStateChanged(user => {
       if (user) {
-        document.getElementById("welcome").innerText = 
-          "Halo, " + user.email;
+        document.getElementById("welcome").innerText = "Selamat datang, " + user.email;
       } else {
-        // Jika belum login → balik ke halaman login
-        window.location.href = "/index.html";
+        window.location.href = "index.html";
       }
     });
 
-    // Logout
+    // Fungsi logout
     function logout() {
       auth.signOut().then(() => {
-        window.location.href = "/index.html";
+        localStorage.removeItem("user");
+        window.location.href = "index.html";
       });
     }
   </script>
 </body>
 </html>
-
