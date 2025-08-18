@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💫 Starnet Dashboard</title>
+  <title>Starnet💫 Dashboard</title>
   <style>
     body { font-family: Arial, sans-serif; background: #eef2f7; margin: 0; padding: 20px; }
     .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     h2 { color: #333; }
     button { padding: 10px 15px; background: #dc3545; border: none; border-radius: 5px; color: white; cursor: pointer; }
     button:hover { background: #a71d2a; }
@@ -14,17 +15,20 @@
 </head>
 <body>
   <div class="container">
-    <h2 id="welcome">Selamat datang di Starnet 🚀</h2>
-    <p>Kamu sudah berhasil login.</p>
-    <button onclick="logout()">Logout</button>
+    <div class="header">
+      <h2>Starnet💫 Dashboard</h2>
+      <button onclick="logout()">Logout</button>
+    </div>
+    <h3 id="welcome">Memuat...</h3>
+    <p>Selamat datang di Starnet💫</p>
   </div>
 
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
   <script>
-    // 🔑 Ganti sama persis dengan config di index.html
+    // 🔑 Ganti dengan config asli Firebase kamu (sama persis seperti index.html)
     const firebaseConfig = {
       apiKey: "API_KEY_ASLI",
       authDomain: "PROJECT_ID.firebaseapp.com",
@@ -34,19 +38,20 @@
       appId: "1:1234567890:web:abcdef123456"
     };
 
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Cek user login
+    // Cek status login
     auth.onAuthStateChanged(user => {
       if (user) {
-        document.getElementById("welcome").innerText = "Selamat datang, " + user.email;
+        document.getElementById("welcome").innerText = "Halo, " + user.email;
       } else {
+        // ❌ kalau belum login → balik ke login
         window.location.href = "index.html";
       }
     });
 
-    // Fungsi logout
+    // Logout
     function logout() {
       auth.signOut().then(() => {
         localStorage.removeItem("user");
