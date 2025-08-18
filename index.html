@@ -103,41 +103,88 @@
         if (userDoc.exists()) {
           role = userDoc.data().role;
         } else {
-          // kalau user belum ada di Firestore, buat entry default staff
-          await setDoc(doc(db, "users", user.uid), {
-            email: user.email,
-            role: "staff",
-            createdAt: new Date()
-          });
-        }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starnet 💫 Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f5f5; text-align:center; padding:30px; }
+    input, button { padding:10px; margin:8px; border-radius:6px; border:1px solid #ccc; width:80%; max-width:300px; }
+    button { background:#007bff; color:#fff; border:none; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .card { background:#fff; padding:20px; margin:0 auto; border-radius:8px; max-width:400px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    #dashboard { display:none; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <h1>💫 Starnet</h1>
 
-        // tampilkan dashboard sesuai role
+  <!-- Login Card -->
+  <div id="login" class="card">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button onclick="login()">Login</button>
+    <p id="status"></p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="card">
+    <h2 id="welcome"></h2>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script type="module">
+    // --- Import Firebase ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut } 
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // --- Firebase Config ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+      authDomain: "dnt-network-7.firebaseapp.com",
+      projectId: "dnt-network-7",
+      storageBucket: "dnt-network-7.appspot.com",
+      messagingSenderId: "761179668371",
+      appId: "1:761179668371:web:7d1468d0298041d4783266"
+    };
+
+    // --- Init ---
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // --- Login Function ---
+    window.login = async function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const statusEl = document.getElementById("status");
+      statusEl.innerText = "🚀 Sedang login...";
+
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCred.user;
+        statusEl.innerText = "✅ Login sukses: " + user.email;
+        
+        // tampilkan dashboard
         document.getElementById("login").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        document.getElementById("welcome").innerText = "👋 Selamat datang di Starnet, " + user.email + " (Role: " + role + ")";
-
-        if (role === "admin") {
-          document.getElementById("adminPanel").style.display = "block";
-        } else {
-          document.getElementById("adminPanel").style.display = "none";
-        }
-
-        // load daftar pelanggan untuk semua role
-        loadPelanggan();
-
+        document.getElementById("welcome").innerText = "Selamat datang, " + user.email;
       } catch (error) {
-        document.getElementById("status").innerText = "❌ Error: " + error.message;
+        console.error("❌ Error login:", error);
+        statusEl.innerText = "❌ Error: " + error.message;
       }
     }
 
-    // Logout
-    window.keluar = async function() {
+    // --- Logout Function ---
+    window.logout = async function() {
       await signOut(auth);
       document.getElementById("login").style.display = "block";
       document.getElementById("dashboard").style.display = "none";
       document.getElementById("status").innerText = "👋 Anda telah logout";
     }
-
-    // Simpan pelanggan (khusus admin)
-    window.simpanPelanggan = async function() {
-      const nama = document.getElementById("nama").va
+  </script>
+</body>
+</html>
