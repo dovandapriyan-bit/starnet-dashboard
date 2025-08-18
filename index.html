@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -21,38 +21,38 @@
     <h2>Login</h2>
     <input type="email" id="email" placeholder="Email"><br>
     <input type="password" id="password" placeholder="Password"><br>
-    <button onclick="daftar()">Daftar</button>
     <button onclick="login()">Login</button>
     <p id="status"></p>
   </div>
 
   <!-- Dashboard -->
   <div id="dashboard">
-    <h2>Tambah Pelanggan</h2>
-    <div class="card">
-      <input type="text" id="nama" placeholder="Nama Pelanggan"><br>
-      <input type="text" id="nohp" placeholder="No HP"><br>
-      <input type="text" id="alamat" placeholder="Alamat"><br>
-      <input type="text" id="paket" placeholder="Paket Internet"><br>
-      <select id="statusBayar">
-        <option value="Lunas">Lunas</option>
-        <option value="Belum">Belum</option>
-      </select><br>
-      <button onclick="simpanPelanggan()">Simpan</button>
-      <p id="hasil"></p>
+    <h2 id="welcome"></h2>
+    <div id="adminPanel" style="display:none;">
+      <h3>Tambah Pelanggan</h3>
+      <div class="card">
+        <input type="text" id="nama" placeholder="Nama Pelanggan"><br>
+        <input type="text" id="nohp" placeholder="No HP"><br>
+        <input type="text" id="alamat" placeholder="Alamat"><br>
+        <input type="text" id="paket" placeholder="Paket Internet"><br>
+        <select id="statusBayar">
+          <option value="Lunas">Lunas</option>
+          <option value="Belum">Belum</option>
+        </select><br>
+        <button onclick="simpanPelanggan()">Simpan</button>
+        <p id="hasil"></p>
+      </div>
     </div>
     <button onclick="keluar()">Logout</button>
   </div>
 
   <script type="module">
-    // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } 
+    import { getAuth, signInWithEmailAndPassword, signOut } 
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc } 
+    import { getFirestore, doc, setDoc, getDoc } 
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
       authDomain: "dnt-network-7.firebaseapp.com",
@@ -67,33 +67,46 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Daftar user baru
-    window.daftar = async function() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        document.getElementById("status").innerText = "✅ Akun berhasil dibuat!";
-      } catch (error) {
-        document.getElementById("status").innerText = "❌ Error: " + error.message;
-      }
-    }
-
     // Login user
     window.login = async function() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       try {
         const userCred = await signInWithEmailAndPassword(auth, email, password);
-        document.getElementById("status").innerText = "✅ Login sukses!";
+        const user = userCred.user;
+
+        // cek role di Firestore
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        let role = "staff"; // default
+
+        if (userDoc.exists()) {
+          role = userDoc.data().role;
+        } else {
+          // kalau user belum ada di Firestore, buat entry default staff
+          await setDoc(doc(db, "users", user.uid), {
+            email: user.email,
+            role: "staff",
+            createdAt: new Date()
+          });
+        }
+
+        // tampilkan dashboard sesuai role
         document.getElementById("login").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
+        document.getElementById("welcome").innerText = "👋 Selamat datang, " + user.email + " (Role: " + role + ")";
+
+        if (role === "admin") {
+          document.getElementById("adminPanel").style.display = "block";
+        } else {
+          document.getElementById("adminPanel").style.display = "none";
+        }
+
       } catch (error) {
         document.getElementById("status").innerText = "❌ Error: " + error.message;
       }
     }
 
-    // Logout user
+    // Logout
     window.keluar = async function() {
       await signOut(auth);
       document.getElementById("login").style.display = "block";
@@ -101,7 +114,7 @@
       document.getElementById("status").innerText = "👋 Anda telah logout";
     }
 
-    // Simpan pelanggan
+    // Simpan pelanggan (khusus admin)
     window.simpanPelanggan = async function() {
       const nama = document.getElementById("nama").value;
       const nohp = document.getElementById("nohp").value;
@@ -126,4 +139,3 @@
   </script>
 </body>
 </html>
-     
