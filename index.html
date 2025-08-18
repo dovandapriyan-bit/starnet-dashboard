@@ -1,84 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Starnet 💫</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f5f5f5; }
-    input, select, button { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #ccc; width: 80%; max-width: 300px; }
-    button { background: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .card { background: white; padding: 20px; margin: 10px auto; border-radius: 8px; max-width: 400px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    #dashboard { display: none; }
-    table { border-collapse: collapse; margin: 20px auto; width: 90%; max-width: 600px; background: white; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #007bff; color: white; }
-  </style>
-</head>
-<body>
-  <h1>💫 Starnet</h1>
-
-  <!-- Login form -->
-  <div id="login">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email"><br>
-    <input type="password" id="password" placeholder="Password"><br>
-    <button onclick="login()">Login</button>
-    <p id="status"></p>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard">
-    <h2 id="welcome"></h2>
-
-    <!-- Panel khusus admin -->
-    <div id="adminPanel" style="display:none;">
-      <h3>Tambah Pelanggan</h3>
-      <div class="card">
-        <input type="text" id="nama" placeholder="Nama Pelanggan"><br>
-        <input type="text" id="nohp" placeholder="No HP"><br>
-        <input type="text" id="alamat" placeholder="Alamat"><br>
-        <input type="text" id="paket" placeholder="Paket Internet"><br>
-        <select id="statusBayar">
-          <option value="Lunas">Lunas</option>
-          <option value="Belum">Belum</option>
-        </select><br>
-        <button onclick="simpanPelanggan()">Simpan</button>
-        <p id="hasil"></p>
-      </div>
-    </div>
-
-    <!-- Tabel daftar pelanggan -->
-    <h3>📋 Daftar Pelanggan</h3>
-    <table id="tabelPelanggan">
-      <thead>
-        <tr>
-          <th>Nama</th>
-          <th>No HP</th>
-          <th>Alamat</th>
-          <th>Paket</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <button onclick="keluar()">Logout</button>
-  </div>
-
+  <meta charset="UTF-8">
+  <title>🌟 Starnet Login</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut } 
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } 
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
       authDomain: "dnt-network-7.firebaseapp.com",
       projectId: "dnt-network-7",
-      storageBucket: "dnt-network-7.appspot.com",
+      storageBucket: "dnt-network-7.firebasestorage.app",
       messagingSenderId: "761179668371",
       appId: "1:761179668371:web:7d1468d0298041d4783266",
       measurementId: "G-CD3EQ350R4"
@@ -86,77 +19,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    // Login user
-    window.login = async function() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        const userCred = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCred.user;
-
-        // cek role di Firestore
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        let role = "staff"; // default
-
-        if (userDoc.exists()) {
-          role = userDoc.data().role;
-        } else {
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Starnet 💫 Login</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f5; text-align:center; padding:30px; }
-    input, button { padding:10px; margin:8px; border-radius:6px; border:1px solid #ccc; width:80%; max-width:300px; }
-    button { background:#007bff; color:#fff; border:none; cursor:pointer; }
-    button:hover { background:#0056b3; }
-    .card { background:#fff; padding:20px; margin:0 auto; border-radius:8px; max-width:400px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
-    #dashboard { display:none; margin-top:20px; }
-  </style>
-</head>
-<body>
-  <h1>💫 Starnet</h1>
-
-  <!-- Login Card -->
-  <div id="login" class="card">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email" required><br>
-    <input type="password" id="password" placeholder="Password" required><br>
-    <button onclick="login()">Login</button>
-    <p id="status"></p>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="card">
-    <h2 id="welcome"></h2>
-    <button onclick="logout()">Logout</button>
-  </div>
-
-  <script type="module">
-    // --- Import Firebase ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut } 
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    // --- Firebase Config ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
-      authDomain: "dnt-network-7.firebaseapp.com",
-      projectId: "dnt-network-7",
-      storageBucket: "dnt-network-7.appspot.com",
-      messagingSenderId: "761179668371",
-      appId: "1:761179668371:web:7d1468d0298041d4783266"
-    };
-
-    // --- Init ---
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // --- Login Function ---
     window.login = async function() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
@@ -167,24 +30,29 @@
         const userCred = await signInWithEmailAndPassword(auth, email, password);
         const user = userCred.user;
         statusEl.innerText = "✅ Login sukses: " + user.email;
-        
-        // tampilkan dashboard
+
         document.getElementById("login").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
         document.getElementById("welcome").innerText = "Selamat datang, " + user.email;
       } catch (error) {
         console.error("❌ Error login:", error);
-        statusEl.innerText = "❌ Error: " + error.message;
+        statusEl.innerText = "❌ Gagal login: " + error.code + " - " + error.message;
       }
     }
-
-    // --- Logout Function ---
-    window.logout = async function() {
-      await signOut(auth);
-      document.getElementById("login").style.display = "block";
-      document.getElementById("dashboard").style.display = "none";
-      document.getElementById("status").innerText = "👋 Anda telah logout";
-    }
   </script>
+</head>
+<body>
+  <div id="login">
+    <h2>🌟 Starnet</h2>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p id="status" style="color:red; font-weight:bold;"></p>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <h2 id="welcome"></h2>
+    <p>🎉 Kamu sudah masuk ke dashboard Starnet.</p>
+  </div>
 </body>
 </html>
