@@ -654,37 +654,679 @@
       const T = db.collection('technicians');
       const G = db.collection('tickets');
       const M = db.collection('materials');
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Starnet💫 — Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f4f6f9; --card:#ffffff; --primary:#0d6efd; --primary-2:#0a58ca;
+      --text:#111827; --muted:#6b7280; --ring:rgba(13,110,253,.15);
+    }
+    html,body{height:100%;}
+    body{background:var(--bg);color:var(--text);}
+    /* layout */
+    .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;}
+    .sidebar{
+      background:linear-gradient(180deg,var(--primary),var(--primary-2));
+      color:#fff; position:sticky; top:0; height:100vh; padding:18px 14px;
+      box-shadow:inset -1px 0 0 rgba(255,255,255,.08);
+    }
+    .brand{font-weight:800;letter-spacing:.3px;margin:6px 10px 18px 10px}
+    .navlink{
+      display:flex;gap:10px;align-items:center;color:#fff;text-decoration:none;
+      padding:10px 12px;border-radius:12px;margin:4px 6px;font-weight:600;opacity:.9;
+    }
+    .navlink:hover,.navlink.active{background:rgba(255,255,255,.16);opacity:1}
+    .content{padding:20px;}
+    /* topbar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .cardx{background:var(--card);border:0;border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.06)}
+    .stat{padding:18px}
+    .pill{border-radius:999px;padding:.25rem .6rem;font-size:.8rem;font-weight:600}
+    .ok{background:#d1fae5;color:#065f46}
+    .bad{background:#fee2e2;color:#991b1b}
+    .warn{background:#fff7ed;color:#9a3412}
+    .table thead th{background:var(--primary);color:#fff;border:0}
+    .table tbody tr{vertical-align:middle}
+    .btn-soft{background:#eef2ff;border:0}
+    .btn-soft:hover{background:#e0e7ff}
+    @media (max-width: 992px){ .layout{grid-template-columns:1fr} .sidebar{position:relative;height:auto;border-radius:0} }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand fs-4">Starnet💫</div>
+    <a class="navlink active" data-target="home"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+    <a class="navlink" data-target="customers"><i class="bi bi-people"></i><span>Pelanggan</span></a>
+    <a class="navlink" data-target="plans"><i class="bi bi-box-seam"></i><span>Paket</span></a>
+    <a class="navlink" data-target="invoices"><i class="bi bi-credit-card-2-front"></i><span>Billing</span></a>
+    <a class="navlink" data-target="technicians"><i class="bi bi-person-badge"></i><span>Teknisi</span></a>
+    <a class="navlink" data-target="tickets"><i class="bi bi-exclamation-triangle"></i><span>Gangguan</span></a>
+    <a class="navlink" data-target="materials"><i class="bi bi-archive"></i><span>Material</span></a>
+    <hr class="border-light">
+    <a class="navlink" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+  </aside>
 
-      ['10Mbps','20Mbps','50Mbps'].forEach((name,i)=>{
-        batch.set(P.doc(name), { name, speedDown:name, speedUp:name, priceMonthly:[100000,150000,250000][i], taxPercent:0 });
+  <!-- CONTENT -->
+  <main class="content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div class="h4 m-0">Dashboard Operasional</div>
+        <div class="text-muted">Selamat datang di pusat kendali Starnet💫</div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <button id="seedBtn" class="btn btn-sm btn-outline-secondary">Seed Demo Data</button>
+        <div class="small text-muted">👤 <b id="who">—</b></div>
+      </div>
+    </div>
+
+    <!-- Home / Stats -->
+    <section id="page-home">
+      <div class="row g-3">
+        <div class="col-md-3"><div class="cardx stat">
+          <div class="text-muted small">👥 Total Pelanggan</div>
+          <div id="statCustomers" class="fs-2 fw-bold">—</div>
+        </div></div>
+        <div class="col-md-3"><div class="cardx stat">
+          <div class="text-muted small">💰 Pendapatan Bulan Ini</div>
+          <div id="statRevenue" class="fs-2 fw-bold">—</div>
+        </div></div>
+        <div class="col-md-3"><div class="cardx stat">
+          <div class="text-muted small">✅ Invoice Lunas</div>
+          <div id="statPaid" class="fs-2 fw-bold">—</div>
+        </div></div>
+        <div class="col-md-3"><div class="cardx stat">
+          <div class="text-muted small">⚠️ Gangguan Aktif</div>
+          <div id="statTrouble" class="fs-2 fw-bold">—</div>
+        </div></div>
+      </div>
+      <div class="cardx p-3 mt-3">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <div class="h6 m-0">Billing Periode</div>
+          <input id="period" class="form-control form-control-sm" style="max-width:150px" placeholder="YYYY-MM">
+          <button class="btn btn-sm btn-primary" onclick="generateInvoices()">Generate Invoice</button>
+          <span class="text-muted small">Jatuh tempo default: tanggal 5</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pelanggan -->
+    <section id="page-customers" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 m-0">Pelanggan</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('customers')"><i class="bi bi-plus-lg"></i> Tambah</button>
+      </div>
+      <div class="cardx p-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr>
+              <th>Nama</th><th>Username</th><th>Kontak</th><th>Paket</th><th>Status</th><th>Mulai</th><th style="width:160px">Aksi</th>
+            </tr></thead>
+            <tbody id="rows-customers"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Paket -->
+    <section id="page-plans" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 m-0">Paket</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('plans')"><i class="bi bi-plus-lg"></i> Tambah</button>
+      </div>
+      <div class="cardx p-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr>
+              <th>Nama Paket</th><th>DL</th><th>UL</th><th>Harga/bulan</th><th>Pajak %</th><th style="width:160px">Aksi</th>
+            </tr></thead>
+            <tbody id="rows-plans"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Billing -->
+    <section id="page-invoices" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 m-0">Billing & Invoice</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('invoices')"><i class="bi bi-plus-lg"></i> Tambah</button>
+      </div>
+      <div class="cardx p-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr>
+              <th>Invoice</th><th>Pelanggan</th><th>Periode</th><th>Nominal</th><th>Status</th><th>Jatuh Tempo</th><th style="width:220px">Aksi</th>
+            </tr></thead>
+            <tbody id="rows-invoices"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Teknisi -->
+    <section id="page-technicians" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 m-0">Teknisi</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('technicians')"><i class="bi bi-plus-lg"></i> Tambah</button>
+      </div>
+      <div class="cardx p-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr>
+              <th>Nama</th><th>HP</th><th>Keahlian</th><th>Status</th><th style="width:160px">Aksi</th>
+            </tr></thead>
+            <tbody id="rows-technicians"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gangguan -->
+    <section id="page-tickets" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 m-0">Gangguan / Tiket</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('tickets')"><i class="bi bi-plus-lg"></i> Tiket</button>
+      </div>
+      <div class="cardx p-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr>
+              <th>ID</th><th>Pelanggan</th><th>Judul</th><th>Status</th><th>Teknisi</th><th style="width:160px">Aksi</th>
+            </tr></thead>
+            <tbody id="rows-tickets"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Material -->
+    <section id="page-materials" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 m-0">Material</div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" onclick="openModal('material_logs')"><i class="bi bi-plus-lg"></i> Mutasi</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('materials')"><i class="bi bi-plus-lg"></i> Item</button>
+        </div>
+      </div>
+      <div class="cardx p-2">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead><tr>
+              <th>Nama</th><th>Stok</th><th>Satuan</th><th>Lokasi</th><th style="width:160px">Aksi</th>
+            </tr></thead>
+            <tbody id="rows-materials"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal CRUD -->
+<div class="modal fade" id="crudModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form id="crudForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="crudTitle">Form</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="crudBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button id="saveBtn" type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+        <input type="hidden" id="docId"><input type="hidden" id="colName">
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- JS libs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  /* ================== FIREBASE ================== */
+  // GANTI DENGAN punyamu
+  const firebaseConfig = {
+    apiKey: "API_KEY",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    projectId: "PROJECT_ID",
+    appId: "APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  /* ================== AUTH ================== */
+  auth.onAuthStateChanged(async (u)=>{
+    if(!u){ location.href = "index.html"; return; }
+    document.getElementById('who').textContent = u.email;
+    await loadAll();
+  });
+  document.getElementById('logoutBtn').onclick=()=>auth.signOut();
+
+  /* ================== NAV ================== */
+  const pages = ['home','customers','plans','invoices','technicians','tickets','materials'];
+  document.querySelectorAll('.navlink[data-target]').forEach(a=>{
+    a.addEventListener('click', ()=>{
+      document.querySelectorAll('.navlink').forEach(x=>x.classList.remove('active'));
+      a.classList.add('active');
+      const tgt = a.getAttribute('data-target');
+      pages.forEach(p=>{
+        document.getElementById('page-'+p).classList.toggle('d-none', p!==tgt);
       });
+    });
+  });
 
-      [['Andi','andi123','10Mbps',true,'2025-08-01','andi@ex.id'],
-       ['Budi','budi88','20Mbps',false,'2025-08-12','budi@ex.id'],
-       ['Cici','cici77','50Mbps',true,'2025-08-15','0812-xxxx']]
-       .forEach(([name,username,plan,enabled,start,contact],i)=>{
-        batch.set(C.doc(username), { name, username, planName:plan, enabled, startDate:start, contact });
-      });
+  /* ================== HELPERS ================== */
+  const modal = new bootstrap.Modal(document.getElementById('crudModal'));
+  const rupiah = n => (n==null?'—':`Rp ${(+n).toLocaleString('id-ID')}`);
+  const yyyymm = (d=new Date()) => d.toISOString().slice(0,7);
+  const toDateStr = v => {
+    if(!v) return '';
+    if(v.seconds) return new Date(v.seconds*1000).toISOString().slice(0,10);
+    const dt = new Date(v); if(!isNaN(dt)) return dt.toISOString().slice(0,10);
+    return '';
+  };
 
-      // invoices contoh periode bulan ini
-      const per = yyyymm();
-      batch.set(I.doc('INV001'), { customerId:'andi123', customerName:'Andi', period:per, amount:100000, status:'paid', dueDate:new Date(), createdAt: new Date() });
-      batch.set(I.doc('INV002'), { customerId:'budi88', customerName:'Budi', period:per, amount:150000, status:'unpaid', dueDate:new Date(), createdAt: new Date() });
+  /* ================== LOAD ALL ================== */
+  async function loadAll(){
+    await Promise.all([
+      renderCustomers(), renderPlans(), renderInvoices(),
+      renderTechnicians(), renderTickets(), renderMaterials(), renderStats()
+    ]);
+    document.getElementById('period').value = yyyymm();
+  }
 
-      // teknisi & tiket
-      batch.set(T.doc('rudi'), { name:'Rudi', phone:'0812345678', skill:'Fiber', active:true });
-      batch.set(T.doc('doni'), { name:'Doni', phone:'0823456789', skill:'Wireless', active:false });
-      batch.set(G.doc('G001'), { customerId:'andi123', customerName:'Andi', title:'Internet putus', detail:'ODP longgar', status:'progress', assignedTo:'rudi', assignedToName:'Rudi', createdAt:new Date() });
+  /* ================== STATS ================== */
+  async function renderStats(){
+    const cust = await db.collection('customers').get();
+    document.getElementById('statCustomers').textContent = cust.size;
 
-      // materials
-      batch.set(M.doc('FO'), { name:'Kabel FO', stock:500, unit:'meter', location:'Gudang A' });
-      batch.set(M.doc('ONT'), { name:'ONT', stock:20, unit:'unit', location:'Gudang B' });
-      batch.set(M.doc('RJ45'), { name:'RJ45', stock:200, unit:'pack', location:'Gudang A' });
+    const per = yyyymm();
+    const inv = await db.collection('invoices').where('period','==',per).get();
+    let paid=0, revenue=0;
+    inv.forEach(d=>{ const x=d.data(); if(x.status==='paid'){paid++; revenue+=+x.amount||0;}});
+    document.getElementById('statPaid').textContent = paid;
+    document.getElementById('statRevenue').textContent = rupiah(revenue);
 
-      try { await batch.commit(); await loadAll(); alert('✅ Demo data ditambahkan'); }
-      catch(e){ alert('Seed gagal: '+e.message); }
-    };
-  </script>
+    const trouble = await db.collection('tickets').where('status','in',['open','progress']).get().catch(()=>({size:0}));
+    document.getElementById('statTrouble').textContent = trouble.size || 0;
+  }
+
+  /* ================== RENDER TABLES ================== */
+  async function renderCustomers(){
+    const el = document.getElementById('rows-customers'); el.innerHTML='';
+    const snap = await db.collection('customers').orderBy('name').get();
+    snap.forEach(doc=>{
+      const c = doc.data();
+      el.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${c.name||'-'}</td>
+          <td>${c.username||'-'}</td>
+          <td>${c.contact||'-'}</td>
+          <td>${c.planName||'-'}</td>
+          <td><span class="pill ${c.enabled?'ok':'bad'}">${c.enabled?'Aktif':'Nonaktif'}</span></td>
+          <td>${c.startDate||'-'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" onclick="openModal('customers','${doc.id}')"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="delDoc('customers','${doc.id}')"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+  }
+  async function renderPlans(){
+    const el = document.getElementById('rows-plans'); el.innerHTML='';
+    const snap = await db.collection('plans').orderBy('priceMonthly').get();
+    snap.forEach(doc=>{
+      const p = doc.data();
+      el.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${p.name||'-'}</td>
+          <td>${p.speedDown||'-'}</td>
+          <td>${p.speedUp||'-'}</td>
+          <td>${rupiah(p.priceMonthly)}</td>
+          <td>${p.taxPercent||0}%</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" onclick="openModal('plans','${doc.id}')"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="delDoc('plans','${doc.id}')"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+  }
+  async function renderInvoices(){
+    const el = document.getElementById('rows-invoices'); el.innerHTML='';
+    const per = document.getElementById('period').value || yyyymm();
+    const snap = await db.collection('invoices').where('period','==',per).get();
+    snap.forEach(doc=>{
+      const i = doc.data();
+      const due = i.dueDate ? new Date(i.dueDate.seconds? i.dueDate.seconds*1000 : i.dueDate) : null;
+      const statusHtml = i.status==='paid' 
+        ? '<span class="pill ok">Lunas</span>'
+        : (due && due < new Date() ? '<span class="pill bad">Jatuh Tempo</span>' : '<span class="pill warn">Belum Bayar</span>');
+      el.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${doc.id}</td>
+          <td>${i.customerName||i.customerId||'-'}</td>
+          <td>${i.period||'-'}</td>
+          <td>${rupiah(i.amount)}</td>
+          <td>${statusHtml}</td>
+          <td>${due? due.toLocaleDateString('id-ID') : '-'}</td>
+          <td class="d-flex flex-wrap gap-1">
+            ${i.status!=='paid'? `<button class="btn btn-sm btn-success" onclick="markPaid('${doc.id}')"><i class="bi bi-check2-circle"></i> Paid</button>`:''}
+            <button class="btn btn-sm btn-outline-primary" onclick="openModal('invoices','${doc.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="delDoc('invoices','${doc.id}')"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+      `);
+    });
+  }
+  async function renderTechnicians(){
+    const el = document.getElementById('rows-technicians'); el.innerHTML='';
+    const snap = await db.collection('technicians').orderBy('name').get();
+    snap.forEach(doc=>{
+      const t = doc.data();
+      el.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${t.name||'-'}</td>
+          <td>${t.phone||'-'}</td>
+          <td>${t.skill||'-'}</td>
+          <td><span class="pill ${t.active?'ok':'bad'}">${t.active?'Aktif':'Nonaktif'}</span></td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" onclick="openModal('technicians','${doc.id}')"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="delDoc('technicians','${doc.id}')"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+  }
+  async function renderTickets(){
+    const el = document.getElementById('rows-tickets'); el.innerHTML='';
+    const snap = await db.collection('tickets').orderBy('createdAt','desc').get();
+    snap.forEach(doc=>{
+      const t = doc.data();
+      const cls = t.status==='closed'?'ok':(t.status==='progress'?'warn':'bad');
+      el.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${doc.id}</td>
+          <td>${t.customerName||t.customerId||'-'}</td>
+          <td>${t.title||'-'}</td>
+          <td><span class="pill ${cls}">${t.status||'-'}</span></td>
+          <td>${t.assignedToName||'-'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" onclick="openModal('tickets','${doc.id}')"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="delDoc('tickets','${doc.id}')"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+  }
+  async function renderMaterials(){
+    const el = document.getElementById('rows-materials'); el.innerHTML='';
+    const snap = await db.collection('materials').orderBy('name').get();
+    snap.forEach(doc=>{
+      const m = doc.data();
+      el.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td>${m.name||'-'}</td>
+          <td>${m.stock||0}</td>
+          <td>${m.unit||'-'}</td>
+          <td>${m.location||'-'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" onclick="openModal('materials','${doc.id}')"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="delDoc('materials','${doc.id}')"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+  }
+
+  /* ================== CRUD CORE ================== */
+  const formSchemas = {
+    customers: [
+      {k:'name', label:'Nama', type:'text', req:true},
+      {k:'username', label:'Username', type:'text', req:true},
+      {k:'contact', label:'Email / HP', type:'text'},
+      {k:'planName', label:'Paket', type:'text'},
+      {k:'enabled', label:'Aktif?', type:'checkbox'},
+      {k:'startDate', label:'Mulai (YYYY-MM-DD)', type:'date'}
+    ],
+    plans: [
+      {k:'name', label:'Nama Paket', type:'text', req:true},
+      {k:'speedDown', label:'Download (Mbps)', type:'number'},
+      {k:'speedUp', label:'Upload (Mbps)', type:'number'},
+      {k:'priceMonthly', label:'Harga / bulan', type:'number', step:'1000', req:true},
+      {k:'taxPercent', label:'Pajak %', type:'number', step:'1'}
+    ],
+    invoices: [
+      {k:'customerId', label:'ID Pelanggan', type:'text', req:true},
+      {k:'customerName', label:'Nama Pelanggan', type:'text'},
+      {k:'period', label:'Periode (YYYY-MM)', type:'text', req:true},
+      {k:'amount', label:'Nominal', type:'number', step:'1000', req:true},
+      {k:'dueDate', label:'Jatuh Tempo (YYYY-MM-DD)', type:'date'},
+      {k:'prorated', label:'Prorata?', type:'checkbox'},
+      {k:'status', label:'Status', type:'select', options:['unpaid','paid','overdue']}
+    ],
+    technicians: [
+      {k:'name', label:'Nama', type:'text', req:true},
+      {k:'phone', label:'HP', type:'text'},
+      {k:'skill', label:'Keahlian', type:'text'},
+      {k:'active', label:'Aktif?', type:'checkbox'}
+    ],
+    tickets: [
+      {k:'customerId', label:'ID Pelanggan', type:'text', req:true},
+      {k:'customerName', label:'Nama Pelanggan', type:'text'},
+      {k:'title', label:'Judul', type:'text', req:true},
+      {k:'detail', label:'Detail', type:'textarea'},
+      {k:'status', label:'Status', type:'select', options:['open','progress','closed']},
+      {k:'assignedTo', label:'Teknisi (ID)', type:'text'},
+      {k:'assignedToName', label:'Teknisi (Nama)', type:'text'}
+    ],
+    materials: [
+      {k:'name', label:'Nama', type:'text', req:true},
+      {k:'stock', label:'Stok', type:'number'},
+      {k:'unit', label:'Satuan', type:'text'},
+      {k:'location', label:'Lokasi', type:'text'}
+    ],
+    material_logs: [
+      {k:'materialId', label:'Material ID', type:'text', req:true},
+      {k:'type', label:'Jenis', type:'select', options:['in','out']},
+      {k:'qty', label:'Jumlah', type:'number', req:true},
+      {k:'ref', label:'Referensi (Tiket/Instalasi)', type:'text'}
+    ]
+  };
+
+  function inputHTML(f,val=''){
+    const req = f.req?'required':'';
+    if(f.type==='checkbox'){
+      return `<div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="f_${f.k}" ${val?'checked':''}>
+        <label class="form-check-label" for="f_${f.k}">${f.label}</label>
+      </div>`;
+    }
+    if(f.type==='select'){
+      const opts = (f.options||[]).map(o=>`<option value="${o}" ${o==val?'selected':''}>${o}</option>`).join('');
+      return `<div class="mb-3"><label class="form-label">${f.label}</label>
+        <select id="f_${f.k}" class="form-select" ${req}>${opts}</select></div>`;
+    }
+    if(f.type==='textarea'){
+      return `<div class="mb-3"><label class="form-label">${f.label}</label>
+        <textarea id="f_${f.k}" class="form-control" rows="3" ${req}>${val||''}</textarea></div>`;
+    }
+    const extra = f.step?` step="${f.step}"`:'';
+    return `<div class="mb-3"><label class="form-label">${f.label}</label>
+      <input id="f_${f.k}" type="${f.type}" class="form-control" value="${val||''}" ${req}${extra}></div>`;
+  }
+
+  async function openModal(col,id){
+    document.getElementById('crudTitle').textContent = (id?'Edit ':'Tambah ')+titleOf(col);
+    document.getElementById('colName').value = col;
+    document.getElementById('docId').value = id||'';
+    let data = {};
+    if(id){
+      const doc = await db.collection(col).doc(id).get();
+      data = doc.exists? doc.data(): {};
+    }
+    const html = formSchemas[col].map(f=> inputHTML(f, f.type==='date'? toDateStr(data[f.k]) : data[f.k])).join('');
+    document.getElementById('crudBody').innerHTML = html;
+    modal.show();
+  }
+
+  function titleOf(col){
+    return {customers:'Pelanggan',plans:'Paket',invoices:'Invoice',technicians:'Teknisi',tickets:'Tiket',materials:'Material',material_logs:'Mutasi Material'}[col]||col;
+  }
+
+  document.getElementById('crudForm').onsubmit = async (e)=>{
+    e.preventDefault();
+    const col = document.getElementById('colName').value;
+    const id  = document.getElementById('docId').value;
+    const fields = formSchemas[col];
+    const payload = {};
+    for(const f of fields){
+      const el = document.getElementById('f_'+f.k);
+      if(!el) continue;
+      let v = (f.type==='checkbox') ? el.checked : el.value;
+      if(f.type==='number') v = +v;
+      payload[f.k] = v;
+    }
+    if(col==='tickets' && !id) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+
+    try{
+      if(id) await db.collection(col).doc(id).set(payload,{merge:true});
+      else await db.collection(col).add(payload);
+      modal.hide();
+      await reloadByCol(col);
+    }catch(err){ alert('Gagal simpan: '+err.message); }
+  };
+
+  async function delDoc(col,id){
+    if(!confirm('Hapus data ini?')) return;
+    try{
+      await db.collection(col).doc(id).delete();
+      await reloadByCol(col);
+    }catch(err){ alert('Gagal hapus: '+err.message); }
+  }
+
+  async function reloadByCol(col){
+    if(col==='customers') await renderCustomers();
+    if(col==='plans') await renderPlans();
+    if(col==='invoices') await renderInvoices();
+    if(col==='technicians') await renderTechnicians();
+    if(col==='tickets') await renderTickets();
+    if(col==='materials' || col==='material_logs') await renderMaterials();
+    await renderStats();
+  }
+
+  /* ================== BILLING HELPERS ================== */
+  async function markPaid(id){
+    try{
+      await db.collection('invoices').doc(id).set({status:'paid',paidAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      await renderInvoices(); await renderStats();
+    }catch(e){ alert('Gagal: '+e.message); }
+  }
+
+  async function generateInvoices(){
+    const per = document.getElementById('period').value || yyyymm();
+    if(!/^\d{4}-\d{2}$/.test(per)) { alert('Format periode harus YYYY-MM'); return; }
+    const mm = +per.split('-')[1]; const yy = +per.split('-')[0];
+    const daysInMonth = new Date(yy, mm, 0).getDate();
+
+    const custSnap = await db.collection('customers').where('enabled','==',true).get();
+    const planSnap = await db.collection('plans').get();
+    const planMap = {}; planSnap.forEach(p=> planMap[p.data().name]=p.data());
+
+    const batch = db.batch();
+    custSnap.forEach(doc=>{
+      const c = doc.data();
+      const plan = planMap[c.planName];
+      if(!plan) return;
+      let amount = +plan.priceMonthly || 0;
+      let prorated = false;
+
+      if(c.startDate && /^\d{4}-\d{2}-\d{2}$/.test(c.startDate)){
+        const sd = new Date(c.startDate);
+        if(sd.getFullYear()==yy && (sd.getMonth()+1)==mm && sd.getDate()>1){
+          const sisa = daysInMonth - sd.getDate() + 1;
+          amount = Math.round(amount * (sisa/daysInMonth));
+          prorated = true;
+        }
+      }
+
+      const invRef = db.collection('invoices').doc(`${doc.id}-${per}`);
+      batch.set(invRef,{
+        customerId: doc.id,
+        customerName: c.name || c.username,
+        period: per,
+        amount, prorated,
+        status: 'unpaid',
+        dueDate: new Date(`${per}-05`),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    });
+
+    try{
+      await batch.commit();
+      alert('Invoice periode '+per+' berhasil dibuat/diupdate.');
+      await renderInvoices(); await renderStats();
+    }catch(e){ alert('Gagal generate: '+e.message); }
+  }
+
+  /* ================== SEED DEMO ================== */
+  document.getElementById('seedBtn').onclick = async ()=>{
+    if(!confirm('Tambah demo data?')) return;
+    const batch = db.batch();
+    const C=db.collection('customers'), P=db.collection('plans'), I=db.collection('invoices'),
+          T=db.collection('technicians'), G=db.collection('tickets'), M=db.collection('materials');
+
+    // plans
+    batch.set(P.doc('10Mbps'),{name:'10Mbps',speedDown:'10',speedUp:'10',priceMonthly:100000,taxPercent:0});
+    batch.set(P.doc('20Mbps'),{name:'20Mbps',speedDown:'20',speedUp:'20',priceMonthly:150000,taxPercent:0});
+    batch.set(P.doc('50Mbps'),{name:'50Mbps',speedDown:'50',speedUp:'50',priceMonthly:250000,taxPercent:0});
+    // customers
+    batch.set(C.doc('andi123'),{name:'Andi',username:'andi123',contact:'andi@ex.id',planName:'10Mbps',enabled:true,startDate:'2025-08-01'});
+    batch.set(C.doc('budi88'),{name:'Budi',username:'budi88',contact:'budi@ex.id',planName:'20Mbps',enabled:false,startDate:'2025-08-12'});
+    batch.set(C.doc('cici77'),{name:'Cici',username:'cici77',contact:'0812xxxx',planName:'50Mbps',enabled:true,startDate:'2025-08-15'});
+    // invoices (bulan ini)
+    const per = yyyymm();
+    batch.set(I.doc('andi123-'+per),{customerId:'andi123',customerName:'Andi',period:per,amount:100000,status:'paid',dueDate:new Date(),createdAt:new Date()});
+    batch.set(I.doc('budi88-'+per),{customerId:'budi88',customerName:'Budi',period:per,amount:150000,status:'unpaid',dueDate:new Date(),createdAt:new Date()});
+    // technicians & tickets
+    batch.set(T.doc('rudi'),{name:'Rudi',phone:'0812345678',skill:'Fiber',active:true});
+    batch.set(T.doc('doni'),{name:'Doni',phone:'0823456789',skill:'Wireless',active:false});
+    batch.set(G.doc('G001'),{customerId:'andi123',customerName:'Andi',title:'Internet putus',detail:'ODP longgar',status:'progress',assignedTo:'rudi',assignedToName:'Rudi',createdAt:new Date()});
+    // materials
+    batch.set(M.doc('FO'),{name:'Kabel FO',stock:500,unit:'meter',location:'Gudang A'});
+    batch.set(M.doc('ONT'),{name:'ONT',stock:20,unit:'unit',location:'Gudang B'});
+    batch.set(M.doc('RJ45'),{name:'RJ45',stock:200,unit:'pack',location:'Gudang A'});
+
+    try{ await batch.commit(); await loadAll(); alert('✅ Demo data ditambahkan'); }
+    catch(e){ alert('Seed gagal: '+e.message); }
+  };
+</script>
 </body>
 </html>
-
