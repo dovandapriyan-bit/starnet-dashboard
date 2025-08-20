@@ -1,176 +1,694 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Starnet💫 Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"/>
+
   <style>
-    body { background:#f4f6f9; }
-    .sidebar {
-      height:100vh; background:linear-gradient(180deg,#0d6efd,#0a58ca); color:white; padding-top:20px;
-      position:fixed; width:240px; transition:all .3s; overflow:hidden;
+    :root{
+      --sidebar-w:240px;
+      --sidebar-w-collapsed:70px;
     }
-    .sidebar.collapsed { width:70px; }
-    .sidebar h4 { transition:.3s; }
-    .sidebar.collapsed h4 { opacity:0; }
-    .sidebar a {
-      display:flex; align-items:center; color:white; padding:12px 20px; margin:5px 10px;
-      border-radius:10px; text-decoration:none; white-space:nowrap; transition:.3s;
+    body{ background:#f4f6f9;}
+    .sidebar{
+      height:100vh; position:fixed; left:0; top:0;
+      background:linear-gradient(180deg,#0d6efd,#0a58ca);
+      color:#fff; width:var(--sidebar-w);
+      transition:all .3s ease; overflow:hidden; padding-top:16px;
+      box-shadow:0 0 20px rgba(0,0,0,.15);
     }
-    .sidebar a i { font-size:1.2rem; margin-right:10px; }
-    .sidebar.collapsed a span { display:none; }
-    .sidebar a:hover { background:rgba(255,255,255,0.2); }
-    .content { margin-left:250px; padding:20px; transition:margin-left .3s; }
-    .content.collapsed { margin-left:80px; }
-    .hidden { display:none; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .toggle-btn { font-size:1.5rem; cursor:pointer; color:#0d6efd; }
+    .sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
+    .sidebar h4{ transition:.3s; }
+    .sidebar.collapsed h4{ opacity:0; }
+    .nav-item-link{
+      display:flex; align-items:center; gap:10px;
+      color:#fff; text-decoration:none; border-radius:12px;
+      padding:10px 14px; margin:6px 12px; white-space:nowrap;
+      transition:.25s;
+    }
+    .nav-item-link:hover{ background:rgba(255,255,255,.18); }
+    .sidebar.collapsed .nav-item-link span{ display:none; }
+    .content{
+      margin-left:var(--sidebar-w); transition:margin-left .3s ease;
+      padding:18px;
+    }
+    .content.collapsed{ margin-left:var(--sidebar-w-collapsed); }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .toggle-btn{ font-size:1.6rem; cursor:pointer; color:#0d6efd; }
+    .card{ border-radius:16px; }
+    .hidden{ display:none; }
+
+    .table thead th{ position:sticky; top:0; background:#fff; z-index:1; }
+    .section-header{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;
+    }
+    .search-box{ max-width:340px; }
+    .badge-soft{
+      background:rgba(13,110,253,.12); color:#0d6efd; border:1px solid rgba(13,110,253,.2);
+    }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <h4 class="text-center mb-4">💫 Starnet</h4>
-    <a href="#" onclick="showPage('dashboard')"><i class="bi bi-speedometer2"></i><span> Dashboard</span></a>
-    <a href="#" onclick="showPage('user')"><i class="bi bi-people"></i><span> User</span></a>
-    <a href="#" onclick="showPage('billing')"><i class="bi bi-credit-card"></i><span> Billing</span></a>
-    <a href="#" onclick="showPage('kas')"><i class="bi bi-bank"></i><span> Kas</span></a>
-    <a href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span> Logout</span></a>
-  </div>
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar">
+    <h4 class="text-center mb-3">Starnet💫</h4>
 
-  <!-- Content -->
-  <div class="content" id="content">
+    <a class="nav-item-link" href="#" onclick="showPage('dashboard')"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('user')"><i class="bi bi-people"></i><span>User</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('paket')"><i class="bi bi-wifi"></i><span>Paket</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('billing')"><i class="bi bi-credit-card"></i><span>Billing</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('kas')"><i class="bi bi-bank"></i><span>Kas Perusahaan</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('teknisi')"><i class="bi bi-person-badge"></i><span>Teknisi</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('gangguan')"><i class="bi bi-exclamation-triangle"></i><span>Gangguan</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('material')"><i class="bi bi-tools"></i><span>Material</span></a>
+    <a class="nav-item-link" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+  </aside>
+
+  <!-- CONTENT -->
+  <main id="content" class="content">
     <div class="topbar">
-      <i class="bi bi-list toggle-btn" id="toggleSidebar"></i>
-      <span class="fw-bold">👤 <span id="user-email"></span></span>
-    </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard">
-      <h2>📊 Dashboard Utama</h2>
-      <div class="row mb-4">
-        <div class="col-md-3"><div class="card shadow p-3 text-center"><h6>👥 User</h6><p id="totalUser" class="fs-4 fw-bold text-primary">0</p></div></div>
-        <div class="col-md-3"><div class="card shadow p-3 text-center"><h6>💰 Pendapatan</h6><p id="totalPendapatan" class="fs-4 fw-bold text-success">Rp 0</p></div></div>
-        <div class="col-md-3"><div class="card shadow p-3 text-center"><h6>⚠️ Tunggakan</h6><p id="totalTunggakan" class="fs-4 fw-bold text-danger">Rp 0</p></div></div>
-        <div class="col-md-3"><div class="card shadow p-3 text-center"><h6>🏦 Kas</h6><p id="totalKas" class="fs-4 fw-bold text-info">Rp 0</p></div></div>
+      <div class="d-flex align-items-center gap-2">
+        <i id="toggleSidebar" class="bi bi-list toggle-btn"></i>
+        <span class="badge rounded-pill bg-light text-dark">Starnet 💫 Admin Panel</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-person-circle fs-4 text-primary"></i>
+        <span id="user-email" class="fw-semibold"></span>
       </div>
     </div>
 
-    <!-- User -->
-    <div id="user" class="hidden">
-      <h3>📋 User</h3>
-      <button class="btn btn-primary mb-2" onclick="addUser()">+ Tambah User</button>
-      <table class="table table-striped shadow">
-        <thead class="table-primary"><tr><th>Nama</th><th>Username</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody id="userTable"></tbody>
-      </table>
-    </div>
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <h3 class="mb-3">📊 Ringkasan</h3>
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Total User</div>
+                <div id="totalUser" class="fs-3 fw-bold text-primary">0</div>
+              </div>
+              <i class="bi bi-people fs-1 text-primary"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Pendapatan</div>
+                <div id="totalPendapatan" class="fs-3 fw-bold text-success">Rp 0</div>
+              </div>
+              <i class="bi bi-cash-coin fs-1 text-success"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Tunggakan</div>
+                <div id="totalTunggakan" class="fs-3 fw-bold text-danger">Rp 0</div>
+              </div>
+              <i class="bi bi-exclamation-octagon fs-1 text-danger"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Saldo Kas</div>
+                <div id="totalKas" class="fs-3 fw-bold text-info">Rp 0</div>
+              </div>
+              <i class="bi bi-bank fs-1 text-info"></i>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <!-- Billing -->
-    <div id="billing" class="hidden">
-      <h3>💳 Billing</h3>
-      <button class="btn btn-primary mb-2" onclick="addBilling()">+ Tambah Billing</button>
-      <table class="table table-striped shadow">
-        <thead class="table-warning"><tr><th>Nama</th><th>Paket</th><th>Periode</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody id="billingTable"></tbody>
-      </table>
-    </div>
+      <div class="row g-3">
+        <div class="col-12 col-lg-4">
+          <div class="card p-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Teknisi</div>
+                <div id="totalTeknisi" class="fs-3 fw-bold">0</div>
+              </div>
+              <i class="bi bi-person-badge fs-1"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-4">
+          <div class="card p-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Gangguan Aktif</div>
+                <div id="totalGangguanAktif" class="fs-3 fw-bold">0</div>
+              </div>
+              <i class="bi bi-lightning-charge fs-1"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-4">
+          <div class="card p-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="text-secondary">Material Kritis (≤5)</div>
+                <div id="totalMaterialKritis" class="fs-3 fw-bold">0</div>
+              </div>
+              <i class="bi bi-tools fs-1"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Kas -->
-    <div id="kas" class="hidden">
-      <h3>🏦 Kas</h3>
-      <button class="btn btn-success mb-2" onclick="addKas()">+ Tambah Kas</button>
-      <table class="table table-striped shadow">
-        <thead class="table-success"><tr><th>Tanggal</th><th>Keterangan</th><th>Jenis</th><th>Jumlah</th><th>Aksi</th></tr></thead>
-        <tbody id="kasTable"></tbody>
-      </table>
-    </div>
-  </div>
+    <!-- USER -->
+    <section id="user" class="hidden">
+      <div class="section-header">
+        <h3>👥 User</h3>
+        <div class="d-flex gap-2">
+          <input id="userSearch" class="form-control form-control-sm search-box" placeholder="Cari nama/username...">
+          <button class="btn btn-primary btn-sm" onclick="addUser()"><i class="bi bi-plus-lg"></i> Tambah User</button>
+        </div>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-primary">
+            <tr><th>Nama</th><th>Username</th><th>Paket</th><th>Status</th><th width="140">Aksi</th></tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-  <!-- Modal User -->
+    <!-- PAKET -->
+    <section id="paket" class="hidden">
+      <div class="section-header">
+        <h3>📡 Paket</h3>
+        <button class="btn btn-primary btn-sm" onclick="addPaket()"><i class="bi bi-plus-lg"></i> Tambah Paket</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-info"><tr><th>Nama Paket</th><th>Kecepatan</th><th>Harga</th><th>Deskripsi</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="paketTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BILLING -->
+    <section id="billing" class="hidden">
+      <div class="section-header">
+        <h3>💳 Billing</h3>
+        <button class="btn btn-primary btn-sm" onclick="addBilling()"><i class="bi bi-plus-lg"></i> Tambah Billing</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-warning"><tr><th>Nama</th><th>Paket</th><th>Periode</th><th>Jumlah</th><th>Status</th><th width="160">Aksi</th></tr></thead>
+            <tbody id="billingTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- KAS -->
+    <section id="kas" class="hidden">
+      <div class="section-header">
+        <h3>🏦 Kas Perusahaan</h3>
+        <button class="btn btn-success btn-sm" onclick="addKas()"><i class="bi bi-plus-lg"></i> Tambah Transaksi</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-success"><tr><th>Tanggal</th><th>Keterangan</th><th>Jenis</th><th>Jumlah</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="kasTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEKNISI -->
+    <section id="teknisi" class="hidden">
+      <div class="section-header">
+        <h3>👷 Teknisi</h3>
+        <button class="btn btn-primary btn-sm" onclick="addTeknisi()"><i class="bi bi-plus-lg"></i> Tambah Teknisi</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-secondary"><tr><th>Nama</th><th>No. HP</th><th>Keahlian</th><th>Status</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="teknisiTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- GANGGUAN -->
+    <section id="gangguan" class="hidden">
+      <div class="section-header">
+        <h3>⚠️ Gangguan</h3>
+        <button class="btn btn-primary btn-sm" onclick="addGangguan()"><i class="bi bi-plus-lg"></i> Tambah Laporan</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-danger"><tr><th>Tanggal</th><th>Pelanggan</th><th>Lokasi</th><th>Deskripsi</th><th>Status</th><th>Teknisi</th><th width="160">Aksi</th></tr></thead>
+            <tbody id="gangguanTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MATERIAL -->
+    <section id="material" class="hidden">
+      <div class="section-header">
+        <h3>🛠️ Material</h3>
+        <button class="btn btn-primary btn-sm" onclick="addMaterial()"><i class="bi bi-plus-lg"></i> Tambah Material</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light"><tr><th>Nama</th><th>Kategori</th><th>Stok</th><th>Satuan</th><th>Catatan</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="materialTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== MODALS (CRUD) ========== -->
+  <!-- USER -->
   <div class="modal fade" id="userModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header bg-primary text-white"><h5 class="modal-title">User</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
       <form id="userForm">
         <input type="hidden" id="userId">
-        <input class="form-control mb-2" id="nama" placeholder="Nama">
-        <input class="form-control mb-2" id="username" placeholder="Username">
-        <input class="form-control mb-2" id="paket" placeholder="Paket">
-        <select class="form-control mb-2" id="status"><option>Aktif</option><option>Nonaktif</option></select>
+        <div class="mb-2"><label class="form-label">Nama</label><input id="nama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Username</label><input id="username" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Paket</label><input id="paket" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Status</label><select id="status" class="form-select"><option>Aktif</option><option>Nonaktif</option></select></div>
       </form>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" onclick="saveUser()">Simpan</button></div>
   </div></div></div>
 
-  <!-- Modal Billing -->
+  <!-- PAKET -->
+  <div class="modal fade" id="paketModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-info text-white"><h5 class="modal-title">Paket</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="paketForm">
+        <input type="hidden" id="paketId">
+        <div class="mb-2"><label class="form-label">Nama Paket</label><input id="pnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Kecepatan</label><input id="pkecepatan" class="form-control" placeholder="Mbps" required></div>
+        <div class="mb-2"><label class="form-label">Harga</label><input type="number" id="pharga" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Deskripsi</label><textarea id="pdeskripsi" class="form-control"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-info text-white" onclick="savePaket()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- BILLING -->
   <div class="modal fade" id="billingModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
     <div class="modal-header bg-warning"><h5 class="modal-title">Billing</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
       <form id="billingForm">
         <input type="hidden" id="billingId">
-        <input class="form-control mb-2" id="bnama" placeholder="Nama">
-        <input class="form-control mb-2" id="bpaket" placeholder="Paket">
-        <input class="form-control mb-2" id="bperiode" placeholder="Periode">
-        <input type="number" class="form-control mb-2" id="bjumlah" placeholder="Jumlah">
-        <select class="form-control mb-2" id="bstatus"><option>Lunas</option><option>Belum Bayar</option></select>
+        <div class="mb-2"><label class="form-label">Nama</label><input id="bnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Paket</label><input id="bpaket" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Periode</label><input id="bperiode" class="form-control" placeholder="Misal: 08/2025" required></div>
+        <div class="mb-2"><label class="form-label">Jumlah</label><input type="number" id="bjumlah" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Status</label><select id="bstatus" class="form-select"><option>Lunas</option><option>Belum Bayar</option></select></div>
       </form>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-warning" onclick="saveBilling()">Simpan</button></div>
   </div></div></div>
 
-  <!-- Modal Kas -->
+  <!-- KAS -->
   <div class="modal fade" id="kasModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-    <div class="modal-header bg-success text-white"><h5 class="modal-title">Kas</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-header bg-success text-white"><h5 class="modal-title">Transaksi Kas</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
     <div class="modal-body">
       <form id="kasForm">
         <input type="hidden" id="kasId">
-        <input type="date" class="form-control mb-2" id="tanggal">
-        <input class="form-control mb-2" id="keterangan" placeholder="Keterangan">
-        <select class="form-control mb-2" id="jenis"><option>Masuk</option><option>Keluar</option></select>
-        <input type="number" class="form-control mb-2" id="jumlah" placeholder="Jumlah">
+        <div class="mb-2"><label class="form-label">Tanggal</label><input type="date" id="tanggal" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Keterangan</label><input id="keterangan" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Jenis</label><select id="jenis" class="form-select"><option>Masuk</option><option>Keluar</option></select></div>
+        <div class="mb-2"><label class="form-label">Jumlah</label><input type="number" id="jumlah" class="form-control" required></div>
       </form>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success" onclick="saveKas()">Simpan</button></div>
   </div></div></div>
 
+  <!-- TEKNISI -->
+  <div class="modal fade" id="teknisiModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-secondary text-white"><h5 class="modal-title">Teknisi</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="teknisiForm">
+        <input type="hidden" id="teknisiId">
+        <div class="mb-2"><label class="form-label">Nama</label><input id="tnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">No. HP</label><input id="thp" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Keahlian</label><input id="tkeahlian" class="form-control"></div>
+        <div class="mb-2"><label class="form-label">Status</label><select id="tstatus" class="form-select"><option>Aktif</option><option>Nonaktif</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-secondary" onclick="saveTeknisi()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- GANGGUAN -->
+  <div class="modal fade" id="gangguanModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-danger text-white"><h5 class="modal-title">Laporan Gangguan</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="gangguanForm">
+        <input type="hidden" id="gangguanId">
+        <div class="mb-2"><label class="form-label">Tanggal</label><input type="date" id="gtanggal" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Pelanggan</label><input id="gpelanggan" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Lokasi</label><input id="glokasi" class="form-control"></div>
+        <div class="mb-2"><label class="form-label">Deskripsi</label><textarea id="gdeskripsi" class="form-control"></textarea></div>
+        <div class="mb-2"><label class="form-label">Status</label><select id="gstatus" class="form-select"><option>Aktif</option><option>Selesai</option></select></div>
+        <div class="mb-2"><label class="form-label">Teknisi</label><input id="gteknisi" class="form-control" placeholder="Nama teknisi penanggung jawab"></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-danger" onclick="saveGangguan()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- MATERIAL -->
+  <div class="modal fade" id="materialModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-light"><h5 class="modal-title">Material</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="materialForm">
+        <input type="hidden" id="materialId">
+        <div class="mb-2"><label class="form-label">Nama</label><input id="mnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Kategori</label><input id="mkategori" class="form-control"></div>
+        <div class="mb-2"><label class="form-label">Stok</label><input type="number" id="mstok" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Satuan</label><input id="msatuan" class="form-control" placeholder="roll/pcs/meter"></div>
+        <div class="mb-2"><label class="form-label">Catatan</label><textarea id="mcatatan" class="form-control"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-dark" onclick="saveMaterial()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- Bootstrap & Firebase -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
   <script>
-    const firebaseConfig={apiKey:"AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",authDomain:"dnt-network-7.firebaseapp.com",projectId:"dnt-network-7",storageBucket:"dnt-network-7.firebasestorage.app",messagingSenderId:"761179668371",appId:"1:761179668371:web:7d1468d0298041d4783266",measurementId:"G-CD3EQ350R4"};
+    // ===== Firebase Starnet 💫 =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+      authDomain: "dnt-network-7.firebaseapp.com",
+      projectId: "dnt-network-7",
+      storageBucket: "dnt-network-7.firebasestorage.app",
+      messagingSenderId: "761179668371",
+      appId: "1:761179668371:web:7d1468d0298041d4783266",
+      measurementId: "G-CD3EQ350R4"
+    };
     firebase.initializeApp(firebaseConfig);
-    const auth=firebase.auth(),db=firebase.firestore();
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
 
-    document.getElementById("toggleSidebar").onclick=()=>{sidebar.classList.toggle("collapsed");content.classList.toggle("collapsed");};
-    document.getElementById("logoutBtn").onclick=()=>auth.signOut().then(()=>location.href="index.html");
+    // ===== UI helpers =====
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+    document.getElementById('toggleSidebar').onclick = () => {
+      sidebar.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
+    };
+    function showPage(id){
+      document.querySelectorAll('main > section').forEach(s=>s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
 
-    function showPage(p){document.querySelectorAll('.content>div').forEach(d=>d.classList.add('hidden'));document.getElementById(p).classList.remove('hidden');}
+    // ===== Auth guard =====
+    document.getElementById('logoutBtn').onclick = ()=>auth.signOut().then(()=>location.href='index.html');
+    auth.onAuthStateChanged(u=>{
+      if(!u){ location.href='index.html'; return; }
+      document.getElementById('user-email').textContent = u.email || '(no email)';
+      // Load all data for dashboard
+      loadUsers();
+      loadPaket();
+      loadBilling();
+      loadKas();
+      loadTeknisi();
+      loadGangguan();
+      loadMaterial();
+    });
 
-    // ===== USER CRUD =====
-    function loadUsers(){db.collection("users").onSnapshot(s=>{let html="";document.getElementById("totalUser").innerText=s.size;s.forEach(doc=>{let u=doc.data();html+=`<tr><td>${u.nama}</td><td>${u.username}</td><td>${u.paket}</td><td><span class="badge ${u.status=='Aktif'?'bg-success':'bg-danger'}">${u.status}</span></td><td><button class="btn btn-sm btn-warning" onclick='editUser("${doc.id}",${JSON.stringify(u)})'>Edit</button> <button class="btn btn-sm btn-danger" onclick='deleteUser("${doc.id}")'>Hapus</button></td></tr>`;});userTable.innerHTML=html;});}
-    function addUser(){userForm.reset();userId.value="";new bootstrap.Modal(userModal).show();}
-    function editUser(id,d){userId.value=id;nama.value=d.nama;username.value=d.username;paket.value=d.paket;status.value=d.status;new bootstrap.Modal(userModal).show();}
-    function saveUser(){let id=userId.value,data={nama:nama.value,username:username.value,paket:paket.value,status:status.value};if(id)db.collection("users").doc(id).update(data);else db.collection("users").add(data);bootstrap.Modal.getInstance(userModal).hide();}
-    function deleteUser(id){if(confirm("Hapus user?"))db.collection("users").doc(id).delete();}
+    // ====== USER CRUD ======
+    function rowActions(editCb, delCb){
+      return `
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-warning" onclick='${editCb}'>Edit</button>
+          <button class="btn btn-sm btn-danger" onclick='${delCb}'>Hapus</button>
+        </div>
+      `;
+    }
 
-    // ===== BILLING CRUD =====
-    function loadBilling(){db.collection("billing").onSnapshot(s=>{let html="",tungg=0,pend=0;s.forEach(doc=>{let b=doc.data();html+=`<tr><td>${b.nama}</td><td>${b.paket}</td><td>${b.periode}</td><td>Rp ${b.jumlah.toLocaleString()}</td><td><span class="badge ${b.status=='Lunas'?'bg-success':'bg-danger'}">${b.status}</span></td><td><button class="btn btn-sm btn-warning" onclick='editBilling("${doc.id}",${JSON.stringify(b)})'>Edit</button> <button class="btn btn-sm btn-danger" onclick='deleteBilling("${doc.id}")'>Hapus</button></td></tr>`;if(b.status=="Lunas")pend+=b.jumlah;else tungg+=b.jumlah;});billingTable.innerHTML=html;totalPendapatan.innerText="Rp "+pend.toLocaleString();totalTunggakan.innerText="Rp "+tungg.toLocaleString();});}
-    function addBilling(){billingForm.reset();billingId.value="";new bootstrap.Modal(billingModal).show();}
-    function editBilling(id,d){billingId.value=id;bnama.value=d.nama;bpaket.value=d.paket;bperiode.value=d.periode;bjumlah.value=d.jumlah;bstatus.value=d.status;new bootstrap.Modal(billingModal).show();}
-    function saveBilling(){let id=billingId.value,data={nama:bnama.value,paket:bpaket.value,periode:bperiode.value,jumlah:parseInt(bjumlah.value),status:bstatus.value};if(id)db.collection("billing").doc(id).update(data);else db.collection("billing").add(data);bootstrap.Modal.getInstance(billingModal).hide();}
-    function deleteBilling(id){if(confirm("Hapus billing?"))db.collection("billing").doc(id).delete();}
+    function addUser(){ userForm.reset(); userId.value=""; new bootstrap.Modal(userModal).show(); }
+    function editUser(id, d){
+      userId.value=id; nama.value=d.nama; username.value=d.username; paket.value=d.paket; status.value=d.status;
+      new bootstrap.Modal(userModal).show();
+    }
+    function saveUser(){
+      const id=userId.value, data={
+        nama:nama.value.trim(), username:username.value.trim(), paket:paket.value.trim(), status:status.value
+      };
+      (id? db.collection('users').doc(id).update(data) : db.collection('users').add(data))
+        .then(()=>bootstrap.Modal.getInstance(userModal).hide());
+    }
+    function deleteUser(id){ if(confirm('Hapus user?')) db.collection('users').doc(id).delete(); }
 
-    // ===== KAS CRUD =====
-    function loadKas(){db.collection("kas").onSnapshot(s=>{let html="",tot=0;s.forEach(doc=>{let k=doc.data();html+=`<tr><td>${k.tanggal}</td><td>${k.keterangan}</td><td>${k.jenis}</td><td>Rp ${k.jumlah.toLocaleString()}</td><td><button class="btn btn-sm btn-warning" onclick='editKas("${doc.id}",${JSON.stringify(k)})'>Edit</button> <button class="btn btn-sm btn-danger" onclick='deleteKas("${doc.id}")'>Hapus</button></td></tr>`;tot+=(k.jenis=="Masuk"?k.jumlah:-k.jumlah);});kasTable.innerHTML=html;totalKas.innerText="Rp "+tot.toLocaleString();});}
-    function addKas(){kasForm.reset();kasId.value="";new bootstrap.Modal(kasModal).show();}
-    function editKas(id,d){kasId.value=id;tanggal.value=d.tanggal;keterangan.value=d.keterangan;jenis.value=d.jenis;jumlah.value=d.jumlah;new bootstrap.Modal(kasModal).show();}
-    function saveKas(){let id=kasId.value,data={tanggal:tanggal.value,keterangan:keterangan.value,jenis:jenis.value,jumlah:parseInt(jumlah.value)};if(id)db.collection("kas").doc(id).update(data);else db.collection("kas").add(data);bootstrap.Modal.getInstance(kasModal).hide();}
-    function deleteKas(id){if(confirm("Hapus kas?"))db.collection("kas").doc(id).delete();}
+    function loadUsers(){
+      const q = document.getElementById('userSearch');
+      let cache = [];
+      db.collection('users').onSnapshot(snap=>{
+        cache = [];
+        let html="";
+        document.getElementById('totalUser').textContent = snap.size;
+        snap.forEach(doc=>{
+          const u = doc.data(); cache.push({id:doc.id, ...u});
+        });
+        const render = (list)=>{
+          html="";
+          list.forEach(u=>{
+            html += `<tr>
+              <td>${u.nama||''}</td>
+              <td>${u.username||''}</td>
+              <td>${u.paket||''}</td>
+              <td><span class="badge ${u.status==='Aktif'?'bg-success':'bg-secondary'}">${u.status||'-'}</span></td>
+              <td>${rowActions(`editUser("${u.id}", ${encode(JSON.stringify(u))})`, `deleteUser("${u.id}")`)}</td>
+            </tr>`;
+          });
+          document.getElementById('userTable').innerHTML = html;
+        };
+        render(cache);
+        q.oninput = ()=>{
+          const k = q.value.toLowerCase();
+          render(cache.filter(u=>(u.nama||'').toLowerCase().includes(k) || (u.username||'').toLowerCase().includes(k)));
+        };
+      });
+    }
 
-    auth.onAuthStateChanged(u=>{if(!u)location.href="index.html";else{document.getElementById("user-email").innerText=u.email;loadUsers();loadBilling();loadKas();}});
+    // small encoder to safely embed JSON in onclick
+    function encode(str){ return `JSON.parse(decodeURIComponent("${encodeURIComponent(str)}"))`; }
+
+    // ====== PAKET CRUD ======
+    function addPaket(){ paketForm.reset(); paketId.value=""; new bootstrap.Modal(paketModal).show(); }
+    function editPaket(id,d){ paketId.value=id; pnama.value=d.nama; pkecepatan.value=d.kecepatan; pharga.value=d.harga; pdeskripsi.value=d.deskripsi||""; new bootstrap.Modal(paketModal).show(); }
+    function savePaket(){
+      const id=paketId.value, data={ nama:pnama.value.trim(), kecepatan:pkecepatan.value.trim(), harga:parseInt(pharga.value||0), deskripsi:pdeskripsi.value.trim() };
+      (id? db.collection('paket').doc(id).update(data):db.collection('paket').add(data))
+        .then(()=>bootstrap.Modal.getInstance(paketModal).hide());
+    }
+    function deletePaket(id){ if(confirm('Hapus paket?')) db.collection('paket').doc(id).delete(); }
+    function loadPaket(){
+      db.collection('paket').onSnapshot(snap=>{
+        let html="";
+        snap.forEach(doc=>{
+          const p = doc.data();
+          html += `<tr>
+            <td>${p.nama||''}</td>
+            <td>${p.kecepatan||''}</td>
+            <td>Rp ${Number(p.harga||0).toLocaleString()}</td>
+            <td>${p.deskripsi||''}</td>
+            <td>${rowActions(`editPaket("${doc.id}", ${encode(JSON.stringify(p))})`, `deletePaket("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('paketTable').innerHTML = html;
+      });
+    }
+
+    // ====== BILLING CRUD ======
+    function addBilling(){ billingForm.reset(); billingId.value=""; new bootstrap.Modal(billingModal).show(); }
+    function editBilling(id,d){ billingId.value=id; bnama.value=d.nama; bpaket.value=d.paket; bperiode.value=d.periode; bjumlah.value=d.jumlah; bstatus.value=d.status; new bootstrap.Modal(billingModal).show(); }
+    function saveBilling(){
+      const id=billingId.value, data={ nama:bnama.value.trim(), paket:bpaket.value.trim(), periode:bperiode.value.trim(), jumlah:parseInt(bjumlah.value||0), status:bstatus.value };
+      (id? db.collection('billing').doc(id).update(data):db.collection('billing').add(data))
+        .then(()=>bootstrap.Modal.getInstance(billingModal).hide());
+    }
+    function deleteBilling(id){ if(confirm('Hapus billing?')) db.collection('billing').doc(id).delete(); }
+    function loadBilling(){
+      db.collection('billing').onSnapshot(snap=>{
+        let html="", tungg=0, pend=0;
+        snap.forEach(doc=>{
+          const b = doc.data();
+          html += `<tr>
+            <td>${b.nama||''}</td>
+            <td>${b.paket||''}</td>
+            <td>${b.periode||''}</td>
+            <td>Rp ${Number(b.jumlah||0).toLocaleString()}</td>
+            <td><span class="badge ${b.status==='Lunas'?'bg-success':'bg-danger'}">${b.status||''}</span></td>
+            <td>${rowActions(`editBilling("${doc.id}", ${encode(JSON.stringify(b))})`, `deleteBilling("${doc.id}")`)}</td>
+          </tr>`;
+          if((b.status||'')==='Lunas') pend += Number(b.jumlah||0); else tungg += Number(b.jumlah||0);
+        });
+        document.getElementById('billingTable').innerHTML = html;
+        document.getElementById('totalPendapatan').textContent = "Rp " + pend.toLocaleString();
+        document.getElementById('totalTunggakan').textContent = "Rp " + tungg.toLocaleString();
+      });
+    }
+
+    // ====== KAS CRUD ======
+    function addKas(){ kasForm.reset(); kasId.value=""; new bootstrap.Modal(kasModal).show(); }
+    function editKas(id,d){ kasId.value=id; tanggal.value=d.tanggal; keterangan.value=d.keterangan; jenis.value=d.jenis; jumlah.value=d.jumlah; new bootstrap.Modal(kasModal).show(); }
+    function saveKas(){
+      const id=kasId.value, data={ tanggal:tanggal.value, keterangan:keterangan.value.trim(), jenis:jenis.value, jumlah:parseInt(jumlah.value||0) };
+      (id? db.collection('kas').doc(id).update(data):db.collection('kas').add(data))
+        .then(()=>bootstrap.Modal.getInstance(kasModal).hide());
+    }
+    function deleteKas(id){ if(confirm('Hapus transaksi kas?')) db.collection('kas').doc(id).delete(); }
+    function loadKas(){
+      db.collection('kas').onSnapshot(snap=>{
+        let html="", total=0;
+        snap.forEach(doc=>{
+          const k = doc.data();
+          html += `<tr>
+            <td>${k.tanggal||''}</td>
+            <td>${k.keterangan||''}</td>
+            <td><span class="badge ${k.jenis==='Masuk'?'bg-success-subtle text-success':'bg-danger-subtle text-danger'}">${k.jenis||''}</span></td>
+            <td>Rp ${Number(k.jumlah||0).toLocaleString()}</td>
+            <td>${rowActions(`editKas("${doc.id}", ${encode(JSON.stringify(k))})`, `deleteKas("${doc.id}")`)}</td>
+          </tr>`;
+          total += (k.jenis==='Masuk' ? Number(k.jumlah||0) : -Number(k.jumlah||0));
+        });
+        document.getElementById('kasTable').innerHTML = html;
+        document.getElementById('totalKas').textContent = "Rp " + total.toLocaleString();
+      });
+    }
+
+    // ====== TEKNISI CRUD ======
+    function addTeknisi(){ teknisiForm.reset(); teknisiId.value=""; new bootstrap.Modal(teknisiModal).show(); }
+    function editTeknisi(id,d){ teknisiId.value=id; tnama.value=d.nama; thp.value=d.hp; tkeahlian.value=d.keahlian||""; tstatus.value=d.status; new bootstrap.Modal(teknisiModal).show(); }
+    function saveTeknisi(){
+      const id=teknisiId.value, data={ nama:tnama.value.trim(), hp:thp.value.trim(), keahlian:tkeahlian.value.trim(), status:tstatus.value };
+      (id? db.collection('teknisi').doc(id).update(data):db.collection('teknisi').add(data))
+        .then(()=>bootstrap.Modal.getInstance(teknisiModal).hide());
+    }
+    function deleteTeknisi(id){ if(confirm('Hapus teknisi?')) db.collection('teknisi').doc(id).delete(); }
+    function loadTeknisi(){
+      db.collection('teknisi').onSnapshot(snap=>{
+        let html=""; let total=0;
+        snap.forEach(doc=>{
+          const t = doc.data(); total++;
+          html += `<tr>
+            <td>${t.nama||''}</td>
+            <td>${t.hp||''}</td>
+            <td>${t.keahlian||''}</td>
+            <td><span class="badge ${t.status==='Aktif'?'bg-success':'bg-secondary'}">${t.status||''}</span></td>
+            <td>${rowActions(`editTeknisi("${doc.id}", ${encode(JSON.stringify(t))})`, `deleteTeknisi("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('teknisiTable').innerHTML = html;
+        document.getElementById('totalTeknisi').textContent = total;
+      });
+    }
+
+    // ====== GANGGUAN CRUD ======
+    function addGangguan(){ gangguanForm.reset(); gangguanId.value=""; new bootstrap.Modal(gangguanModal).show(); }
+    function editGangguan(id,d){
+      gangguanId.value=id; gtanggal.value=d.tanggal; gpelanggan.value=d.pelanggan; glokasi.value=d.lokasi||"";
+      gdeskripsi.value=d.deskripsi||""; gstatus.value=d.status; gteknisi.value=d.teknisi||"";
+      new bootstrap.Modal(gangguanModal).show();
+    }
+    function saveGangguan(){
+      const id=gangguanId.value, data={
+        tanggal:gtanggal.value, pelanggan:gpelanggan.value.trim(), lokasi:glokasi.value.trim(),
+        deskripsi:gdeskripsi.value.trim(), status:gstatus.value, teknisi:gteknisi.value.trim()
+      };
+      (id? db.collection('gangguan').doc(id).update(data):db.collection('gangguan').add(data))
+        .then(()=>bootstrap.Modal.getInstance(gangguanModal).hide());
+    }
+    function deleteGangguan(id){ if(confirm('Hapus laporan?')) db.collection('gangguan').doc(id).delete(); }
+    function loadGangguan(){
+      db.collection('gangguan').onSnapshot(snap=>{
+        let html="", aktif=0;
+        snap.forEach(doc=>{
+          const g = doc.data();
+          if((g.status||'')==='Aktif') aktif++;
+          html += `<tr>
+            <td>${g.tanggal||''}</td>
+            <td>${g.pelanggan||''}</td>
+            <td>${g.lokasi||''}</td>
+            <td>${g.deskripsi||''}</td>
+            <td><span class="badge ${g.status==='Aktif'?'bg-danger':'bg-success'}">${g.status||''}</span></td>
+            <td>${g.teknisi||''}</td>
+            <td>${rowActions(`editGangguan("${doc.id}", ${encode(JSON.stringify(g))})`, `deleteGangguan("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('gangguanTable').innerHTML = html;
+        document.getElementById('totalGangguanAktif').textContent = aktif;
+      });
+    }
+
+    // ====== MATERIAL CRUD ======
+    function addMaterial(){ materialForm.reset(); materialId.value=""; new bootstrap.Modal(materialModal).show(); }
+    function editMaterial(id,d){
+      materialId.value=id; mnama.value=d.nama; mkategori.value=d.kategori||""; mstok.value=d.stok; msatuan.value=d.satuan||""; mcatatan.value=d.catatan||"";
+      new bootstrap.Modal(materialModal).show();
+    }
+    function saveMaterial(){
+      const id=materialId.value, data={
+        nama:mnama.value.trim(), kategori:mkategori.value.trim(), stok:parseInt(mstok.value||0), satuan:msatuan.value.trim(), catatan:mcatatan.value.trim()
+      };
+      (id? db.collection('material').doc(id).update(data):db.collection('material').add(data))
+        .then(()=>bootstrap.Modal.getInstance(materialModal).hide());
+    }
+    function deleteMaterial(id){ if(confirm('Hapus material?')) db.collection('material').doc(id).delete(); }
+    function loadMaterial(){
+      db.collection('material').onSnapshot(snap=>{
+        let html="", kritis=0;
+        snap.forEach(doc=>{
+          const m = doc.data();
+          if(Number(m.stok||0) <= 5) kritis++;
+          html += `<tr>
+            <td>${m.nama||''}</td>
+            <td>${m.kategori||''}</td>
+            <td><span class="badge ${Number(m.stok||0)<=5?'bg-danger text-white':'badge-soft'}">${Number(m.stok||0)}</span></td>
+            <td>${m.satuan||''}</td>
+            <td>${m.catatan||''}</td>
+            <td>${rowActions(`editMaterial("${doc.id}", ${encode(JSON.stringify(m))})`, `deleteMaterial("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('materialTable').innerHTML = html;
+        document.getElementById('totalMaterialKritis').textContent = kritis;
+      });
+    }
   </script>
 </body>
 </html>
