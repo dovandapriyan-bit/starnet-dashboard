@@ -3,14 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Starnet💫</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    // === FIREBASE CONFIG ===
+  <!-- CSS -->
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; color: #333; }
+    header { background: #1a237e; color: #fff; padding: 15px; font-size: 22px; font-weight: bold; text-align: center; }
+    h3 { margin-top: 30px; color: #1a237e; }
+    form { margin: 15px 0; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    input, select, button { margin: 5px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #1a237e; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #3949ab; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th { background: #3949ab; color: #fff; }
+    #kasSaldo, #totalTunggakan { font-weight: bold; margin: 10px 0; background: #e8eaf6; padding: 10px; border-radius: 6px; }
+    .offline { background: #ffcdd2; }
+    .gangguan { background: #ff7043; color: white; }
+  </style>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+</head>
+<body>
+  <header>Dashboard Starnet💫</header>
+
+  <!-- FORM USER -->
+  <form id="userForm">
+    <input type="text" id="name" placeholder="Nama" required>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="text" id="planName" placeholder="Paket" required>
+    <input type="text" id="contact" placeholder="Kontak">
+    <button type="submit">Simpan User</button>
+  </form>
+
+  <h3>Daftar User</h3>
+  <table>
+    <thead>
+      <tr><th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th></tr>
+    </thead>
+    <tbody id="userTableBody"></tbody>
+  </table>
+  <div id="totalTunggakan">Total Tunggakan: Rp 0</div>
+
+  <h3>Kas Perusahaan</h3>
+  <form id="kasForm">
+    <select id="kasType"><option value="Masuk">Kas Masuk</option><option value="Keluar">Kas Keluar</option></select>
+    <input type="number" id="kasNominal" placeholder="Nominal" required>
+    <input type="text" id="kasKeterangan" placeholder="Keterangan">
+    <button type="submit">Simpan</button>
+  </form>
+  <table>
+    <thead><tr><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Waktu</th></tr></thead>
+    <tbody id="kasTableBody"></tbody>
+  </table>
+  <div id="kasSaldo">Saldo Kas: Rp 0</div>
+
+  <h3>Daftar Gangguan</h3>
+  <table>
+    <thead><tr><th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Indikasi</th><th>Waktu</th></tr></thead>
+    <tbody id="gangguanTableBody"></tbody>
+  </table>
+
+  <h3>Grafik ISP</h3>
+  <canvas id="ispChart"></canvas>
+
+  <script>
+    // === Firebase Config ===
     const firebaseConfig = {
       apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
       authDomain: "dnt-network-7.firebaseapp.com",
@@ -20,233 +82,104 @@
       appId: "1:761179668371:web:7d1468d0298041d4783266",
       measurementId: "G-CD3EQ350R4"
     };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // ================== USER CRUD ==================
-    const userTable = document.querySelector("#userTable tbody");
-    const userForm = document.getElementById("addUserForm");
-    let editingId = null;
-
-    userForm.addEventListener("submit", async (e) => {
+    // === SIMPAN USER ===
+    const userForm = document.getElementById('userForm');
+    const userTableBody = document.getElementById('userTableBody');
+    userForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = {
-        name: document.getElementById("name").value,
-        username: document.getElementById("username").value,
-        contact: document.getElementById("contact").value,
-        planName: document.getElementById("planName").value,
-        startDate: new Date().toISOString().split("T")[0],
-        status: "online",
-        lastSeen: Date.now(),
-        tunggakan: parseInt(document.getElementById("tunggakan").value) || 0
-      };
-
-      try {
-        if (editingId) {
-          await updateDoc(doc(db, "customers", editingId), data);
-          editingId = null;
-          alert("✅ User berhasil diupdate!");
-        } else {
-          await addDoc(collection(db, "customers"), data);
-          alert("✅ User berhasil ditambahkan!");
-        }
-        userForm.reset();
-      } catch (err) {
-        console.error(err);
-        alert("❌ Error: " + err.message);
-      }
-    });
-
-    function editUser(id, user) {
-      document.getElementById("name").value = user.name;
-      document.getElementById("username").value = user.username;
-      document.getElementById("contact").value = user.contact;
-      document.getElementById("planName").value = user.planName;
-      document.getElementById("tunggakan").value = user.tunggakan;
-      editingId = id;
-    }
-
-    async function deleteUser(id) {
-      if (confirm("Yakin ingin menghapus user ini?")) {
-        await deleteDoc(doc(db, "customers", id));
-      }
-    }
-
-    onSnapshot(collection(db, "customers"), snap => {
-      userTable.innerHTML = "";
-      snap.forEach(docSnap => {
-        const u = docSnap.data();
-        userTable.innerHTML += `
-          <tr>
-            <td>${u.name}</td>
-            <td>${u.username}</td>
-            <td>${u.planName}</td>
-            <td>${u.contact}</td>
-            <td>${u.status}</td>
-            <td>${u.tunggakan}</td>
-            <td>
-              <button onclick='editUser("${docSnap.id}", ${JSON.stringify(u)})'>Edit</button>
-              <button onclick='deleteUser("${docSnap.id}")'>Hapus</button>
-            </td>
-          </tr>`;
+      await db.collection('customers').add({
+        name: name.value, username: username.value, planName: planName.value, contact: contact.value,
+        status: "Aktif", tunggakan: 0, lastSeen: new Date()
       });
+      userForm.reset(); loadUsers();
     });
-    window.editUser = editUser;
-    window.deleteUser = deleteUser;
 
-    // ================== AUTO GANGGUAN (15 menit) ==================
-    async function checkUsers() {
-      const snap = await getDocs(collection(db, "customers"));
-      const now = Date.now();
-      snap.forEach(async (docSnap) => {
-        const u = docSnap.data();
-        if (now - u.lastSeen > 15 * 60 * 1000) {
-          await addDoc(collection(db, "troubles"), {
-            name: u.name,
-            username: u.username,
-            status: "LOS / Offline",
-            indikasi: "Tidak ada koneksi >15 menit",
-            time: new Date().toLocaleString()
-          });
+    async function loadUsers() {
+      const snapshot = await db.collection('customers').get();
+      userTableBody.innerHTML = ''; let totalTunggakan = 0;
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        let rowClass = "";
+        if (d.status === "Offline") rowClass = "offline";
+        userTableBody.innerHTML += `<tr class="${rowClass}">
+          <td>${d.name}</td><td>${d.username}</td><td>${d.planName}</td><td>${d.contact}</td><td>${d.status}</td><td>${d.tunggakan||0}</td></tr>`;
+        totalTunggakan += d.tunggakan||0;
+      });
+      document.getElementById('totalTunggakan').innerText = "Total Tunggakan: Rp " + totalTunggakan;
+    }
+
+    // === KAS ===
+    const kasForm = document.getElementById('kasForm');
+    const kasTableBody = document.getElementById('kasTableBody');
+    let saldoKas = 0;
+    kasForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const type = kasType.value; const nominal = parseInt(kasNominal.value);
+      const keterangan = kasKeterangan.value; const waktu = new Date().toLocaleString();
+      await db.collection('kas').add({type, nominal, keterangan, waktu});
+      kasForm.reset(); loadKas();
+    });
+    async function loadKas() {
+      const snapshot = await db.collection('kas').get();
+      kasTableBody.innerHTML = ''; saldoKas = 0;
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        kasTableBody.innerHTML += `<tr><td>${d.type}</td><td>${d.nominal}</td><td>${d.keterangan}</td><td>${d.waktu}</td></tr>`;
+        saldoKas += d.type==="Masuk"?d.nominal:-d.nominal;
+      });
+      document.getElementById('kasSaldo').innerText = "Saldo Kas: Rp " + saldoKas;
+    }
+
+    // === CEK GANGGUAN ===
+    async function checkGangguan() {
+      const snapshot = await db.collection('customers').get();
+      const gangguanTableBody = document.getElementById('gangguanTableBody');
+      gangguanTableBody.innerHTML = '';
+      const now = new Date();
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        if (d.lastSeen) {
+          let lastSeen = d.lastSeen.toDate();
+          let diff = (now - lastSeen) / 60000;
+          if (diff > 15) {
+            gangguanTableBody.innerHTML += `<tr class="gangguan">
+              <td>${d.name}</td><td>${d.username}</td><td>${d.planName}</td><td>${d.contact}</td>
+              <td>Offline >15m</td><td>${now.toLocaleString()}</td></tr>`;
+            db.collection('customers').doc(doc.id).update({status:"Offline"});
+          } else {
+            db.collection('customers').doc(doc.id).update({status:"Aktif"});
+          }
         }
       });
     }
-    setInterval(checkUsers, 5 * 60 * 1000);
+    setInterval(checkGangguan, 60000);
 
-    // ================== GANGGUAN REALTIME ==================
-    const gangguanTable = document.querySelector("#gangguanTable tbody");
-    onSnapshot(collection(db, "troubles"), snap => {
-      gangguanTable.innerHTML = "";
-      snap.forEach(doc => {
-        const g = doc.data();
-        gangguanTable.innerHTML += `
-          <tr>
-            <td>${g.name}</td>
-            <td>${g.username}</td>
-            <td>${g.status}</td>
-            <td>${g.indikasi}</td>
-            <td>${g.time}</td>
-          </tr>`;
-      });
-    });
-
-    // ================== KAS PERUSAHAAN ==================
-    const kasTable = document.querySelector("#kasTable tbody");
-    const kasSaldo = document.getElementById("kasSaldo");
-    document.getElementById("addKasForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const jenis = document.getElementById("jenis").value;
-      const nominal = parseInt(document.getElementById("nominal").value);
-      const keterangan = document.getElementById("keterangan").value;
-
-      const data = { jenis, nominal, keterangan, time: new Date().toLocaleString() };
-      await addDoc(collection(db, "kas"), data);
-      e.target.reset();
-    });
-
-    onSnapshot(collection(db, "kas"), snap => {
-      kasTable.innerHTML = "";
-      let saldo = 0;
-      snap.forEach(doc => {
-        const k = doc.data();
-        kasTable.innerHTML += `
-          <tr>
-            <td>${k.jenis}</td>
-            <td>${k.nominal}</td>
-            <td>${k.keterangan}</td>
-            <td>${k.time}</td>
-          </tr>`;
-        saldo += (k.jenis === "masuk" ? k.nominal : -k.nominal);
-      });
-      kasSaldo.textContent = "Saldo Kas: Rp " + saldo.toLocaleString();
-    });
-
-    // ================== GRAFIK ISP ==================
-    const ctx = document.getElementById("ispChart").getContext("2d");
+    // === GRAFIK ISP ===
+    const ctx = document.getElementById('ispChart').getContext('2d');
     const ispChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          { label: "Upload", borderColor: "blue", data: [] },
-          { label: "Download", borderColor: "green", data: [] },
-          { label: "LoadBalance", borderColor: "orange", data: [] }
-        ]
-      }
+      type: 'line',
+      data: { labels: [], datasets: [
+        {label:'Upload', borderColor:'blue', data:[]},
+        {label:'Download', borderColor:'green', data:[]},
+        {label:'LoadBalance', borderColor:'orange', data:[]}
+      ]},
+      options: { responsive:true }
     });
-    setInterval(() => {
+    function updateISP() {
       const now = new Date().toLocaleTimeString();
       ispChart.data.labels.push(now);
-      ispChart.data.datasets[0].data.push(Math.random() * 50);
-      ispChart.data.datasets[1].data.push(Math.random() * 50);
-      ispChart.data.datasets[2].data.push(Math.random() * 100);
-      if (ispChart.data.labels.length > 10) {
-        ispChart.data.labels.shift();
-        ispChart.data.datasets.forEach(d => d.data.shift());
-      }
+      ispChart.data.datasets[0].data.push(Math.floor(Math.random()*100));
+      ispChart.data.datasets[1].data.push(Math.floor(Math.random()*100));
+      ispChart.data.datasets[2].data.push(Math.floor(Math.random()*100));
       ispChart.update();
-    }, 2000);
+    }
+    setInterval(updateISP, 5000);
 
-    // ================== HITUNG TOTAL TUNGGAKAN ==================
-    onSnapshot(collection(db, "customers"), snap => {
-      let totalTunggakan = 0;
-      snap.forEach(doc => {
-        const u = doc.data();
-        if (u.tunggakan) totalTunggakan += u.tunggakan;
-      });
-      document.getElementById("totalTunggakan").textContent = "Total Tunggakan: Rp " + totalTunggakan.toLocaleString();
-    });
+    // === LOAD AWAL ===
+    loadUsers(); loadKas(); checkGangguan();
   </script>
-</head>
-<body>
-  <h1>Dashboard Starnet💫</h1>
-
-  <!-- FORM TAMBAH / EDIT USER -->
-  <form id="addUserForm">
-    <input id="name" placeholder="Nama" required>
-    <input id="username" placeholder="Username" required>
-    <input id="contact" placeholder="Kontak" required>
-    <input id="planName" placeholder="Paket" required>
-    <input id="tunggakan" type="number" placeholder="Tunggakan">
-    <button type="submit">Simpan User</button>
-  </form>
-
-  <!-- TABEL USER -->
-  <h3>Daftar User</h3>
-  <table id="userTable" border="1">
-    <thead><tr><th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th><th>Aksi</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <p id="totalTunggakan"></p>
-
-  <!-- FORM KAS -->
-  <h3>Kas Perusahaan</h3>
-  <form id="addKasForm">
-    <select id="jenis">
-      <option value="masuk">Kas Masuk</option>
-      <option value="keluar">Kas Keluar</option>
-    </select>
-    <input id="nominal" type="number" placeholder="Nominal" required>
-    <input id="keterangan" placeholder="Keterangan">
-    <button type="submit">Tambah Kas</button>
-  </form>
-
-  <!-- TABEL KAS -->
-  <table id="kasTable" border="1">
-    <thead><tr><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Waktu</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <p id="kasSaldo"></p>
-
-  <!-- GRAFIK ISP -->
-  <h3>Grafik ISP</h3>
-  <canvas id="ispChart" width="400" height="150"></canvas>
-
-  <!-- DAFTAR GANGGUAN -->
-  <h3>Daftar Gangguan</h3>
-  <table id="gangguanTable" border="1">
-    <thead><tr><th>Nama</th><th>Username</th><th>Status</th><th>Indikasi</th><th>Waktu</th></tr></thead>
-    <tbody></tbody>
-  </table>
 </body>
 </html>
