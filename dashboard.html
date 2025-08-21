@@ -1,105 +1,463 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Starnet💫 Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"/>
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --sidebar-w:240px;
+      --sidebar-w-collapsed:74px;
+      --brand:#0d6efd;
+      --brand-darker:#0a58ca;
+      --bg:#f4f6f9;
+    }
+    body{ background:var(--bg); }
+    .sidebar{
+      height:100vh; position:fixed; inset:0 auto 0 0;
+      width:var(--sidebar-w); background:linear-gradient(180deg,var(--brand),var(--brand-darker));
+      color:#fff; transition:.3s; overflow:hidden; padding-top:16px; box-shadow:0 0 20px rgba(0,0,0,.15);
+    }
+    .sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
+    .sidebar h4{ transition:.2s; }
+    .sidebar.collapsed h4{ opacity:0; }
+    .nav-item-link{
+      display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none;
+      border-radius:12px; padding:10px 14px; margin:6px 12px; white-space:nowrap; transition:.2s;
+    }
+    .nav-item-link:hover{ background:rgba(255,255,255,.16); }
+    .sidebar.collapsed .nav-item-link span{ display:none; }
+    .content{ margin-left:var(--sidebar-w); transition:.3s; padding:18px; }
+    .content.collapsed{ margin-left:var(--sidebar-w-collapsed); }
+    .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .toggle-btn{ font-size:1.7rem; cursor:pointer; color:var(--brand); }
+    .card{ border-radius:16px; }
+    .hidden{ display:none; }
+    .section-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .search-box{ max-width:340px; }
+    .table thead th{ position:sticky; top:0; background:#fff; z-index:1; }
+    .badge-soft{ background:rgba(13,110,253,.12); color:#0d6efd; border:1px solid rgba(13,110,253,.2); }
+    .modal-header.bg-brand{ background:var(--brand); color:#fff; }
+  </style>
 </head>
-<body class="bg-gray-100 flex">
-
+<body>
   <!-- SIDEBAR -->
-  <div id="sidebar" class="bg-gray-900 text-white w-64 min-h-screen transition-all duration-300">
-    <div class="p-4 flex items-center justify-between">
-      <h1 id="ispName" class="text-xl font-bold">Starnet💫</h1>
-      <button onclick="toggleSidebar()" class="text-white">☰</button>
-    </div>
-    <ul class="mt-6 space-y-2 px-2">
-      <li><button onclick="showPage('dashboard')" class="w-full text-left hover:bg-gray-700 p-2 rounded">📊 Dashboard</button></li>
-      <li><button onclick="showPage('users')" class="w-full text-left hover:bg-gray-700 p-2 rounded">👥 User</button></li>
-      <li><button onclick="showPage('packages')" class="w-full text-left hover:bg-gray-700 p-2 rounded">📦 Paket</button></li>
-      <li><button onclick="showPage('billing')" class="w-full text-left hover:bg-gray-700 p-2 rounded">💳 Billing</button></li>
-      <li><button onclick="showPage('kas')" class="w-full text-left hover:bg-gray-700 p-2 rounded">💰 Kas Perusahaan</button></li>
-      <li><button onclick="showPage('troubles')" class="w-full text-left hover:bg-gray-700 p-2 rounded">🚨 Gangguan</button></li>
-      <li><button onclick="showPage('technicians')" class="w-full text-left hover:bg-gray-700 p-2 rounded">🛠️ Teknisi</button></li>
-      <li><button onclick="showPage('materials')" class="w-full text-left hover:bg-gray-700 p-2 rounded">📑 Material</button></li>
-      <li><button onclick="showPage('settings')" class="w-full text-left hover:bg-gray-700 p-2 rounded">⚙️ Settings</button></li>
-    </ul>
-  </div>
+  <aside id="sidebar" class="sidebar">
+    <h4 id="brandNameSidebar" class="text-center mb-3">💫 Starnet</h4>
+    <a class="nav-item-link" href="#" onclick="showPage('dashboard')"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('user')"><i class="bi bi-people"></i><span>User</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('paket')"><i class="bi bi-wifi"></i><span>Paket</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('billing')"><i class="bi bi-credit-card"></i><span>Billing</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('kas')"><i class="bi bi-bank"></i><span>Kas</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('teknisi')"><i class="bi bi-person-badge"></i><span>Teknisi</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('gangguan')"><i class="bi bi-exclamation-triangle"></i><span>Gangguan</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('material')"><i class="bi bi-tools"></i><span>Material</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('mikrotik')"><i class="bi bi-hdd-network"></i><span>Mikrotik</span></a>
+    <a class="nav-item-link" href="#" onclick="showPage('settings')"><i class="bi bi-gear"></i><span>Pengaturan</span></a>
+    <a class="nav-item-link" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+  </aside>
 
-  <!-- MAIN CONTENT -->
-  <div class="flex-1 p-6" id="content">
-    <!-- Dashboard -->
-    <div id="page-dashboard" class="page">
-      <h2 class="text-2xl font-bold mb-4">📊 Dashboard</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded shadow">👥 User Aktif: <span id="userCount">0</span></div>
-        <div class="bg-white p-4 rounded shadow">💳 Tunggakan: Rp <span id="unpaid">0</span></div>
-        <div class="bg-white p-4 rounded shadow">💰 Kas: Rp <span id="kasBalance">0</span></div>
+  <!-- CONTENT -->
+  <main id="content" class="content">
+    <div class="topbar">
+      <div class="d-flex align-items-center gap-2">
+        <i id="toggleSidebar" class="bi bi-list toggle-btn"></i>
+        <span id="brandBadge" class="badge rounded-pill bg-light text-dark">Starnet 💫 Admin Panel</span>
       </div>
-      <canvas id="trafficChart" class="mt-6"></canvas>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-person-circle fs-4 text-primary"></i>
+        <span id="user-email" class="fw-semibold"></span>
+      </div>
     </div>
 
-    <!-- Users -->
-    <div id="page-users" class="page hidden">
-      <h2 class="text-2xl font-bold mb-4">👥 Manajemen User</h2>
-      <form id="addUserForm" class="bg-white p-4 rounded shadow mb-4">
-        <input id="name" class="border p-2 mr-2" placeholder="Nama">
-        <input id="username" class="border p-2 mr-2" placeholder="Username">
-        <input id="contact" class="border p-2 mr-2" placeholder="Kontak">
-        <select id="planName" class="border p-2"></select>
-        <button class="bg-blue-600 text-white px-4 py-2 rounded">Tambah</button>
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <h3 class="mb-3">📊 Ringkasan</h3>
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div><div class="text-secondary">Total User</div><div id="totalUser" class="fs-3 fw-bold text-primary">0</div></div>
+              <i class="bi bi-people fs-1 text-primary"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div><div class="text-secondary">Pendapatan</div><div id="totalPendapatan" class="fs-3 fw-bold text-success">Rp 0</div></div>
+              <i class="bi bi-cash-coin fs-1 text-success"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div><div class="text-secondary">Tunggakan</div><div id="totalTunggakan" class="fs-3 fw-bold text-danger">Rp 0</div></div>
+              <i class="bi bi-exclamation-octagon fs-1 text-danger"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <div><div class="text-secondary">Saldo Kas</div><div id="totalKas" class="fs-3 fw-bold text-info">Rp 0</div></div>
+              <i class="bi bi-bank fs-1 text-info"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grafik ISP -->
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">📈 Grafik Trafik ISP</h5>
+          <span class="text-secondary small">Upload • Download • Load Balance</span>
+        </div>
+        <canvas id="trafficChart" height="110"></canvas>
+      </div>
+    </section>
+
+    <!-- USER -->
+    <section id="user" class="hidden">
+      <div class="section-header">
+        <h3>👥 User</h3>
+        <div class="d-flex gap-2">
+          <input id="userSearch" class="form-control form-control-sm search-box" placeholder="Cari nama/username/ODP...">
+          <button class="btn btn-primary btn-sm" onclick="addUser()"><i class="bi bi-plus-lg"></i> Tambah User</button>
+        </div>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-primary">
+              <tr><th>Nama</th><th>Username</th><th>Paket</th><th>HP</th><th>ODP</th><th>Status</th><th width="160">Aksi</th></tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAKET -->
+    <section id="paket" class="hidden">
+      <div class="section-header">
+        <h3>📡 Paket</h3>
+        <button class="btn btn-primary btn-sm" onclick="addPaket()"><i class="bi bi-plus-lg"></i> Tambah Paket</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-primary"><tr><th>Nama Paket</th><th>Kecepatan</th><th>Harga</th><th>Deskripsi</th><th width="160">Aksi</th></tr></thead>
+            <tbody id="paketTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- BILLING -->
+    <section id="billing" class="hidden">
+      <div class="section-header">
+        <h3>💳 Billing</h3>
+        <button class="btn btn-primary btn-sm" onclick="addBilling()"><i class="bi bi-plus-lg"></i> Tambah Billing</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-primary"><tr><th>Nama</th><th>Paket</th><th>Periode</th><th>Jumlah</th><th>Status</th><th width="180">Aksi</th></tr></thead>
+            <tbody id="billingTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- KAS -->
+    <section id="kas" class="hidden">
+      <div class="section-header">
+        <h3>🏦 Kas Perusahaan</h3>
+        <button class="btn btn-success btn-sm" onclick="addKas()"><i class="bi bi-plus-lg"></i> Tambah Transaksi</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-success"><tr><th>Tanggal</th><th>Keterangan</th><th>Jenis</th><th>Jumlah</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="kasTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEKNISI -->
+    <section id="teknisi" class="hidden">
+      <div class="section-header">
+        <h3>👷 Teknisi</h3>
+        <button class="btn btn-primary btn-sm" onclick="addTeknisi()"><i class="bi bi-plus-lg"></i> Tambah Teknisi</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-secondary"><tr><th>Nama</th><th>No. HP</th><th>Keahlian</th><th>Status</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="teknisiTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- GANGGUAN -->
+    <section id="gangguan" class="hidden">
+      <div class="section-header">
+        <h3>⚠️ Gangguan</h3>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary btn-sm" onclick="addGangguan()"><i class="bi bi-plus-lg"></i> Tambah Laporan</button>
+          <button class="btn btn-outline-success btn-sm" onclick="openBlastModal()"><i class="bi bi-whatsapp"></i> WA Blast by ODP</button>
+        </div>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-danger"><tr><th>Tanggal</th><th>Pelanggan</th><th>ODP</th><th>Lokasi</th><th>Deskripsi</th><th>Status</th><th>Teknisi</th><th width="200">Aksi</th></tr></thead>
+            <tbody id="gangguanTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MATERIAL -->
+    <section id="material" class="hidden">
+      <div class="section-header">
+        <h3>🛠️ Material</h3>
+        <button class="btn btn-primary btn-sm" onclick="addMaterial()"><i class="bi bi-plus-lg"></i> Tambah Material</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light"><tr><th>Nama</th><th>Kategori</th><th>Stok</th><th>Satuan</th><th>Catatan</th><th width="140">Aksi</th></tr></thead>
+            <tbody id="materialTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIKROTIK -->
+    <section id="mikrotik" class="hidden">
+      <div class="section-header">
+        <h3>🌐 Mikrotik</h3>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="mb-2"><label class="form-label">IP / Host</label><input id="mkIp" class="form-control" placeholder="192.168.88.1"></div>
+            <div class="mb-2"><label class="form-label">Port API</label><input id="mkPort" class="form-control" value="8728"></div>
+            <div class="mb-2"><label class="form-label">Username</label><input id="mkUser" class="form-control" placeholder="admin"></div>
+            <div class="mb-2"><label class="form-label">Password</label><input id="mkPass" type="password" class="form-control" placeholder="••••••"></div>
+            <button class="btn btn-primary" onclick="testMikrotik()">Tes Koneksi (Dummy)</button>
+            <div id="mkResult" class="mt-3 text-secondary small">Catatan: koneksi nyata perlu backend (PHP/NodeJS) RouterOS API.</div>
+          </div>
+          <div class="col-md-8">
+            <div class="alert alert-info mb-2">
+              <b>Info:</b> Karena Netlify (front-end) tidak bisa akses RouterOS langsung, perlu API perantara.
+              Nanti dashboard ini bisa panggil endpoint backend untuk ambil trafik (buat grafik asli), user aktif, PPPoE, dll.
+            </div>
+            <ul class="mb-0">
+              <li>Rencana endpoint: <code>/api/mikrotik/traffic</code>, <code>/api/mikrotik/users</code>, <code>/api/mikrotik/pppoe</code></li>
+              <li>Backend bisa ditempatkan di VPS/Hosting (PHP/NodeJS).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PENGATURAN -->
+    <section id="settings" class="hidden">
+      <div class="section-header">
+        <h3>⚙️ Pengaturan</h3>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label">Nama ISP</label>
+            <input id="ispNameInput" class="form-control" placeholder="Mis: Starnet 💫">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary" onclick="saveISPName()"><i class="bi bi-save"></i> Simpan</button>
+          </div>
+          <div class="col-12">
+            <div class="small text-secondary">Nama ini tampil di <i>title</i>, sidebar, dan badge atas.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== MODALS (CRUD + BLAST) ========== -->
+
+  <!-- USER -->
+  <div class="modal fade" id="userModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-brand"><h5 class="modal-title text-white">User</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="userForm">
+        <input type="hidden" id="userId">
+        <div class="row g-2">
+          <div class="col-md-6"><label class="form-label">Nama</label><input id="nama" class="form-control" required></div>
+          <div class="col-md-6"><label class="form-label">Username</label><input id="username" class="form-control" required></div>
+          <div class="col-md-6">
+            <label class="form-label">Paket</label>
+            <select id="paketSelect" class="form-select" required></select>
+          </div>
+          <div class="col-md-6"><label class="form-label">No. HP (WA)</label><input id="hp" class="form-control" placeholder="08xxxxxxxxxx"></div>
+          <div class="col-md-6"><label class="form-label">ODP</label><input id="odp" class="form-control" placeholder="ODP-XX-YY"></div>
+          <div class="col-md-6"><label class="form-label">Status</label><select id="status" class="form-select"><option>Aktif</option><option>Nonaktif</option></select></div>
+        </div>
       </form>
-      <table class="w-full bg-white shadow rounded" id="userTable">
-        <thead><tr class="bg-gray-200"><th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th></tr></thead>
-        <tbody></tbody>
-      </table>
     </div>
+    <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" onclick="saveUser()">Simpan</button></div>
+  </div></div></div>
 
-    <!-- Packages -->
-    <div id="page-packages" class="page hidden">
-      <h2 class="text-2xl font-bold mb-4">📦 Paket Internet</h2>
-      <form id="addPackageForm" class="bg-white p-4 rounded shadow mb-4">
-        <input id="pkgName" class="border p-2 mr-2" placeholder="Nama Paket">
-        <input id="pkgPrice" class="border p-2 mr-2" placeholder="Harga">
-        <button class="bg-green-600 text-white px-4 py-2 rounded">Tambah Paket</button>
-      </form>
-      <ul id="packageList" class="bg-white p-4 rounded shadow"></ul>
-    </div>
-
-    <!-- Kas -->
-    <div id="page-kas" class="page hidden">
-      <h2 class="text-2xl font-bold mb-4">💰 Kas Perusahaan</h2>
-      <form id="kasForm" class="bg-white p-4 rounded shadow mb-4">
-        <input id="kasDesc" class="border p-2 mr-2" placeholder="Deskripsi">
-        <input id="kasAmount" class="border p-2 mr-2" placeholder="Jumlah">
-        <button class="bg-purple-600 text-white px-4 py-2 rounded">Tambah Transaksi</button>
-      </form>
-      <ul id="kasList" class="bg-white p-4 rounded shadow"></ul>
-    </div>
-
-    <!-- Gangguan -->
-    <div id="page-troubles" class="page hidden">
-      <h2 class="text-2xl font-bold mb-4">🚨 Data Gangguan</h2>
-      <ul id="troubleList" class="bg-white p-4 rounded shadow"></ul>
-    </div>
-
-    <!-- Settings -->
-    <div id="page-settings" class="page hidden">
-      <h2 class="text-2xl font-bold mb-4">⚙️ Pengaturan</h2>
-      <form id="ispForm" class="bg-white p-4 rounded shadow">
-        <input id="ispInput" class="border p-2 mr-2" placeholder="Nama ISP">
-        <button class="bg-blue-600 text-white px-4 py-2 rounded">Update Nama ISP</button>
+  <!-- PAKET -->
+  <div class="modal fade" id="paketModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-brand"><h5 class="modal-title text-white">Paket</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="paketForm">
+        <input type="hidden" id="paketId">
+        <div class="mb-2"><label class="form-label">Nama Paket</label><input id="pnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Kecepatan</label><input id="pkecepatan" class="form-control" placeholder="Mbps" required></div>
+        <div class="mb-2"><label class="form-label">Harga</label><input type="number" id="pharga" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Deskripsi</label><textarea id="pdeskripsi" class="form-control"></textarea></div>
       </form>
     </div>
-  </div>
+    <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" onclick="savePaket()">Simpan</button></div>
+  </div></div></div>
 
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  <!-- BILLING -->
+  <div class="modal fade" id="billingModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-warning"><h5 class="modal-title">Billing</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="billingForm">
+        <input type="hidden" id="billingId">
+        <div class="mb-2"><label class="form-label">Nama</label><input id="bnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Paket</label><input id="bpaket" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Periode</label><input id="bperiode" class="form-control" placeholder="08/2025" required></div>
+        <div class="mb-2"><label class="form-label">Jumlah</label><input type="number" id="bjumlah" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Status</label><select id="bstatus" class="form-select"><option>Lunas</option><option>Belum Bayar</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-warning" onclick="saveBilling()">Simpan</button></div>
+  </div></div></div>
 
+  <!-- KAS -->
+  <div class="modal fade" id="kasModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-success text-white"><h5 class="modal-title">Transaksi Kas</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="kasForm">
+        <input type="hidden" id="kasId">
+        <div class="mb-2"><label class="form-label">Tanggal</label><input type="date" id="tanggal" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Keterangan</label><input id="keterangan" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Jenis</label><select id="jenis" class="form-select"><option>Masuk</option><option>Keluar</option></select></div>
+        <div class="mb-2"><label class="form-label">Jumlah</label><input type="number" id="jumlah" class="form-control" required></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-success" onclick="saveKas()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- TEKNISI -->
+  <div class="modal fade" id="teknisiModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-secondary text-white"><h5 class="modal-title">Teknisi</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="teknisiForm">
+        <input type="hidden" id="teknisiId">
+        <div class="mb-2"><label class="form-label">Nama</label><input id="tnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">No. HP</label><input id="thp" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Keahlian</label><input id="tkeahlian" class="form-control"></div>
+        <div class="mb-2"><label class="form-label">Status</label><select id="tstatus" class="form-select"><option>Aktif</option><option>Nonaktif</option></select></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-secondary" onclick="saveTeknisi()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- GANGGUAN -->
+  <div class="modal fade" id="gangguanModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header bg-danger text-white"><h5 class="modal-title">Laporan Gangguan</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="gangguanForm">
+        <input type="hidden" id="gangguanId">
+        <div class="row g-2">
+          <div class="col-md-3"><label class="form-label">Tanggal</label><input type="date" id="gtanggal" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">Pelanggan</label><input id="gpelanggan" class="form-control" required></div>
+          <div class="col-md-3"><label class="form-label">ODP</label><input id="godp" class="form-control" placeholder="ODP-XX-YY"></div>
+          <div class="col-md-3"><label class="form-label">Status</label><select id="gstatus" class="form-select"><option>Aktif</option><option>Selesai</option></select></div>
+          <div class="col-md-6"><label class="form-label">Lokasi</label><input id="glokasi" class="form-control"></div>
+          <div class="col-md-6"><label class="form-label">Teknisi</label><input id="gteknisi" class="form-control" placeholder="Nama teknisi PJ"></div>
+          <div class="col-12"><label class="form-label">Deskripsi</label><textarea id="gdeskripsi" class="form-control" rows="3"></textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+      <button class="btn btn-danger" onclick="saveGangguan()">Simpan</button>
+    </div>
+  </div></div></div>
+
+  <!-- BLAST MODAL -->
+  <div class="modal fade" id="blastModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="bi bi-whatsapp"></i> WA Blast Pelanggan Terdampak</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Pilih ODP</label>
+          <select id="blastOdp" class="form-select"></select>
+        </div>
+        <div class="col-md-8">
+          <label class="form-label">Pesan</label>
+          <textarea id="blastMsg" class="form-control" rows="2">[STARNET] Mohon maaf, saat ini sedang ada gangguan pada ODP {ODP}. Tim teknisi kami sedang melakukan perbaikan. Terima kasih atas pengertiannya.</textarea>
+        </div>
+      </div>
+      <div class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div><b>Daftar Nomor:</b> <span id="blastCount" class="badge bg-secondary">0</span></div>
+          <div class="small text-secondary">Tips: Pastikan nomor format 628xx… agar bisa langsung ke WhatsApp.</div>
+        </div>
+        <div id="blastList" class="mt-2" style="max-height:220px; overflow:auto; border:1px solid #eee; border-radius:8px; padding:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" onclick="copyBlast()"><i class="bi bi-clipboard"></i> Copy Pesan</button>
+      <button class="btn btn-success" onclick="sendBlast()"><i class="bi bi-whatsapp"></i> Kirim WA Blast</button>
+    </div>
+  </div></div></div>
+
+  <!-- MATERIAL -->
+  <div class="modal fade" id="materialModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header bg-light"><h5 class="modal-title">Material</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <form id="materialForm">
+        <input type="hidden" id="materialId">
+        <div class="mb-2"><label class="form-label">Nama</label><input id="mnama" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Kategori</label><input id="mkategori" class="form-control"></div>
+        <div class="mb-2"><label class="form-label">Stok</label><input type="number" id="mstok" class="form-control" required></div>
+        <div class="mb-2"><label class="form-label">Satuan</label><input id="msatuan" class="form-control" placeholder="roll/pcs/meter"></div>
+        <div class="mb-2"><label class="form-label">Catatan</label><textarea id="mcatatan" class="form-control"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-light" data-bs-dismiss="modal">Batal</button><button class="btn btn-dark" onclick="saveMaterial()">Simpan</button></div>
+  </div></div></div>
+
+  <!-- Bootstrap & Firebase -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script>
+    // ===== Firebase Starnet 💫 =====
     const firebaseConfig = {
       apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
       authDomain: "dnt-network-7.firebaseapp.com",
@@ -109,125 +467,419 @@
       appId: "1:761179668371:web:7d1468d0298041d4783266",
       measurementId: "G-CD3EQ350R4"
     };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    // ===== UI helpers =====
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+    document.getElementById('toggleSidebar').onclick = () => {
+      sidebar.classList.toggle('collapsed');
+      content.classList.toggle('collapsed');
+      localStorage.setItem('starnet_sidebar', sidebar.classList.contains('collapsed') ? '1':'0');
+    };
+    if(localStorage.getItem('starnet_sidebar')==='1'){ sidebar.classList.add('collapsed'); content.classList.add('collapsed'); }
 
-    // PAGE HANDLER
-    function showPage(id) {
-      document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
-      document.getElementById("page-" + id).classList.remove("hidden");
+    function showPage(id){
+      document.querySelectorAll('main > section').forEach(s=>s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      window.scrollTo({top:0,behavior:'smooth'});
     }
-    window.showPage = showPage;
+    const rowActions = (editCb, delCb)=>`
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-warning" onclick='${editCb}'>Edit</button>
+        <button class="btn btn-sm btn-danger" onclick='${delCb}'>Hapus</button>
+      </div>`;
 
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("w-20");
+    const encode = (str)=>`JSON.parse(decodeURIComponent("${encodeURIComponent(str)}"))`;
+
+    // ===== Auth guard =====
+    document.getElementById('logoutBtn').onclick = ()=>auth.signOut().then(()=>location.href='index.html');
+    auth.onAuthStateChanged(u=>{
+      if(!u){ location.href='index.html'; return; }
+      document.getElementById('user-email').textContent = u.email || '(no email)';
+      loadISPName();
+      // Load data
+      loadUsers(); loadPaket(); loadBilling(); loadKas(); loadTeknisi(); loadGangguan(); loadMaterial();
+      initTrafficChart();
+    });
+
+    // ====== SETTINGS: ISP NAME ======
+    function loadISPName(){
+      db.collection('settings').doc('app').get().then(doc=>{
+        const name = (doc.exists && (doc.data().ispName||"")) || "Starnet 💫";
+        applyISPName(name);
+        document.getElementById('ispNameInput').value = name;
+      }).catch(()=>applyISPName("Starnet 💫"));
     }
-    window.toggleSidebar = toggleSidebar;
+    function applyISPName(name){
+      document.getElementById('brandNameSidebar').innerText = name.replace(/ Admin Panel/i,'');
+      document.getElementById('brandBadge').innerText = name + " Admin Panel";
+      document.title = name + " Dashboard";
+    }
+    function saveISPName(){
+      const name = (document.getElementById('ispNameInput').value||"").trim() || "Starnet 💫";
+      db.collection('settings').doc('app').set({ ispName:name }, { merge:true }).then(()=>{
+        applyISPName(name);
+        alert('Nama ISP diperbarui.');
+      });
+    }
 
-    // === CRUD USER ===
-    const userTable = document.querySelector("#userTable tbody");
-    document.getElementById("addUserForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = {
-        name: name.value,
-        username: username.value,
-        contact: contact.value,
-        planName: planName.value,
-        startDate: new Date().toISOString().split("T")[0],
-        enabled: true
+    // ====== USER & PAKET (dropdown) ======
+    let paketCache = [];
+    function refreshPaketSelect(){
+      const sel = document.getElementById('paketSelect');
+      sel.innerHTML = paketCache.length? '' : '<option value="">(Belum ada paket)</option>';
+      paketCache.forEach(p=>{
+        const o = document.createElement('option'); o.value = p.nama; o.textContent = `${p.nama} — ${p.kecepatan} — Rp ${Number(p.harga||0).toLocaleString()}`;
+        sel.appendChild(o);
+      });
+    }
+
+    function addUser(){ userForm.reset(); userId.value=""; refreshPaketSelect(); new bootstrap.Modal(userModal).show(); }
+    function editUser(id,d){
+      userId.value=id; nama.value=d.nama||""; username.value=d.username||""; hp.value=d.hp||""; odp.value=d.odp||"";
+      refreshPaketSelect();
+      // pilih paket yang cocok jika ada
+      setTimeout(()=>{ paketSelect.value = d.paket || (paketCache[0]?.nama||""); },0);
+      status.value=d.status||"Aktif";
+      new bootstrap.Modal(userModal).show();
+    }
+    function saveUser(){
+      const id=userId.value, data={
+        nama:nama.value.trim(), username:username.value.trim(), paket:paketSelect.value, hp:hp.value.trim(), odp:odp.value.trim(), status:status.value
       };
-      await addDoc(collection(db, "customers"), data);
-      e.target.reset();
-    });
-    onSnapshot(collection(db, "customers"), snap => {
-      userTable.innerHTML = "";
-      document.getElementById("userCount").textContent = snap.size;
-      snap.forEach(doc => {
-        const u = doc.data();
-        userTable.innerHTML += `<tr><td>${u.name}</td><td>${u.username}</td><td>${u.planName}</td><td>${u.contact}</td></tr>`;
-      });
-    });
-
-    // === CRUD PAKET ===
-    const planSelect = document.getElementById("planName");
-    document.getElementById("addPackageForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      await addDoc(collection(db, "packages"), {
-        name: pkgName.value, price: pkgPrice.value
-      });
-      e.target.reset();
-    });
-    onSnapshot(collection(db, "packages"), snap => {
-      planSelect.innerHTML = "";
-      packageList.innerHTML = "";
-      snap.forEach(doc => {
-        const p = doc.data();
-        planSelect.innerHTML += `<option>${p.name}</option>`;
-        packageList.innerHTML += `<li>${p.name} - Rp${p.price}</li>`;
-      });
-    });
-
-    // === KAS ===
-    document.getElementById("kasForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      await addDoc(collection(db, "kas"), {
-        desc: kasDesc.value, amount: Number(kasAmount.value)
-      });
-      e.target.reset();
-    });
-    onSnapshot(collection(db, "kas"), snap => {
-      let total = 0;
-      kasList.innerHTML = "";
-      snap.forEach(doc => {
-        const k = doc.data();
-        total += k.amount;
-        kasList.innerHTML += `<li>${k.desc}: Rp${k.amount}</li>`;
-      });
-      document.getElementById("kasBalance").textContent = total;
-    });
-
-    // === ISP NAME ===
-    document.getElementById("ispForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      document.getElementById("ispName").textContent = ispInput.value;
-    });
-
-    // === GANGGUAN AUTO ===
-    async function checkTrouble() {
-      const snap = await getDocs(collection(db, "customers"));
-      snap.forEach(async doc => {
-        const u = doc.data();
-        // simulasi: random offline
-        if (Math.random() < 0.2) {
-          await addDoc(collection(db, "troubles"), {
-            name: u.name, username: u.username, status: "offline", time: new Date().toISOString()
+      (id? db.collection('users').doc(id).update(data):db.collection('users').add(data))
+        .then(()=>bootstrap.Modal.getInstance(userModal).hide());
+    }
+    function deleteUser(id){ if(confirm('Hapus user?')) db.collection('users').doc(id).delete(); }
+    function loadUsers(){
+      const q = document.getElementById('userSearch'); let local=[];
+      db.collection('users').onSnapshot(snap=>{
+        local=[]; let html="";
+        document.getElementById('totalUser').textContent = snap.size;
+        snap.forEach(doc=>{ const u = {id:doc.id, ...doc.data()}; local.push(u); });
+        const render=(list)=>{
+          html=""; list.forEach(u=>{
+            html += `<tr>
+              <td>${u.nama||''}</td>
+              <td>${u.username||''}</td>
+              <td>${u.paket||''}</td>
+              <td>${u.hp||''}</td>
+              <td>${u.odp||''}</td>
+              <td><span class="badge ${u.status==='Aktif'?'bg-success':'bg-secondary'}">${u.status||'-'}</span></td>
+              <td>${rowActions(`editUser("${u.id}", ${encode(JSON.stringify(u))})`, `deleteUser("${u.id}")`)}</td>
+            </tr>`;
           });
+          document.getElementById('userTable').innerHTML = html;
+        };
+        render(local);
+        q.oninput = ()=>{
+          const k = (q.value||'').toLowerCase();
+          render(local.filter(u=>(u.nama||'').toLowerCase().includes(k) || (u.username||'').toLowerCase().includes(k) || (u.odp||'').toLowerCase().includes(k)));
+        };
+      });
+    }
+
+    // ====== PAKET CRUD ======
+    function addPaket(){ paketForm.reset(); paketId.value=""; new bootstrap.Modal(paketModal).show(); }
+    function editPaket(id,d){ paketId.value=id; pnama.value=d.nama; pkecepatan.value=d.kecepatan; pharga.value=d.harga; pdeskripsi.value=d.deskripsi||""; new bootstrap.Modal(paketModal).show(); }
+    function savePaket(){
+      const id=paketId.value, data={ nama:pnama.value.trim(), kecepatan:pkecepatan.value.trim(), harga:parseInt(pharga.value||0), deskripsi:pdeskripsi.value.trim() };
+      (id? db.collection('paket').doc(id).update(data):db.collection('paket').add(data))
+        .then(()=>bootstrap.Modal.getInstance(paketModal).hide());
+    }
+    function deletePaket(id){ if(confirm('Hapus paket?')) db.collection('paket').doc(id).delete(); }
+    function loadPaket(){
+      db.collection('paket').orderBy('harga','asc').onSnapshot(snap=>{
+        let html=""; paketCache=[];
+        snap.forEach(doc=>{
+          const p = {id:doc.id, ...doc.data()}; paketCache.push(p);
+          html += `<tr>
+            <td>${p.nama||''}</td>
+            <td>${p.kecepatan||''}</td>
+            <td>Rp ${Number(p.harga||0).toLocaleString()}</td>
+            <td>${p.deskripsi||''}</td>
+            <td>${rowActions(`editPaket("${doc.id}", ${encode(JSON.stringify(p))})`, `deletePaket("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('paketTable').innerHTML = html;
+        refreshPaketSelect();
+      });
+    }
+
+    // ====== BILLING CRUD ======
+    function addBilling(){ billingForm.reset(); billingId.value=""; new bootstrap.Modal(billingModal).show(); }
+    function editBilling(id,d){ billingId.value=id; bnama.value=d.nama; bpaket.value=d.paket; bperiode.value=d.periode; bjumlah.value=d.jumlah; bstatus.value=d.status; new bootstrap.Modal(billingModal).show(); }
+    function saveBilling(){
+      const id=billingId.value, data={ nama:bnama.value.trim(), paket:bpaket.value.trim(), periode:bperiode.value.trim(), jumlah:parseInt(bjumlah.value||0), status:bstatus.value };
+      (id? db.collection('billing').doc(id).update(data):db.collection('billing').add(data))
+        .then(()=>bootstrap.Modal.getInstance(billingModal).hide());
+    }
+    function deleteBilling(id){ if(confirm('Hapus billing?')) db.collection('billing').doc(id).delete(); }
+    function loadBilling(){
+      db.collection('billing').onSnapshot(snap=>{
+        let html="", tungg=0, pend=0;
+        snap.forEach(doc=>{
+          const b = doc.data();
+          html += `<tr>
+            <td>${b.nama||''}</td>
+            <td>${b.paket||''}</td>
+            <td>${b.periode||''}</td>
+            <td>Rp ${Number(b.jumlah||0).toLocaleString()}</td>
+            <td><span class="badge ${b.status==='Lunas'?'bg-success':'bg-danger'}">${b.status||''}</span></td>
+            <td>${rowActions(`editBilling("${doc.id}", ${encode(JSON.stringify(b))})`, `deleteBilling("${doc.id}")`)}</td>
+          </tr>`;
+          if((b.status||'')==='Lunas') pend += Number(b.jumlah||0); else tungg += Number(b.jumlah||0);
+        });
+        document.getElementById('billingTable').innerHTML = html;
+        document.getElementById('totalPendapatan').textContent = "Rp " + pend.toLocaleString();
+        document.getElementById('totalTunggakan').textContent = "Rp " + tungg.toLocaleString();
+      });
+    }
+
+    // ====== KAS CRUD ======
+    function addKas(){ kasForm.reset(); kasId.value=""; new bootstrap.Modal(kasModal).show(); }
+    function editKas(id,d){ kasId.value=id; tanggal.value=d.tanggal; keterangan.value=d.keterangan; jenis.value=d.jenis; jumlah.value=d.jumlah; new bootstrap.Modal(kasModal).show(); }
+    function saveKas(){
+      const id=kasId.value, data={ tanggal:tanggal.value, keterangan:keterangan.value.trim(), jenis:jenis.value, jumlah:parseInt(jumlah.value||0) };
+      (id? db.collection('kas').doc(id).update(data):db.collection('kas').add(data))
+        .then(()=>bootstrap.Modal.getInstance(kasModal).hide());
+    }
+    function deleteKas(id){ if(confirm('Hapus transaksi kas?')) db.collection('kas').doc(id).delete(); }
+    function loadKas(){
+      db.collection('kas').onSnapshot(snap=>{
+        let html="", total=0;
+        snap.forEach(doc=>{
+          const k = doc.data();
+          html += `<tr>
+            <td>${k.tanggal||''}</td>
+            <td>${k.keterangan||''}</td>
+            <td><span class="badge ${k.jenis==='Masuk'?'bg-success-subtle text-success':'bg-danger-subtle text-danger'}">${k.jenis||''}</span></td>
+            <td>Rp ${Number(k.jumlah||0).toLocaleString()}</td>
+            <td>${rowActions(`editKas("${doc.id}", ${encode(JSON.stringify(k))})`, `deleteKas("${doc.id}")`)}</td>
+          </tr>`;
+          total += (k.jenis==='Masuk' ? Number(k.jumlah||0) : -Number(k.jumlah||0));
+        });
+        document.getElementById('kasTable').innerHTML = html;
+        document.getElementById('totalKas').textContent = "Rp " + total.toLocaleString();
+      });
+    }
+
+    // ====== TEKNISI CRUD ======
+    function addTeknisi(){ teknisiForm.reset(); teknisiId.value=""; new bootstrap.Modal(teknisiModal).show(); }
+    function editTeknisi(id,d){ teknisiId.value=id; tnama.value=d.nama; thp.value=d.hp; tkeahlian.value=d.keahlian||""; tstatus.value=d.status; new bootstrap.Modal(teknisiModal).show(); }
+    function saveTeknisi(){
+      const id=teknisiId.value, data={ nama:tnama.value.trim(), hp:thp.value.trim(), keahlian:tkeahlian.value.trim(), status:tstatus.value };
+      (id? db.collection('teknisi').doc(id).update(data):db.collection('teknisi').add(data))
+        .then(()=>bootstrap.Modal.getInstance(teknisiModal).hide());
+    }
+    function deleteTeknisi(id){ if(confirm('Hapus teknisi?')) db.collection('teknisi').doc(id).delete(); }
+    function loadTeknisi(){
+      db.collection('teknisi').onSnapshot(snap=>{
+        let html=""; let total=0;
+        snap.forEach(doc=>{
+          const t = doc.data(); total++;
+          html += `<tr>
+            <td>${t.nama||''}</td>
+            <td>${t.hp||''}</td>
+            <td>${t.keahlian||''}</td>
+            <td><span class="badge ${t.status==='Aktif'?'bg-success':'bg-secondary'}">${t.status||''}</span></td>
+            <td>${rowActions(`editTeknisi("${doc.id}", ${encode(JSON.stringify(t))})`, `deleteTeknisi("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('teknisiTable').innerHTML = html;
+        document.getElementById('totalTeknisi').textContent = total;
+      });
+    }
+
+    // ====== GANGGUAN CRUD + BLAST ======
+    function addGangguan(){ gangguanForm.reset(); gangguanId.value=""; new bootstrap.Modal(gangguanModal).show(); }
+    function editGangguan(id,d){
+      gangguanId.value=id; gtanggal.value=d.tanggal; gpelanggan.value=d.pelanggan; glokasi.value=d.lokasi||"";
+      gdeskripsi.value=d.deskripsi||""; gstatus.value=d.status; gteknisi.value=d.teknisi||""; godp.value=d.odp||"";
+      new bootstrap.Modal(gangguanModal).show();
+    }
+    function saveGangguan(){
+      const id=gangguanId.value, data={
+        tanggal:gtanggal.value, pelanggan:gpelanggan.value.trim(), lokasi:glokasi.value.trim(),
+        deskripsi:gdeskripsi.value.trim(), status:gstatus.value, teknisi:gteknisi.value.trim(), odp:godp.value.trim()
+      };
+      (id? db.collection('gangguan').doc(id).update(data):db.collection('gangguan').add(data))
+        .then(()=>bootstrap.Modal.getInstance(gangguanModal).hide());
+    }
+    function deleteGangguan(id){ if(confirm('Hapus laporan?')) db.collection('gangguan').doc(id).delete(); }
+    let odpSet = new Set();
+    function loadGangguan(){
+      db.collection('gangguan').onSnapshot(snap=>{
+        let html="", aktif=0; odpSet = new Set();
+        snap.forEach(doc=>{
+          const g = doc.data();
+          if((g.status||'')==='Aktif') aktif++;
+          if(g.odp) odpSet.add(g.odp);
+          html += `<tr>
+            <td>${g.tanggal||''}</td>
+            <td>${g.pelanggan||''}</td>
+            <td>${g.odp||''}</td>
+            <td>${g.lokasi||''}</td>
+            <td>${g.deskripsi||''}</td>
+            <td><span class="badge ${g.status==='Aktif'?'bg-danger':'bg-success'}">${g.status||''}</span></td>
+            <td>${g.teknisi||''}</td>
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
+                <button class="btn btn-sm btn-warning" onclick='editGangguan("${doc.id}", ${encode(JSON.stringify(g))})'>Edit</button>
+                <button class="btn btn-sm btn-danger" onclick='deleteGangguan("${doc.id}")'>Hapus</button>
+                <button class="btn btn-sm btn-success" onclick='openBlastModal("${g.odp||""}")'><i class="bi bi-whatsapp"></i> Blast</button>
+              </div>
+            </td>
+          </tr>`;
+        });
+        document.getElementById('gangguanTable').innerHTML = html;
+        document.getElementById('totalGangguanAktif').textContent = aktif;
+      });
+    }
+    function openBlastModal(prefillOdp){
+      // isi daftar ODP dari gangguan + dari user
+      const sel = document.getElementById('blastOdp'); sel.innerHTML = "";
+      const uniq = new Set([...odpSet]);
+      // juga tambahkan ODP yang ada di users
+      db.collection('users').get().then(s=>{
+        s.forEach(d=>{ const u=d.data(); if(u.odp) uniq.add(u.odp); });
+        Array.from(uniq).sort().forEach(v=>{
+          const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o);
+        });
+        if(prefillOdp){ sel.value=prefillOdp; }
+        loadBlastList();
+        new bootstrap.Modal(blastModal).show();
+      });
+      document.getElementById('blastMsg').value = document.getElementById('blastMsg').value || "[STARNET] Mohon maaf, saat ini sedang ada gangguan pada ODP {ODP}. Tim teknisi kami sedang melakukan perbaikan. Terima kasih atas pengertiannya.";
+      sel.onchange = loadBlastList;
+    }
+    function normalizePhone(hp){
+      hp = (hp||"").replace(/\D/g,'');
+      if(hp.startsWith('62')) return hp;
+      if(hp.startsWith('0')) return '62' + hp.substring(1);
+      return hp;
+    }
+    function loadBlastList(){
+      const odp = document.getElementById('blastOdp').value;
+      const listEl = document.getElementById('blastList'); listEl.innerHTML = "Memuat...";
+      db.collection('users').where('odp','==',odp).where('status','==','Aktif').get().then(s=>{
+        let html=""; let cnt=0;
+        s.forEach(doc=>{
+          const u = doc.data(); const hp = normalizePhone(u.hp||"");
+          if(!hp) return;
+          cnt++;
+          html += `<div class="d-flex justify-content-between border-bottom py-1">
+            <div><b>${u.nama||''}</b> <span class="text-secondary">(${u.username||''})</span> • ${u.paket||''}</div>
+            <code>${hp}</code>
+          </div>`;
+        });
+        document.getElementById('blastCount').innerText = cnt;
+        listEl.innerHTML = html || '<i>Tidak ada user aktif di ODP ini.</i>';
+      });
+    }
+    function copyBlast(){
+      const odp = document.getElementById('blastOdp').value;
+      const msg = (document.getElementById('blastMsg').value||'').replace('{ODP}',odp);
+      navigator.clipboard.writeText(msg).then(()=>alert('Pesan disalin.'));
+    }
+    async function sendBlast(){
+      const odp = document.getElementById('blastOdp').value;
+      const msg = encodeURIComponent((document.getElementById('blastMsg').value||'').replace('{ODP}',odp));
+      const s = await db.collection('users').where('odp','==',odp).where('status','==','Aktif').get();
+      const nums = [];
+      s.forEach(d=>{ const hp=normalizePhone(d.data().hp||''); if(hp) nums.push(hp); });
+      if(nums.length===0){ alert('Tidak ada nomor di ODP ini.'); return; }
+      if(!confirm(`Kirim WA ke ${nums.length} nomor? (akan membuka banyak tab)`)) return;
+      // Buka tab bertahap (WhatsApp tidak mendukung multi nomor sekaligus via satu link)
+      let opened=0;
+      nums.slice(0,15).forEach((n,i)=>{
+        setTimeout(()=>{ window.open(`https://wa.me/${n}?text=${msg}`,'_blank'); }, i*300);
+        opened++;
+      });
+      if(nums.length>15) alert(`Demi keamanan browser, hanya membuka 15 tab. Sisa ${nums.length-15} nomor silakan kirim ulang.`);
+    }
+
+    // ====== MATERIAL CRUD ======
+    function addMaterial(){ materialForm.reset(); materialId.value=""; new bootstrap.Modal(materialModal).show(); }
+    function editMaterial(id,d){
+      materialId.value=id; mnama.value=d.nama; mkategori.value=d.kategori||""; mstok.value=d.stok; msatuan.value=d.satuan||""; mcatatan.value=d.catatan||"";
+      new bootstrap.Modal(materialModal).show();
+    }
+    function saveMaterial(){
+      const id=materialId.value, data={
+        nama:mnama.value.trim(), kategori:mkategori.value.trim(), stok:parseInt(mstok.value||0), satuan:msatuan.value.trim(), catatan:mcatatan.value.trim()
+      };
+      (id? db.collection('material').doc(id).update(data):db.collection('material').add(data))
+        .then(()=>bootstrap.Modal.getInstance(materialModal).hide());
+    }
+    function deleteMaterial(id){ if(confirm('Hapus material?')) db.collection('material').doc(id).delete(); }
+    function loadMaterial(){
+      db.collection('material').onSnapshot(snap=>{
+        let html="", kritis=0;
+        snap.forEach(doc=>{
+          const m = doc.data();
+          if(Number(m.stok||0) <= 5) kritis++;
+          html += `<tr>
+            <td>${m.nama||''}</td>
+            <td>${m.kategori||''}</td>
+            <td><span class="badge ${Number(m.stok||0)<=5?'bg-danger text-white':'badge-soft'}">${Number(m.stok||0)}</span></td>
+            <td>${m.satuan||''}</td>
+            <td>${m.catatan||''}</td>
+            <td>${rowActions(`editMaterial("${doc.id}", ${encode(JSON.stringify(m))})`, `deleteMaterial("${doc.id}")`)}</td>
+          </tr>`;
+        });
+        document.getElementById('materialTable').innerHTML = html;
+        document.getElementById('totalMaterialKritis').textContent = kritis;
+      });
+    }
+
+    // ====== Mikrotik Dummy ======
+    function testMikrotik(){
+      const ip=mkIp.value.trim(), port=mkPort.value.trim(), user=mkUser.value.trim();
+      if(!ip || !port || !user){ mkResult.innerHTML='<span class="text-danger">Lengkapi IP/Port/Username.</span>'; return; }
+      mkResult.innerHTML = `<span class="text-success">Berhasil terkoneksi ke ${ip}:${port} sebagai ${user} (dummy).</span>`;
+    }
+
+    // ====== Chart (dummy realtime) ======
+    let chart, t0=Date.now();
+    function initTrafficChart(){
+      const ctx = document.getElementById('trafficChart');
+      const labels = Array.from({length:12}, (_,i)=>new Date(Date.now()-(11-i)*5000).toLocaleTimeString());
+      chart = new Chart(ctx, {
+        type:'line',
+        data:{
+          labels,
+          datasets:[
+            {label:'Upload (Mbps)', data:labels.map(()=>rnd(10,40)), tension:.35, fill:false},
+            {label:'Download (Mbps)', data:labels.map(()=>rnd(30,120)), tension:.35, fill:false},
+            {label:'Load Balance (%)', data:labels.map(()=>rnd(30,90)), yAxisID:'y1', tension:.35, fill:false}
+          ]
+        },
+        options:{
+          responsive:true,
+          interaction:{ mode:'index', intersect:false },
+          scales:{
+            y:{ title:{display:true,text:'Mbps'} },
+            y1:{ position:'right', title:{display:true,text:'%'} , min:0, max:100, grid:{ drawOnChartArea:false } }
+          },
+          plugins:{ legend:{ position:'bottom' } }
         }
       });
+      setInterval(pushTrafficPoint, 5000);
     }
-    setInterval(checkTrouble, 60000); // tiap 1 menit
-
-    onSnapshot(collection(db, "troubles"), snap => {
-      troubleList.innerHTML = "";
-      snap.forEach(doc => {
-        const t = doc.data();
-        troubleList.innerHTML += `<li>${t.username} - ${t.status} (${t.time})</li>`;
-      });
-    });
-
-    // === GRAFIK ISP (Dummy) ===
-    const ctx = document.getElementById("trafficChart");
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: ["00:00","06:00","12:00","18:00","24:00"],
-        datasets: [
-          { label: "Upload", data: [5,10,6,8,4], borderColor: "blue" },
-          { label: "Download", data: [15,20,18,25,10], borderColor: "green" }
-        ]
-      }
-    });
+    function rnd(min,max){ return Math.round(min + Math.random()*(max-min)); }
+    function pushTrafficPoint(){
+      const lbl = new Date().toLocaleTimeString();
+      const ds = chart.data.datasets;
+      chart.data.labels.push(lbl); chart.data.labels.shift();
+      ds[0].data.push(rnd(10,40)); ds[0].data.shift();
+      ds[1].data.push(rnd(30,120)); ds[1].data.shift();
+      ds[2].data.push(rnd(30,90)); ds[2].data.shift();
+      chart.update('none');
+    }
   </script>
 </body>
 </html>
