@@ -5,21 +5,97 @@
   <title>Dashboard Starnet💫</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
+  <!-- Font & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; color: #333; }
-    header { background: #1a237e; color: #fff; padding: 15px; font-size: 22px; font-weight: bold; text-align: center; }
+    /* === Layout Umum === */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+    header {
+      background: #1a237e;
+      color: #fff;
+      padding: 15px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+    }
+    /* === Sidebar === */
+    .sidebar {
+      width: 220px;
+      background: #1a237e;
+      color: white;
+      min-height: 100vh;
+      padding-top: 20px;
+      transition: width 0.3s;
+    }
+    .sidebar.shrink { width: 60px; }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar ul li {
+      padding: 12px 20px;
+      cursor: pointer;
+      display: flex; align-items: center;
+    }
+    .sidebar ul li:hover { background: #3949ab; }
+    .sidebar ul li i { margin-right: 10px; }
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
     h3 { margin-top: 30px; color: #1a237e; }
-    form { margin: 15px 0; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    input, select, button { margin: 5px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
-    button { background: #1a237e; color: #fff; border: none; cursor: pointer; }
+    /* === Form & Table === */
+    form {
+      margin: 15px 0;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      margin: 5px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #1a237e;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
     button:hover { background: #3949ab; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    th { background: #3949ab; color: #fff; }
-    #kasSaldo, #totalTunggakan { font-weight: bold; margin: 10px 0; background: #e8eaf6; padding: 10px; border-radius: 6px; }
-    .offline { background: #ffcdd2; }
-    .gangguan { background: #ff7043; color: white; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    table th { background: #3949ab; color: #fff; }
+    .info-box {
+      font-weight: bold;
+      margin: 10px 0;
+      background: #e8eaf6;
+      padding: 10px;
+      border-radius: 6px;
+    }
   </style>
 
   <!-- Chart.js -->
@@ -30,46 +106,68 @@
 </head>
 <body>
   <header>Dashboard Starnet💫</header>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <h2><i class="fas fa-satellite-dish"></i> Starnet</h2>
+      <ul>
+        <li><i class="fas fa-users"></i> User</li>
+        <li><i class="fas fa-box"></i> Paket</li>
+        <li><i class="fas fa-file-invoice-dollar"></i> Billing</li>
+        <li><i class="fas fa-money-bill-wave"></i> Kas</li>
+        <li><i class="fas fa-exclamation-triangle"></i> Gangguan</li>
+        <li><i class="fas fa-chart-line"></i> Grafik ISP</li>
+        <li><i class="fas fa-user-cog"></i> Teknisi</li>
+        <li><i class="fas fa-tools"></i> Material</li>
+        <li><i class="fas fa-pen"></i> Edit Nama ISP</li>
+      </ul>
+    </div>
 
-  <!-- FORM USER -->
-  <form id="userForm">
-    <input type="text" id="name" placeholder="Nama" required>
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="text" id="planName" placeholder="Paket" required>
-    <input type="text" id="contact" placeholder="Kontak">
-    <button type="submit">Simpan User</button>
-  </form>
+    <!-- Content -->
+    <div class="content">
+      <!-- Tambah User -->
+      <form id="userForm">
+        <input type="text" id="name" placeholder="Nama" required>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="text" id="planName" placeholder="Paket" required>
+        <input type="text" id="contact" placeholder="Kontak">
+        <button type="submit">Tambah User</button>
+      </form>
+      <h3>Daftar User</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+      <div class="info-box" id="totalTunggakan">Total Tunggakan: Rp 0</div>
 
-  <h3>Daftar User</h3>
-  <table>
-    <thead>
-      <tr><th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th></tr>
-    </thead>
-    <tbody id="userTableBody"></tbody>
-  </table>
-  <div id="totalTunggakan">Total Tunggakan: Rp 0</div>
+      <!-- Kas Perusahaan -->
+      <h3>Kas Perusahaan</h3>
+      <form id="kasForm">
+        <select id="kasType">
+          <option value="Masuk">Kas Masuk</option>
+          <option value="Keluar">Kas Keluar</option>
+        </select>
+        <input type="number" id="kasNominal" placeholder="Nominal" required>
+        <input type="text" id="kasKeterangan" placeholder="Keterangan">
+        <button type="submit">Simpan</button>
+      </form>
+      <table>
+        <thead>
+          <tr><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Waktu</th></tr>
+        </thead>
+        <tbody id="kasTableBody"></tbody>
+      </table>
+      <div class="info-box" id="kasSaldo">Saldo Kas: Rp 0</div>
 
-  <h3>Kas Perusahaan</h3>
-  <form id="kasForm">
-    <select id="kasType"><option value="Masuk">Kas Masuk</option><option value="Keluar">Kas Keluar</option></select>
-    <input type="number" id="kasNominal" placeholder="Nominal" required>
-    <input type="text" id="kasKeterangan" placeholder="Keterangan">
-    <button type="submit">Simpan</button>
-  </form>
-  <table>
-    <thead><tr><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Waktu</th></tr></thead>
-    <tbody id="kasTableBody"></tbody>
-  </table>
-  <div id="kasSaldo">Saldo Kas: Rp 0</div>
-
-  <h3>Daftar Gangguan</h3>
-  <table>
-    <thead><tr><th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Indikasi</th><th>Waktu</th></tr></thead>
-    <tbody id="gangguanTableBody"></tbody>
-  </table>
-
-  <h3>Grafik ISP</h3>
-  <canvas id="ispChart"></canvas>
+      <!-- Grafik ISP -->
+      <h3>Grafik ISP</h3>
+      <canvas id="ispChart"></canvas>
+    </div>
+  </div>
 
   <script>
     // === Firebase Config ===
@@ -82,92 +180,100 @@
       appId: "1:761179668371:web:7d1468d0298041d4783266",
       measurementId: "G-CD3EQ350R4"
     };
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // === SIMPAN USER ===
+    // === User ===
     const userForm = document.getElementById('userForm');
     const userTableBody = document.getElementById('userTableBody');
+
     userForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const name = document.getElementById('name').value;
+      const username = document.getElementById('username').value;
+      const planName = document.getElementById('planName').value;
+      const contact = document.getElementById('contact').value;
+
       await db.collection('customers').add({
-        name: name.value, username: username.value, planName: planName.value, contact: contact.value,
-        status: "Aktif", tunggakan: 0, lastSeen: new Date()
+        name, username, planName, contact,
+        status: "Aktif", tunggakan: 0,
+        lastSeen: new Date()
       });
-      userForm.reset(); loadUsers();
+      userForm.reset();
+      loadUsers();
     });
 
     async function loadUsers() {
       const snapshot = await db.collection('customers').get();
-      userTableBody.innerHTML = ''; let totalTunggakan = 0;
+      userTableBody.innerHTML = '';
+      let totalTunggakan = 0;
       snapshot.forEach(doc => {
-        const d = doc.data();
-        let rowClass = "";
-        if (d.status === "Offline") rowClass = "offline";
-        userTableBody.innerHTML += `<tr class="${rowClass}">
-          <td>${d.name}</td><td>${d.username}</td><td>${d.planName}</td><td>${d.contact}</td><td>${d.status}</td><td>${d.tunggakan||0}</td></tr>`;
-        totalTunggakan += d.tunggakan||0;
+        const data = doc.data();
+        userTableBody.innerHTML += `
+          <tr>
+            <td>${data.name}</td>
+            <td>${data.username}</td>
+            <td>${data.planName}</td>
+            <td>${data.contact}</td>
+            <td>${data.status}</td>
+            <td>${data.tunggakan || 0}</td>
+          </tr>`;
+        totalTunggakan += data.tunggakan || 0;
       });
       document.getElementById('totalTunggakan').innerText = "Total Tunggakan: Rp " + totalTunggakan;
     }
 
-    // === KAS ===
+    // === Kas ===
     const kasForm = document.getElementById('kasForm');
     const kasTableBody = document.getElementById('kasTableBody');
     let saldoKas = 0;
+
     kasForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const type = kasType.value; const nominal = parseInt(kasNominal.value);
-      const keterangan = kasKeterangan.value; const waktu = new Date().toLocaleString();
+      const type = document.getElementById('kasType').value;
+      const nominal = parseInt(document.getElementById('kasNominal').value);
+      const keterangan = document.getElementById('kasKeterangan').value;
+      const waktu = new Date().toLocaleString();
+
       await db.collection('kas').add({type, nominal, keterangan, waktu});
-      kasForm.reset(); loadKas();
+      kasForm.reset();
+      loadKas();
     });
+
     async function loadKas() {
       const snapshot = await db.collection('kas').get();
-      kasTableBody.innerHTML = ''; saldoKas = 0;
+      kasTableBody.innerHTML = '';
+      saldoKas = 0;
       snapshot.forEach(doc => {
-        const d = doc.data();
-        kasTableBody.innerHTML += `<tr><td>${d.type}</td><td>${d.nominal}</td><td>${d.keterangan}</td><td>${d.waktu}</td></tr>`;
-        saldoKas += d.type==="Masuk"?d.nominal:-d.nominal;
+        const data = doc.data();
+        kasTableBody.innerHTML += `
+          <tr>
+            <td>${data.type}</td>
+            <td>${data.nominal}</td>
+            <td>${data.keterangan}</td>
+            <td>${data.waktu}</td>
+          </tr>`;
+        if (data.type === "Masuk") saldoKas += data.nominal;
+        else saldoKas -= data.nominal;
       });
       document.getElementById('kasSaldo').innerText = "Saldo Kas: Rp " + saldoKas;
     }
 
-    // === CEK GANGGUAN ===
-    async function checkGangguan() {
-      const snapshot = await db.collection('customers').get();
-      const gangguanTableBody = document.getElementById('gangguanTableBody');
-      gangguanTableBody.innerHTML = '';
-      const now = new Date();
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        if (d.lastSeen) {
-          let lastSeen = d.lastSeen.toDate();
-          let diff = (now - lastSeen) / 60000;
-          if (diff > 15) {
-            gangguanTableBody.innerHTML += `<tr class="gangguan">
-              <td>${d.name}</td><td>${d.username}</td><td>${d.planName}</td><td>${d.contact}</td>
-              <td>Offline >15m</td><td>${now.toLocaleString()}</td></tr>`;
-            db.collection('customers').doc(doc.id).update({status:"Offline"});
-          } else {
-            db.collection('customers').doc(doc.id).update({status:"Aktif"});
-          }
-        }
-      });
-    }
-    setInterval(checkGangguan, 60000);
-
-    // === GRAFIK ISP ===
+    // === Grafik ISP Dummy ===
     const ctx = document.getElementById('ispChart').getContext('2d');
     const ispChart = new Chart(ctx, {
       type: 'line',
-      data: { labels: [], datasets: [
-        {label:'Upload', borderColor:'blue', data:[]},
-        {label:'Download', borderColor:'green', data:[]},
-        {label:'LoadBalance', borderColor:'orange', data:[]}
-      ]},
-      options: { responsive:true }
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Upload', borderColor: 'blue', data: [] },
+          { label: 'Download', borderColor: 'green', data: [] },
+          { label: 'Load Balance', borderColor: 'orange', data: [] }
+        ]
+      },
+      options: { responsive: true }
     });
+
     function updateISP() {
       const now = new Date().toLocaleTimeString();
       ispChart.data.labels.push(now);
@@ -178,8 +284,24 @@
     }
     setInterval(updateISP, 5000);
 
-    // === LOAD AWAL ===
-    loadUsers(); loadKas(); checkGangguan();
+    // === Auto Cek User Offline 15 menit ===
+    setInterval(async () => {
+      const snapshot = await db.collection('customers').get();
+      snapshot.forEach(async doc => {
+        const data = doc.data();
+        if (data.lastSeen) {
+          const diff = (new Date() - data.lastSeen.toDate()) / 60000;
+          if (diff > 15 && data.status !== "Gangguan") {
+            await db.collection('customers').doc(doc.id).update({status: "Gangguan"});
+          }
+        }
+      });
+      loadUsers();
+    }, 60000);
+
+    // === Load Data Awal ===
+    loadUsers();
+    loadKas();
   </script>
 </body>
 </html>
