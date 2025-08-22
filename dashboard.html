@@ -109,6 +109,7 @@ button:hover{background:#0056b3;}
     <input type="number" id="billingAmount" placeholder="Jumlah Tagihan" required>
     <button type="submit">Generate Billing</button>
   </form>
+  <button onclick="generateBillingAll()">Generate Billing All User (Bulanan)</button>
   <table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
 </div>
 
@@ -128,7 +129,7 @@ button:hover{background:#0056b3;}
 <div id="teknisi" class="section">
   <h2>Teknisi</h2>
   <form id="addTeknisiForm">
-    <input type="text" id="teknisiNama" placeholder="Nama Teknisi" required>
+    <input type="text" id="teknisiNama" placeholder="Nama Teknisi">
     <input type="text" id="teknisiHP" placeholder="HP">
     <button type="submit">Tambah Teknisi</button>
   </form>
@@ -208,6 +209,19 @@ document.getElementById("addBillingForm").addEventListener("submit",e=>{e.preven
 function loadBillingTable(){db.collection("billing").get().then(snap=>{const tbody=document.querySelector("#billingTable tbody"); tbody.innerHTML=""; snap.forEach(d=>{const b=d.data(); const tr=document.createElement("tr"); tr.innerHTML=`<td>${b.user}</td><td>${b.jumlah}</td><td>${b.status}</td><td><button onclick="payBilling('${d.id}')">Bayar</button><button onclick="deleteDoc('billing','${d.id}')">Hapus</button></td>`; tbody.appendChild(tr);});});}
 function payBilling(id){db.collection("billing").doc(id).update({status:"paid"}).then(()=>{alert("Billing dibayar!");loadBillingTable();updateDashboard();});}
 
+// GENERATE BILLING BULANAN ALL USER
+function generateBillingAll(){
+  db.collection("user").get().then(snap=>{
+    snap.forEach(doc=>{
+      const user = doc.data().userName;
+      const amount = 100000; // contoh default tagihan
+      db.collection("billing").add({user:user,jumlah:amount,status:"unpaid",waktu:firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    alert("Billing untuk semua user berhasil dibuat!");
+    loadBillingTable(); updateDashboard();
+  });
+}
+
 // CRUD KAS
 document.getElementById("addKasForm").addEventListener("submit",e=>{e.preventDefault(); const k={keterangan:document.getElementById("kasKeterangan").value,jumlah:Number(document.getElementById("kasJumlah").value),tipe:document.getElementById("kasTipe").value,waktu:firebase.firestore.FieldValue.serverTimestamp()}; db.collection("kas").add(k).then(()=>{alert("Kas ditambahkan!");loadKasTable();updateDashboard();e.target.reset();});});
 function loadKasTable(){db.collection("kas").get().then(snap=>{const tbody=document.querySelector("#kasTable tbody"); tbody.innerHTML=""; snap.forEach(d=>{const k=d.data(); const tr=document.createElement("tr"); tr.innerHTML=`<td>${k.keterangan}</td><td>${k.jumlah}</td><td>${k.tipe}</td><td><button onclick="deleteDoc('kas','${d.id}')">Hapus</button></td>`; tbody.appendChild(tr);});});}
@@ -242,21 +256,30 @@ function loadMaterialTable(){db.collection("material").get().then(snap=>{const t
 
 // UPDATE DASHBOARD
 function updateDashboard(){
-  db.collection("user").get().then(snap=>document.getElementById("totalUser").innerText=snap.size);
-  db.collection("kas").get().then(snap=>{let total=0;snap.forEach(d=>{const k=d.data(); total+=k.tipe==="masuk"?k.jumlah:-k.jumlah;});document.getElementById("saldoKas").innerText=total;});
-  db.collection("billing").get().then(snap=>{let total=0; snap.forEach(d=>{if(d.data().status==="unpaid") total+=d.data().jumlah;});document.getElementById("totalTunggakan").innerText=total;});
-  db.collection("gangguan").where("status","==","aktif").get().then(snap=>document.getElementById("totalGangguan").innerText=snap.size);
+  db.collection("user").get().then(snap=>{document.getElementById("totalUser").innerText=snap.size;});
+  db.collection("kas").get().then(snap=>{let saldo=0; snap.forEach(d=>{const k=d.data(); saldo+=k.tipe==="masuk"?k.jumlah:-k.jumlah;}); document.getElementById("saldoKas").innerText=saldo;});
+  db.collection("billing").where("status","==","unpaid").get().then(snap=>{document.getElementById("totalTunggakan").innerText=snap.size;});
+  db.collection("gangguan").where("status","==","aktif").get().then(snap=>{
+    const total = snap.size;
+    document.getElementById("totalGangguan").innerText = total;
+    if(total>0){
+      let minTime=null;
+      snap.forEach(d=>{const g=d.data(); const t=g.waktu.seconds*1000; if(minTime===null||t<minTime) minTime=t;});
+      const card=document.getElementById("totalGangguan");
+      if(minTime){setInterval(()=>{card.innerText=`${total} aktif | TTR: ${formatDuration(Date.now()-minTime)}`;},1000);}
+    }
+  });
+
+  // Update dashboard gangguan table
   db.collection("gangguan").orderBy("waktu","desc").limit(5).get().then(snap=>{
     const tbody=document.querySelector("#dashboardGangguan tbody"); tbody.innerHTML="";
-    snap.forEach(d=>{
-      const g=d.data(); const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${g.user}</td><td>${g.indikasi}</td><td>${new Date(g.waktu?.seconds*1000||Date.now()).toLocaleString()}</td><td class="ttrCell">${g.ttr||"-"}</td><td>${g.status}</td>`;
-      tbody.appendChild(tr);
+    snap.forEach(d=>{const g=d.data(); const tr=document.createElement("tr"); tr.innerHTML=`<td>${g.user}</td><td>${g.indikasi}</td><td>${new Date(g.waktu.seconds*1000).toLocaleString()}</td><td class="ttrCell">${g.ttr||"-"}</td><td>${g.status}</td>`; tbody.appendChild(tr);
       if(g.status==="aktif"){const cell=tr.querySelector(".ttrCell"); const startTime=g.waktu.seconds*1000; setInterval(()=>{cell.innerText=formatDuration(Date.now()-startTime);},1000);}
-      else if(g.ttr===null && g.status==="selesai"){const ttrMs=Date.now()-g.waktu.seconds*1000; tr.querySelector(".ttrCell").innerText=formatDuration(ttrMs);}
     });
   });
 }
+
+setInterval(()=>{updateDashboard();},1000);
 </script>
 
 </body>
