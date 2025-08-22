@@ -2,19 +2,19 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Starnet 💫 Manager</title>
+<title>Starnet💫 Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9;}
-.sidebar{width:250px;height:100%;position:fixed;top:0;left:0;background:linear-gradient(180deg,#007bff,#0056b3);color:#fff;padding-top:20px;overflow:hidden;transition:width 0.3s;}
+.sidebar{width:250px;height:100%;position:fixed;top:0;left:0;background:#007bff;color:#fff;padding-top:20px;overflow:hidden;transition:width 0.3s;}
 .sidebar.minimized{width:60px;}
 .sidebar h2{text-align:center;margin-bottom:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sidebar a{display:flex;align-items:center;color:white;padding:12px 20px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:12px;transition:background 0.3s;}
 .sidebar a:hover{background:rgba(255,255,255,0.2);}
-.sidebar a span.icon{display:inline-block;width:30px;text-align:center;}
+.sidebar a span.icon{display:inline-block;width:30px;text-align:center;color:#ffdd00;}
 .sidebar.minimized a span.text{display:none;}
 .main{margin-left:250px;padding:20px;transition:margin-left 0.3s;}
 .main.sidebar-minimized{margin-left:60px;}
@@ -30,10 +30,13 @@ button{padding:6px 10px;margin:2px;border:none;background:#007bff;color:white;bo
 button:hover{background:#0056b3;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;}
 .section{display:none;}
-.billing-card{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:10px;background:#f0f4ff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-.billing-card span.user-icon{font-size:24px;margin-right:10px;}
-.billing-card span.user-name{font-weight:bold;}
-.billing-actions button{margin-left:5px;}
+.billing-card, .gangguan-card{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:10px;background:#f0f4ff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.billing-card span.user-icon, .gangguan-card span.user-icon{font-size:24px;margin-right:10px;}
+.billing-card span.user-name, .gangguan-card span.user-name{font-weight:bold;}
+.billing-actions button, .gangguan-actions button{margin-left:5px;}
+.progress-bar-container{background:#ddd;border-radius:10px;overflow:hidden;margin-top:5px;}
+.progress-bar{height:12px;background:#007bff;width:0%;transition:width 0.5s;}
+#dashboardGangguanContainer{max-height:250px;overflow-y:auto;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -59,19 +62,38 @@ button:hover{background:#0056b3;}
 <div id="dashboard" class="section">
   <h2>Dashboard</h2>
   <div class="grid">
-    <div class="card" onclick="showSection('user')" style="cursor:pointer;"><h3>Total User</h3><p id="totalUser">0</p></div>
-    <div class="card" onclick="showSection('kas')" style="cursor:pointer;"><h3>Saldo Kas</h3><p id="saldoKas">0</p></div>
-    <div class="card" onclick="showSection('billing')" style="cursor:pointer;"><h3>Tunggakan</h3><p id="totalTunggakan">0</p></div>
-    <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;"><h3>Gangguan Aktif</h3><p id="totalGangguan">0</p></div>
+    <div class="card" style="cursor:pointer;"><h3>Total User</h3><p id="totalUser">0</p></div>
+    <div class="card" style="cursor:pointer;"><h3>Saldo Kas</h3><p id="saldoKas">0</p></div>
+    <div class="card" style="cursor:pointer;"><h3>Tunggakan</h3><p id="totalTunggakan">0</p></div>
+    <div class="card" style="cursor:pointer;"><h3>Gangguan Aktif</h3><p id="totalGangguan">0</p></div>
   </div>
   <div class="card"><canvas id="ispChart"></canvas></div>
+  <div class="card">
+    <h3>Gangguan Terbaru</h3>
+    <div id="dashboardGangguanContainer">
+      <table id="dashboardGangguan"><thead><tr><th>User</th><th>Indikasi</th><th>Waktu</th><th>Status</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
 </div>
 
 <!-- BILLING -->
 <div id="billing" class="section">
   <h2>Billing</h2>
-  <button onclick="generateBillingAll()">Generate Billing All User</button>
   <div id="billingList"></div>
+</div>
+
+<!-- GANGGUAN -->
+<div id="gangguan" class="section">
+  <h2>Gangguan</h2>
+  <table id="gangguanTable">
+    <thead>
+      <tr>
+        <th>User</th><th>Indikasi</th><th>Teknisi</th><th>Status</th><th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div id="progressDetail" style="margin-top:20px;"></div>
 </div>
 
 <script>
@@ -82,8 +104,6 @@ const db=firebase.firestore();
 
 // Sidebar toggle
 function toggleSidebar(){document.getElementById("sidebar").classList.toggle("minimized");document.getElementById("mainContent").classList.toggle("sidebar-minimized");}
-
-// Navigation
 function showSection(id){document.querySelectorAll(".section").forEach(s=>s.style.display="none");document.getElementById(id).style.display="block";}
 function logout(){alert("Logout sukses!");}
 
@@ -95,33 +115,41 @@ function updateDashboard(){
   db.collection("user").get().then(snap=>{document.getElementById("totalUser").innerText=snap.size;});
   db.collection("kas").get().then(snap=>{let saldo=0;snap.forEach(d=>{const k=d.data(); saldo+=k.tipe==="masuk"?k.jumlah:-k.jumlah;}); document.getElementById("saldoKas").innerText=saldo;});
   db.collection("billing").where("status","==","unpaid").get().then(snap=>{document.getElementById("totalTunggakan").innerText=snap.size;});
-  db.collection("gangguan").where("status","==","aktif").get().then(snap=>{
-    const total=snap.size;
-    document.getElementById("totalGangguan").innerText=total;
+  db.collection("gangguan").where("status","==","aktif").get().then(snap=>{document.getElementById("totalGangguan").innerText=snap.size;});
+  loadDashboardGangguan();
+}
+
+// DASHBOARD GANGGUAN TERBARU MAX 5
+function loadDashboardGangguan(){
+  const tbody=document.querySelector("#dashboardGangguan tbody"); tbody.innerHTML="";
+  db.collection("gangguan").orderBy("waktu","desc").limit(5).get().then(snap=>{
+    snap.forEach(d=>{
+      const g=d.data();
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${g.user}</td><td>${g.indikasi}</td><td>${new Date(g.waktu.seconds*1000).toLocaleString()}</td><td>${g.status}</td>`;
+      tbody.appendChild(tr);
+    });
   });
 }
 
-// BILLING
+// BILLING OTOMATIS BULANAN
 function generateBillingAll(){
   db.collection("user").get().then(snap=>{
     snap.forEach(doc=>{
       const user=doc.data().userName;
-      db.collection("billing").add({
-        user:user,
-        jumlah:null,
-        status:"unpaid",
-        waktu:firebase.firestore.FieldValue.serverTimestamp()
-      });
+      db.collection("billing").add({user:user,jumlah:null,status:"unpaid",waktu:firebase.firestore.FieldValue.serverTimestamp()});
     });
-    alert("Billing untuk semua user berhasil dibuat!");
-    loadBillingList();
-    updateDashboard();
+    loadBillingList(); updateDashboard();
   });
 }
 
+// Panggil otomatis setiap awal bulan
+const now=new Date();
+if(now.getDate()===1){generateBillingAll();}
+
+// LOAD BILLING
 function loadBillingList(){
-  const container=document.getElementById("billingList");
-  container.innerHTML="";
+  const container=document.getElementById("billingList"); container.innerHTML="";
   db.collection("billing").orderBy("waktu","desc").get().then(snap=>{
     snap.forEach(d=>{
       const b=d.data();
@@ -140,14 +168,42 @@ function loadBillingList(){
     });
   });
 }
+function payBilling(id){db.collection("billing").doc(id).update({status:"paid"}).then(()=>{loadBillingList(); updateDashboard();});}
 
-function payBilling(id){db.collection("billing").doc(id).update({status:"paid"}).then(()=>{alert("Billing dibayar!");loadBillingList();updateDashboard();});}
+// GANGGUAN MENU
+function loadGangguan(){
+  const tbody=document.querySelector("#gangguanTable tbody"); tbody.innerHTML="";
+  db.collection("gangguan").orderBy("waktu","desc").get().then(snap=>{
+    snap.forEach(d=>{
+      const g=d.data();
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${g.user}</td><td>${g.indikasi}</td><td>${g.teknisi||"-"}</td><td>${g.status}</td>
+        <td><button onclick="showProgressRealtime('${d.id}')">Progres</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+// PROGRES GANGGUAN REALTIME
+function showProgressRealtime(gangguanId){
+  const container=document.getElementById("progressDetail");
+  container.innerHTML=`<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>`;
+  const progressBar=document.getElementById("progressBar");
+  db.collection("gangguan").doc(gangguanId).onSnapshot(doc=>{
+    const data=doc.data();
+    const perc=data.progres||0;
+    progressBar.style.width=perc+"%";
+  });
+}
 
 // GENERIK DELETE
-function deleteDoc(col,id){if(confirm("Yakin hapus data ini?")) db.collection(col).doc(id).delete().then(()=>{alert("Data dihapus!");loadBillingList();updateDashboard();});}
+function deleteDoc(col,id){if(confirm("Yakin hapus data ini?")) db.collection(col).doc(id).delete().then(()=>{loadBillingList(); loadGangguan(); updateDashboard();});}
 
-// Inisialisasi
-document.addEventListener("DOMContentLoaded",()=>{showSection("dashboard");updateDashboard(); loadBillingList();});
+// INIT
+document.addEventListener("DOMContentLoaded",()=>{
+  showSection("dashboard"); updateDashboard();
+  loadBillingList(); loadGangguan();
+});
 setInterval(()=>{updateDashboard();},10000);
 </script>
 </body>
