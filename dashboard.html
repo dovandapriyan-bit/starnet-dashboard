@@ -4,43 +4,59 @@
   <meta charset="UTF-8">
   <title>Starnet 💫 Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {margin:0; font-family:'Segoe UI',Arial,sans-serif; background:#f4f6fa; color:#333;}
-    .sidebar {width:240px; height:100%; position:fixed; top:0; left:0; background:#1e293b; color:#fff; padding-top:20px; transition:0.3s;}
-    .sidebar h2 {text-align:center; margin:0 0 30px; font-size:20px; color:#38bdf8;}
-    .sidebar a {display:block; color:#cbd5e1; padding:12px 20px; text-decoration:none; transition:0.2s; font-size:15px;}
-    .sidebar a:hover, .sidebar a.active {background:#334155; color:#fff;}
-    .main {margin-left:240px; padding:25px; transition:0.3s;}
-    .card {background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:20px;}
-    table {width:100%; border-collapse:collapse; font-size:14px;}
-    th,td {padding:10px; border-bottom:1px solid #e2e8f0; text-align:left;}
-    th {background:#f1f5f9;}
-    #toggleBtn {position:fixed; top:10px; left:10px; background:#1e293b; color:#fff; border:none; padding:8px 12px; border-radius:6px; z-index:1000; display:none;}
-    @media(max-width:768px){.sidebar{left:-240px;} .sidebar.active{left:0;} .main{margin-left:0;} #toggleBtn{display:block;}}
-    button {padding:6px 12px; border:none; border-radius:6px; cursor:pointer;}
-    button.primary {background:#3b82f6; color:white;}
+    body {margin:0; font-family:Arial,sans-serif; background:#f4f6f9;}
+    .sidebar {width:250px; height:100%; position:fixed; top:0; left:0;
+      background:linear-gradient(180deg,#007bff,#0056b3); color:#fff; padding-top:20px; transition:0.3s;}
+    .sidebar h2 {text-align:center; margin-bottom:20px;}
+    .sidebar a {display:block; color:white; padding:12px 20px; text-decoration:none; transition:0.3s;}
+    .sidebar a:hover {background:rgba(255,255,255,0.2);}
+    .main {margin-left:250px; padding:20px;}
+    .card {background:white; padding:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;}
+    h3 {margin-top:0;}
+    table {width:100%; border-collapse:collapse;}
+    th,td {padding:8px; border:1px solid #ddd; text-align:left;}
+    th {background:#007bff; color:white;}
+    input,select {padding:6px; margin:4px 0; width:100%;}
+    button {padding:8px 12px; margin:4px 2px; border:none; background:#007bff; color:white;
+      border-radius:4px; cursor:pointer;}
+    button:hover {background:#0056b3;}
+    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px;}
   </style>
 </head>
 <body>
-  <button id="toggleBtn">☰</button>
-  <div class="sidebar" id="sidebar">
+  <!-- Sidebar -->
+  <div class="sidebar">
     <h2 id="ispName">Starnet 💫</h2>
-    <a href="#" class="active" onclick="showSection('dashboard',this)">📊 Dashboard</a>
-    <a href="#" onclick="showSection('user',this)">👥 User</a>
-    <a href="#" onclick="showSection('paket',this)">📦 Paket</a>
-    <a href="#" onclick="showSection('billing',this)">💳 Billing</a>
-    <a href="#" onclick="showSection('kas',this)">💰 Kas</a>
-    <a href="#" onclick="logout()">🚪 Logout</a>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <a href="#" onclick="showSection('user')">User</a>
+    <a href="#" onclick="showSection('paket')">Paket</a>
+    <a href="#" onclick="showSection('billing')">Billing</a>
+    <a href="#" onclick="showSection('kas')">Kas</a>
+    <a href="#" onclick="showSection('teknisi')">Teknisi</a>
+    <a href="#" onclick="showSection('gangguan')">Gangguan</a>
+    <a href="#" onclick="showSection('material')">Material</a>
+    <a href="#" onclick="showSection('editisp')">Edit ISP</a>
+    <a href="#" onclick="logout()">Logout</a>
   </div>
 
+  <!-- Main Content -->
   <div class="main">
     <!-- Dashboard -->
     <div id="dashboard" class="section">
       <h2>Dashboard</h2>
-      <div class="card"><span>Total User: <b id="totalUser">0</b></span></div>
-      <div class="card"><span>Saldo Kas: <b id="saldoKas">0</b></span></div>
+      <div class="grid">
+        <div class="card"><h3>Total User</h3><p id="totalUser">0</p></div>
+        <div class="card"><h3>Saldo Kas</h3><p id="saldoKas">0</p></div>
+        <div class="card"><h3>Tunggakan</h3><p id="totalTunggakan">0</p></div>
+        <div class="card"><h3>Gangguan Aktif</h3><p id="totalGangguan">0</p></div>
+      </div>
+      <div class="card"><canvas id="ispChart"></canvas></div>
     </div>
 
     <!-- User -->
@@ -50,8 +66,9 @@
         <input type="hidden" id="userId">
         <label>Nama</label><input id="userName" required>
         <label>Paket</label><select id="planName" required></select>
-        <label>Status Bayar</label><select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
-        <button class="primary" type="submit">Simpan</button>
+        <label>Status Bayar</label>
+        <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
+        <button type="submit">Simpan User</button>
       </form>
       <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
@@ -63,83 +80,196 @@
         <input type="hidden" id="paketId">
         <label>Nama Paket</label><input id="namaPaket" required>
         <label>Bandwidth</label><input id="bandwidth" required>
-        <label>Harga</label><input id="hargaPaket" required>
-        <button class="primary" type="submit">Simpan Paket</button>
+        <button type="submit">Simpan Paket</button>
       </form>
-      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Harga</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Billing -->
     <div id="billing" class="section" style="display:none;">
       <h2>Billing</h2>
-      <button class="primary" onclick="generateBilling()">Generate Billing Sekarang</button>
-      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Paket</th><th>Harga</th><th>Prorata</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+      <form id="billingForm">
+        <input type="hidden" id="billingId">
+        <label>User</label><input id="billingUser" required>
+        <label>Jumlah</label><input id="billingAmount" required>
+        <button type="submit">Simpan Billing</button>
+      </form>
+      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Kas -->
     <div id="kas" class="section" style="display:none;">
-      <h2>Kas</h2>
+      <h2>Kas Perusahaan</h2>
       <form id="kasForm">
         <input type="hidden" id="kasId">
         <label>Keterangan</label><input id="kasKet" required>
-        <label>Jumlah</label><input id="kasJumlah" required>
-        <button class="primary" type="submit">Simpan</button>
+        <label>Jumlah (+/-)</label><input id="kasJumlah" required>
+        <button type="submit">Simpan Transaksi</button>
       </form>
       <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Teknisi -->
+    <div id="teknisi" class="section" style="display:none;">
+      <h2>Teknisi</h2>
+      <form id="teknisiForm">
+        <input type="hidden" id="teknisiId">
+        <label>Nama Teknisi</label><input id="namaTeknisi" required>
+        <label>Kontak</label><input id="kontakTeknisi" required>
+        <button type="submit">Simpan Teknisi</button>
+      </form>
+      <div class="card"><table id="teknisiTable"><thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Gangguan -->
+    <div id="gangguan" class="section" style="display:none;">
+      <h2>Gangguan</h2>
+      <div class="card"><table id="gangguanTable"><thead><tr><th>User</th><th>Indikasi</th><th>Waktu</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Material -->
+    <div id="material" class="section" style="display:none;">
+      <h2>Material</h2>
+      <form id="materialForm">
+        <input type="hidden" id="materialId">
+        <label>Nama Material</label><input id="namaMaterial" required>
+        <label>Stok</label><input id="stokMaterial" required>
+        <button type="submit">Simpan Material</button>
+      </form>
+      <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Edit ISP -->
+    <div id="editisp" class="section" style="display:none;">
+      <h2>Edit Nama ISP</h2>
+      <input id="newISPName" placeholder="Nama ISP baru">
+      <button onclick="editISP()">Simpan</button>
     </div>
   </div>
 
 <script>
-  const firebaseConfig={apiKey:"AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",authDomain:"dnt-network-7.firebaseapp.com",projectId:"dnt-network-7"};
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+    authDomain: "dnt-network-7.firebaseapp.com",
+    projectId: "dnt-network-7",
+    storageBucket: "dnt-network-7.firebasestorage.app",
+    messagingSenderId: "761179668371",
+    appId: "1:761179668371:web:7d1468d0298041d4783266",
+    measurementId: "G-CD3EQ350R4"
+  };
   firebase.initializeApp(firebaseConfig);
-  const db=firebase.firestore();
+  const db = firebase.firestore();
 
-  document.getElementById("toggleBtn").onclick=()=>{document.getElementById("sidebar").classList.toggle("active");};
-  function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.style.display="none");document.getElementById(id).style.display="block";document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove("active"));if(el)el.classList.add("active");}
+  function showSection(id){
+    document.querySelectorAll('.section').forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
+  }
   function logout(){alert("Logout sukses!");}
+  function editISP(){ document.getElementById("ispName").innerText=document.getElementById("newISPName").value || "Starnet 💫"; }
 
-  // CRUD Helper
-  function renderTable(collection,tableId,fields){db.collection(collection).onSnapshot(snap=>{let tbody=document.querySelector(`#${tableId} tbody`);tbody.innerHTML="";snap.forEach(doc=>{let d=doc.data();let tr=document.createElement("tr");fields.forEach(f=>{let td=document.createElement("td");td.textContent=d[f]||"";tr.appendChild(td);});let td=document.createElement("td");td.innerHTML=`<button onclick="editItem('${collection}','${doc.id}')">Edit</button><button onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>`;tr.appendChild(td);tbody.appendChild(tr);});});}
-  function saveForm(e,collection,idField,fields){e.preventDefault();const id=document.getElementById(idField).value;let data={};fields.forEach(f=>data[f]=document.getElementById(f).value);if(id){db.collection(collection).doc(id).update(data);}else{db.collection(collection).add(data);}e.target.reset();document.getElementById(idField).value="";}
-  function editItem(c,id){db.collection(c).doc(id).get().then(doc=>{if(doc.exists){let d=doc.data();Object.keys(d).forEach(k=>{if(document.getElementById(k))document.getElementById(k).value=d[k];});if(document.getElementById(c+"Id"))document.getElementById(c+"Id").value=id;}});}
-  function deleteItem(c,id){if(confirm("Yakin hapus?"))db.collection(c).doc(id).delete();}
+  // Load Paket ke dropdown User
+  function loadPaketSelect(){
+    const sel=document.getElementById("planName");
+    sel.innerHTML="<option value=''>--Pilih Paket--</option>";
+    db.collection("paket").get().then(snap=>{
+      snap.forEach(doc=>{
+        let d=doc.data(); let o=document.createElement("option");
+        o.value=d.namaPaket; o.textContent=d.namaPaket+" ("+d.bandwidth+")";
+        sel.appendChild(o);
+      })
+    })
+  }
+  document.addEventListener("DOMContentLoaded", loadPaketSelect);
 
-  // User
+  // Chart dummy
+  const ctx=document.getElementById("ispChart");
+  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"blue"},{label:"Download",data:[20,25,30,35],borderColor:"green"}]}});
+
+  // ===================== CRUD FIRESTORE =====================
+
+  // Helper render function
+  function renderTable(collection, tableId, fields){
+    db.collection(collection).onSnapshot(snap=>{
+      let tbody=document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML="";
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+        fields.forEach(f=>{let td=document.createElement("td"); td.textContent=d[f]||""; tr.appendChild(td);});
+        let td=document.createElement("td");
+        td.innerHTML=`<button onclick="editItem('${collection}','${doc.id}')">✏️</button><button onclick="deleteItem('${collection}','${doc.id}')">🗑️</button>`;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      })
+    })
+  }
+
+  // Generic add/update
+  function saveForm(e, collection, idField, fields){
+    e.preventDefault();
+    const id=document.getElementById(idField).value;
+    let data={};
+    fields.forEach(f=>data[f]=document.getElementById(f).value);
+    if(id){
+      db.collection(collection).doc(id).update(data);
+    } else {
+      db.collection(collection).add(data);
+    }
+    e.target.reset();
+    document.getElementById(idField).value="";
+  }
+
+  // Edit
+  function editItem(collection,id){
+    db.collection(collection).doc(id).get().then(doc=>{
+      if(doc.exists){
+        let d=doc.data();
+        Object.keys(d).forEach(k=>{ if(document.getElementById(k)) document.getElementById(k).value=d[k]; });
+        if(document.getElementById(collection+"Id")) document.getElementById(collection+"Id").value=id;
+      }
+    })
+  }
+
+  // Delete
+  function deleteItem(collection,id){ if(confirm("Yakin hapus?")) db.collection(collection).doc(id).delete(); }
+
+  // ================== Form Submit Binding ==================
   document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);
   renderTable("user","userTable",["userName","planName","statusBayar"]);
 
-  // Paket
-  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth","hargaPaket"]);
-  renderTable("paket","paketTable",["namaPaket","bandwidth","hargaPaket"]);
+  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);
+  renderTable("paket","paketTable",["namaPaket","bandwidth"]);
 
-  // Kas
+  document.getElementById("billingForm").onsubmit=(e)=>saveForm(e,"billing","billingId",["billingUser","billingAmount"]);
+  renderTable("billing","billingTable",["billingUser","billingAmount"]);
+
   document.getElementById("kasForm").onsubmit=(e)=>saveForm(e,"kas","kasId",["kasKet","kasJumlah"]);
   renderTable("kas","kasTable",["kasKet","kasJumlah"]);
 
-  // Billing otomatis
-  function generateBilling(){
-    const now=new Date();
-    const periode=`${now.getMonth()+1}-${now.getFullYear()}`;
-    db.collection("billing").where("periode","==",periode).get().then(snap=>{
-      if(!snap.empty){alert("Billing bulan ini sudah digenerate!");return;}
-      db.collection("user").get().then(users=>{
-        users.forEach(u=>{
-          let user=u.data();
-          db.collection("paket").where("namaPaket","==",user.planName).get().then(p=>{
-            if(!p.empty){
-              let harga=p.docs[0].data().hargaPaket;
-              db.collection("billing").add({billingUser:user.userName,billingPaket:user.planName,billingHarga:harga,billingProrata:"-",statusBayar:"Belum",periode:periode});
-            }
-          });
-        });
-      });
-    });
-  }
-  renderTable("billing","billingTable",["billingUser","billingPaket","billingHarga","billingProrata","statusBayar"]);
+  document.getElementById("teknisiForm").onsubmit=(e)=>saveForm(e,"teknisi","teknisiId",["namaTeknisi","kontakTeknisi"]);
+  renderTable("teknisi","teknisiTable",["namaTeknisi","kontakTeknisi"]);
 
-  // Dashboard counters
-  db.collection("user").onSnapshot(snap=>{document.getElementById("totalUser").textContent=snap.size;});
-  db.collection("kas").onSnapshot(snap=>{let saldo=0;snap.forEach(doc=>{saldo+=parseFloat(doc.data().kasJumlah||0);});document.getElementById("saldoKas").textContent=saldo;});
+  document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);
+  renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
+
+  // ================== Gangguan Auto Refresh ==================
+  function loadGangguan(){
+    db.collection("gangguan").orderBy("waktu","desc").limit(10).get().then(snap=>{
+      let tbody=document.querySelector("#gangguanTable tbody");
+      tbody.innerHTML="";
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+        tr.innerHTML=`<td>${d.user||""}</td><td>${d.indikasi||""}</td><td>${d.waktu||""}</td>`;
+        tbody.appendChild(tr);
+      })
+      document.getElementById("totalGangguan").textContent=snap.size;
+    })
+  }
+  loadGangguan();
+  setInterval(loadGangguan, 15*60*1000); // auto refresh tiap 15 menit
+
 </script>
 </body>
 </html>
