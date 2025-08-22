@@ -1,168 +1,184 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Starnet 💫 Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {margin:0; font-family:Arial,sans-serif; background:#f4f6f9;}
-    .sidebar {width:250px; height:100%; position:fixed; top:0; left:0;
-      background:linear-gradient(180deg,#007bff,#0056b3); color:#fff; padding-top:20px;}
-    .sidebar h2 {text-align:center; margin-bottom:20px;}
-    .sidebar a {display:block; color:white; padding:12px 20px; text-decoration:none;}
-    .sidebar a:hover {background:rgba(255,255,255,0.2);}
-    .main {margin-left:250px; padding:20px;}
-    .card {background:white; padding:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;}
-    h3 {margin-top:0;}
-    table {width:100%; border-collapse:collapse;}
-    th,td {padding:8px; border:1px solid #ddd; text-align:left;}
-    th {background:#007bff; color:white;}
-    input,select {padding:6px; margin:4px 0; width:100%;}
-    button {padding:6px 10px; margin:2px; border:none; background:#007bff; color:white;
-      border-radius:4px; cursor:pointer;}
-    button:hover {background:#0056b3;}
-    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px;}
-  </style>
+<meta charset="UTF-8">
+<title>Starnet 💫 Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {margin:0; font-family:Arial,sans-serif; background:#f4f6f9;}
+  .sidebar {width:250px; height:100%; position:fixed; top:0; left:0;
+    background:linear-gradient(180deg,#007bff,#0056b3); color:#fff; padding-top:20px; transition:0.3s;}
+  .sidebar.hide {left:-260px;}
+  .sidebar h2 {text-align:center; margin-bottom:20px;}
+  .sidebar a {display:block; color:white; padding:12px 20px; text-decoration:none;}
+  .sidebar a:hover {background:rgba(255,255,255,0.2);}
+  .main {margin-left:250px; padding:20px; transition:0.3s;}
+  .main.full {margin-left:0;}
+  .card {background:white; padding:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;}
+  h3 {margin-top:0;}
+  table {width:100%; border-collapse:collapse;}
+  th,td {padding:8px; border:1px solid #ddd; text-align:left;}
+  th {background:#007bff; color:white;}
+  input,select {padding:6px; margin:4px 0; width:100%;}
+  button {padding:6px 10px; margin:2px; border:none; background:#007bff; color:white;
+    border-radius:4px; cursor:pointer;}
+  button:hover {background:#0056b3;}
+  .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px;}
+  @media(max-width:768px){.sidebar{width:200px}.main{margin-left:200px;}}
+</style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2 id="ispName">Starnet 💫</h2>
-    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
-    <a href="#" onclick="showSection('user')">User</a>
-    <a href="#" onclick="showSection('paket')">Paket</a>
-    <a href="#" onclick="showSection('billing')">Billing</a>
-    <a href="#" onclick="showSection('kas')">Kas</a>
-    <a href="#" onclick="showSection('teknisi')">Teknisi</a>
-    <a href="#" onclick="showSection('gangguan')">Gangguan</a>
-    <a href="#" onclick="showSection('material')">Material</a>
-    <a href="#" onclick="showSection('editisp')">Edit ISP</a>
-    <a href="#" onclick="logout()">Logout</a>
-  </div>
 
-  <!-- Main Content -->
-  <div class="main">
-    <!-- Dashboard -->
-    <div id="dashboard" class="section">
-      <h2>Dashboard</h2>
-      <div class="grid">
-        <div class="card" onclick="showSection('user')" style="cursor:pointer;">
-          <h3>Total User</h3><p id="totalUser">0</p>
-        </div>
-        <div class="card" onclick="showSection('kas')" style="cursor:pointer;">
-          <h3>Saldo Kas</h3><p id="saldoKas">0</p>
-        </div>
-        <div class="card" onclick="showSection('billing')" style="cursor:pointer;">
-          <h3>Tunggakan</h3><p id="totalTunggakan">0</p>
-        </div>
-        <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;">
-          <h3>Gangguan Aktif</h3><p id="totalGangguan">0</p>
-        </div>
-      </div>
-      <div class="card"><canvas id="ispChart"></canvas></div>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <h2 id="ispName">Starnet 💫</h2>
+  <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+  <a href="#" onclick="showSection('user')">User</a>
+  <a href="#" onclick="showSection('paket')">Paket</a>
+  <a href="#" onclick="showSection('billing')">Billing</a>
+  <a href="#" onclick="showSection('kas')">Kas</a>
+  <a href="#" onclick="showSection('teknisi')">Teknisi</a>
+  <a href="#" onclick="showSection('gangguan')">Gangguan</a>
+  <a href="#" onclick="showSection('material')">Material</a>
+  <a href="#" onclick="showSection('editisp')">Edit ISP</a>
+  <a href="#" onclick="toggleSidebar()">☰ Toggle Sidebar</a>
+  <a href="#" onclick="logout()">Logout</a>
+</div>
+
+<!-- Main Content -->
+<div class="main" id="mainContent">
+
+<!-- Dashboard -->
+<div id="dashboard" class="section">
+  <h2>Dashboard</h2>
+  <div class="grid">
+    <div class="card" onclick="showSection('user')" style="cursor:pointer;">
+      <h3>Total User</h3><p id="totalUser">0</p>
     </div>
-
-    <!-- User -->
-    <div id="user" class="section" style="display:none;">
-      <h2>User</h2>
-      <form id="userForm">
-        <input type="hidden" id="userId">
-        <label>Nama</label><input id="userName" required>
-        <label>Paket</label><select id="planName" required></select>
-        <label>Status Bayar</label>
-        <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
-        <button type="submit">Simpan User</button>
-      </form>
-      <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    <div class="card" onclick="showSection('kas')" style="cursor:pointer;">
+      <h3>Saldo Kas</h3><p id="saldoKas">0</p>
     </div>
-
-    <!-- Paket -->
-    <div id="paket" class="section" style="display:none;">
-      <h2>Paket</h2>
-      <form id="paketForm">
-        <input type="hidden" id="paketId">
-        <label>Nama Paket</label><input id="namaPaket" required>
-        <label>Bandwidth</label><input id="bandwidth" required>
-        <button type="submit">Simpan Paket</button>
-      </form>
-      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    <div class="card" onclick="showSection('billing')" style="cursor:pointer;">
+      <h3>Tunggakan</h3><p id="totalTunggakan">0</p>
     </div>
-
-    <!-- Billing -->
-    <div id="billing" class="section" style="display:none;">
-      <h2>Billing</h2>
-      <form id="billingForm">
-        <input type="hidden" id="billingId">
-        <label>User</label><input id="billingUser" required>
-        <label>Jumlah</label><input id="billingAmount" required>
-        <button type="submit">Simpan Billing</button>
-      </form>
-      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <!-- Kas -->
-    <div id="kas" class="section" style="display:none;">
-      <h2>Kas Perusahaan</h2>
-      <form id="kasForm">
-        <input type="hidden" id="kasId">
-        <label>Keterangan</label><input id="kasKet" required>
-        <label>Jumlah (+/-)</label><input id="kasJumlah" required>
-        <button type="submit">Simpan Transaksi</button>
-      </form>
-      <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <!-- Teknisi -->
-    <div id="teknisi" class="section" style="display:none;">
-      <h2>Teknisi</h2>
-      <form id="teknisiForm">
-        <input type="hidden" id="teknisiId">
-        <label>Nama Teknisi</label><input id="namaTeknisi" required>
-        <label>Kontak</label><input id="kontakTeknisi" required>
-        <button type="submit">Simpan Teknisi</button>
-      </form>
-      <div class="card"><table id="teknisiTable"><thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <!-- Gangguan -->
-    <div id="gangguan" class="section" style="display:none;">
-      <h2>Gangguan</h2>
-      <button onclick="simulateGangguan()">➕ Tambah Gangguan Random</button>
-      <button onclick="clearGangguan()">🗑️ Hapus Semua Gangguan</button>
-      <div class="card">
-        <table id="gangguanTable">
-          <thead>
-            <tr><th>User</th><th>Indikasi</th><th>Waktu</th><th>TTR</th><th>Status</th><th>Aksi</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Material -->
-    <div id="material" class="section" style="display:none;">
-      <h2>Material</h2>
-      <form id="materialForm">
-        <input type="hidden" id="materialId">
-        <label>Nama Material</label><input id="namaMaterial" required>
-        <label>Stok</label><input id="stokMaterial" required>
-        <button type="submit">Simpan Material</button>
-      </form>
-      <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <!-- Edit ISP -->
-    <div id="editisp" class="section" style="display:none;">
-      <h2>Edit Nama ISP</h2>
-      <input id="newISPName" placeholder="Nama ISP baru">
-      <button onclick="editISP()">Simpan</button>
+    <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;">
+      <h3>Gangguan Aktif</h3><p id="totalGangguan">0</p>
     </div>
   </div>
+  <div class="card"><canvas id="ispChart"></canvas></div>
+</div>
+
+<!-- User -->
+<div id="user" class="section" style="display:none;">
+  <h2>User</h2>
+  <form id="userForm">
+    <input type="hidden" id="userId">
+    <label>Nama</label><input id="userName" required>
+    <label>No HP</label><input id="userHP" required>
+    <label>Alamat</label><input id="userAlamat" required>
+    <label>MAC/SN ONT</label><input id="userMAC" required>
+    <label>ODP</label><input id="userODP" required>
+    <label>Paket</label><select id="planName" required></select>
+    <label>Status Bayar</label>
+    <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
+    <button type="submit">Simpan User</button>
+  </form>
+  <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>HP</th><th>Alamat</th><th>MAC</th><th>ODP</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<!-- Paket -->
+<div id="paket" class="section" style="display:none;">
+  <h2>Paket</h2>
+  <form id="paketForm">
+    <input type="hidden" id="paketId">
+    <label>Nama Paket</label><input id="namaPaket" required>
+    <label>Bandwidth</label><input id="bandwidth" required>
+    <button type="submit">Simpan Paket</button>
+  </form>
+  <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<!-- Billing -->
+<div id="billing" class="section" style="display:none;">
+  <h2>Billing</h2>
+  <form id="billingForm">
+    <input type="hidden" id="billingId">
+    <label>User</label><input id="billingUser" required>
+    <label>Jumlah</label><input type="number" id="billingAmount" required>
+    <button type="submit">Simpan Billing</button>
+  </form>
+  <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<!-- Kas -->
+<div id="kas" class="section" style="display:none;">
+  <h2>Kas Perusahaan</h2>
+  <form id="kasForm">
+    <input type="hidden" id="kasId">
+    <label>Keterangan</label><input id="kasKet" required>
+    <label>Jumlah (+/-)</label><input type="number" id="kasJumlah" required>
+    <button type="submit">Simpan Transaksi</button>
+  </form>
+  <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<!-- Teknisi -->
+<div id="teknisi" class="section" style="display:none;">
+  <h2>Teknisi</h2>
+  <form id="teknisiForm">
+    <input type="hidden" id="teknisiId">
+    <label>Nama Teknisi</label><input id="namaTeknisi" required>
+    <label>Kontak</label><input id="kontakTeknisi" required>
+    <button type="submit">Simpan Teknisi</button>
+  </form>
+  <div class="card"><table id="teknisiTable"><thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<!-- Gangguan -->
+<div id="gangguan" class="section" style="display:none;">
+  <h2>Gangguan</h2>
+  <button onclick="simulateGangguan()">➕ Tambah Gangguan Random</button>
+  <button onclick="clearGangguan()">🗑️ Hapus Semua Gangguan</button>
+  <select id="gangguanFilter" onchange="loadGangguan()">
+    <option value="all">Semua</option>
+    <option value="Aktif">Aktif</option>
+    <option value="Selesai">Selesai</option>
+  </select>
+  <div class="card">
+    <table id="gangguanTable">
+      <thead>
+        <tr><th>User</th><th>Indikasi</th><th>Waktu</th><th>TTR</th><th>Status</th><th>Aksi</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Material -->
+<div id="material" class="section" style="display:none;">
+  <h2>Material</h2>
+  <form id="materialForm">
+    <input type="hidden" id="materialId">
+    <label>Nama Material</label><input id="namaMaterial" required>
+    <label>Stok</label><input type="number" id="stokMaterial" required>
+    <button type="submit">Simpan Material</button>
+  </form>
+  <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<!-- Edit ISP -->
+<div id="editisp" class="section" style="display:none;">
+  <h2>Edit Nama ISP</h2>
+  <input id="newISPName" placeholder="Nama ISP baru">
+  <button onclick="editISP()">Simpan</button>
+</div>
+
+</div>
 
 <script>
   // Firebase Config
@@ -178,14 +194,21 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // Sidebar toggle
+  function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("hide");
+    document.getElementById("mainContent").classList.toggle("full");
+  }
+
+  // Navigation
   function showSection(id){
     document.querySelectorAll('.section').forEach(s=>s.style.display="none");
     document.getElementById(id).style.display="block";
   }
   function logout(){alert("Logout sukses!");}
-  function editISP(){ document.getElementById("ispName").innerText=document.getElementById("newISPName").value || "Starnet 💫"; }
+  function editISP(){ document.getElementById("ispName").innerText=document.getElementById("newISPName").value||"Starnet 💫"; }
 
-  // Load Paket ke dropdown User
+  // Load Paket dropdown
   function loadPaketSelect(){
     const sel=document.getElementById("planName");
     sel.innerHTML="<option value=''>--Pilih Paket--</option>";
@@ -199,11 +222,25 @@
   }
   document.addEventListener("DOMContentLoaded", loadPaketSelect);
 
-  // Chart dummy
+  // Chart
   const ctx=document.getElementById("ispChart");
-  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"blue"},{label:"Download",data:[20,25,30,35],borderColor:"green"}]}});
+  const ispChart=new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:"Upload",data:[],borderColor:"blue"},{label:"Download",data:[],borderColor:"green"}]}});
+  function updateChart(){
+    db.collection("billing").get().then(snap=>{
+      const labels=[]; const upload=[]; const download=[];
+      snap.forEach(doc=>{
+        labels.push(doc.data().billingUser);
+        upload.push(Math.random()*50); download.push(Math.random()*50);
+      });
+      ispChart.data.labels=labels;
+      ispChart.data.datasets[0].data=upload;
+      ispChart.data.datasets[1].data=download;
+      ispChart.update();
+    });
+  }
+  updateChart();
 
-  // Generic CRUD Helper
+  // Generic CRUD
   function renderTable(collection, tableId, fields){
     db.collection(collection).onSnapshot(snap=>{
       let tbody=document.querySelector(`#${tableId} tbody`);
@@ -224,10 +261,12 @@
     const id=document.getElementById(idField).value;
     let data={};
     fields.forEach(f=>data[f]=document.getElementById(f).value);
+    if(collection=="kas" || collection=="billing" || collection=="material"){ 
+      fields.forEach(f=>data[f]=parseFloat(data[f])||0);
+    }
     if(id){ db.collection(collection).doc(id).update(data); }
     else{ db.collection(collection).add(data); }
-    e.target.reset();
-    document.getElementById(idField).value="";
+    e.target.reset(); document.getElementById(idField).value="";
   }
   function editItem(collection,id){
     db.collection(collection).doc(id).get().then(doc=>{
@@ -241,8 +280,11 @@
   function deleteItem(collection,id){ if(confirm("Yakin hapus?")) db.collection(collection).doc(id).delete(); }
 
   // Bind forms
-  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);
-  renderTable("user","userTable",["userName","planName","statusBayar"]);
+  document.getElementById("userForm").onsubmit=(e)=>{
+    saveForm(e,"user","userId",["userName","userHP","userAlamat","userMAC","userODP","planName","statusBayar"]);
+    generateBilling(e.target.userName.value);
+  };
+  renderTable("user","userTable",["userName","userHP","userAlamat","userMAC","userODP","planName","statusBayar"]);
 
   document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);
   renderTable("paket","paketTable",["namaPaket","bandwidth"]);
@@ -259,7 +301,7 @@
   document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);
   renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
 
-  // Dashboard Auto Count
+  // Dashboard
   db.collection("user").onSnapshot(snap=>{
     document.getElementById("totalUser").textContent=snap.size;
     let tunggakan=0;
@@ -274,89 +316,64 @@
 
   // ================== Gangguan ==================
   function loadGangguan(){
-    db.collection("gangguan").orderBy("waktu","desc").limit(10).get().then(snap=>{
-      let tbody=document.querySelector("#gangguanTable tbody");
-      tbody.innerHTML="";
+    const filter=document.getElementById("gangguanFilter").value;
+    db.collection("gangguan").orderBy("waktu","desc").get().then(snap=>{
+      let tbody=document.querySelector("#gangguanTable tbody"); tbody.innerHTML="";
       let activeCount=0;
       snap.forEach(doc=>{
         let d=doc.data();
+        if(filter!="all" && d.status!=filter) return;
         let tr=document.createElement("tr");
-
-        // Hitung TTR hanya untuk status Aktif
         let ttr="00:00:00";
         if(d.status==="Aktif"){
-          let startTime=new Date(d.waktu);
+          let start=new Date(d.waktu);
           let now=new Date();
-          let diff=now-startTime;
+          let diff=now-start;
           let hrs=Math.floor(diff/1000/60/60);
           let mins=Math.floor((diff/1000/60)%60);
           let secs=Math.floor((diff/1000)%60);
           ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
           activeCount++;
-        } else if(d.ttr){
-          ttr=d.ttr; // simpan TTR final saat close
-        }
-
-        tr.innerHTML=`
-          <td>${d.user||""}</td>
-          <td>${d.indikasi||""}</td>
-          <td>${d.waktu||""}</td>
-          <td>${ttr}</td>
-          <td>${d.status||"Aktif"}</td>
-          <td>${d.status==="Aktif"? `<button onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>
-        `;
+        } else if(d.ttr) ttr=d.ttr;
+        tr.innerHTML=`<td>${d.user||""}</td><td>${d.indikasi||""}</td><td>${d.waktu||""}</td><td>${ttr}</td><td>${d.status||"Aktif"}</td><td>${d.status==="Aktif"? `<button onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>`;
         tbody.appendChild(tr);
       });
       document.getElementById("totalGangguan").textContent=activeCount;
     })
   }
   loadGangguan();
-  setInterval(loadGangguan, 60*1000);
+  setInterval(loadGangguan, 1000);
 
-  // Tambah gangguan random
   function simulateGangguan(){
     db.collection("user").get().then(snap=>{
       if(!snap.empty){
-        let users=[];
-        snap.forEach(doc=>users.push(doc.data().userName));
+        let users=[]; snap.forEach(doc=>users.push(doc.data().userName));
         let randomUser=users[Math.floor(Math.random()*users.length)];
-        db.collection("gangguan").add({
-          user: randomUser,
-          indikasi: "Koneksi putus",
-          waktu: new Date().toISOString(),
-          status: "Aktif"
-        }).then(()=>loadGangguan());
-      } else {
-        alert("Belum ada user untuk disimulasikan!");
-      }
+        db.collection("gangguan").add({user: randomUser,indikasi:"Koneksi putus",waktu:new Date().toISOString(),status:"Aktif"})
+        .then(()=>loadGangguan());
+      } else alert("Belum ada user!");
     })
   }
-
-  // Tutup satu gangguan
   function closeGangguan(id){
     db.collection("gangguan").doc(id).get().then(doc=>{
       if(doc.exists){
-        let d=doc.data();
-        let startTime=new Date(d.waktu);
-        let now=new Date();
-        let diff=now-startTime;
-        let hrs=Math.floor(diff/1000/60/60);
-        let mins=Math.floor((diff/1000/60)%60);
-        let secs=Math.floor((diff/1000)%60);
-        let ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        db.collection("gangguan").doc(id).update({status:"Selesai", ttr:ttr}).then(()=>loadGangguan());
+        let d=doc.data(); let diff=new Date()-new Date(d.waktu);
+        let hrs=Math.floor(diff/1000/60/60); let mins=Math.floor((diff/1000/60)%60); let secs=Math.floor((diff/1000)%60);
+        db.collection("gangguan").doc(id).update({status:"Selesai",ttr:`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`}).then(()=>loadGangguan());
       }
     })
   }
-
-  // Hapus semua gangguan
   function clearGangguan(){
     if(confirm("Yakin hapus semua gangguan?")){
-      db.collection("gangguan").get().then(snap=>{
-        snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete());
-        loadGangguan();
-      })
+      db.collection("gangguan").get().then(snap=>{ snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete()); loadGangguan(); })
     }
+  }
+
+  // Billing Otomatis
+  function generateBilling(userName){
+    const amount=100000; // default
+    db.collection("billing").add({billingUser:userName,billingAmount:amount});
+    updateChart();
   }
 </script>
 </body>
