@@ -4,11 +4,8 @@
   <meta charset="UTF-8">
   <title>Starnet 💫 Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {margin:0; font-family:'Segoe UI',Arial,sans-serif; background:#f4f6fa; color:#333;}
     .sidebar {width:240px; height:100%; position:fixed; top:0; left:0; background:#1e293b; color:#fff; padding-top:20px; transition:0.3s;}
@@ -16,37 +13,18 @@
     .sidebar a {display:block; color:#cbd5e1; padding:12px 20px; text-decoration:none; transition:0.2s; font-size:15px;}
     .sidebar a:hover, .sidebar a.active {background:#334155; color:#fff;}
     .main {margin-left:240px; padding:25px; transition:0.3s;}
-    .card {background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:20px; transition:0.2s;}
-    .card:hover {box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-    .stat {display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:22px; font-weight:bold;}
-    .stat small {font-size:14px; font-weight:normal; color:#666;}
-    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px;}
+    .card {background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:20px;}
     table {width:100%; border-collapse:collapse; font-size:14px;}
     th,td {padding:10px; border-bottom:1px solid #e2e8f0; text-align:left;}
-    th {background:#f1f5f9; font-weight:600;}
-    tr:hover {background:#f9fafb;}
-    input,select {padding:8px; margin:6px 0; width:100%; border:1px solid #ccc; border-radius:6px;}
-    button {padding:8px 14px; margin:4px 2px; border:none; border-radius:6px; cursor:pointer; font-size:14px;}
-    button.primary {background:#3b82f6; color:white;}
-    button.primary:hover {background:#2563eb;}
-    button.danger {background:#ef4444; color:white;}
-    button.danger:hover {background:#dc2626;}
-    button.success {background:#22c55e; color:white;}
-    button.success:hover {background:#16a34a;}
-    h2 {margin-top:0; color:#0f172a;}
-    /* Sidebar toggle */
+    th {background:#f1f5f9;}
     #toggleBtn {position:fixed; top:10px; left:10px; background:#1e293b; color:#fff; border:none; padding:8px 12px; border-radius:6px; z-index:1000; display:none;}
-    @media(max-width:768px){
-      .sidebar{left:-240px;}
-      .sidebar.active{left:0;}
-      .main{margin-left:0;}
-      #toggleBtn{display:block;}
-    }
+    @media(max-width:768px){.sidebar{left:-240px;} .sidebar.active{left:0;} .main{margin-left:0;} #toggleBtn{display:block;}}
+    button {padding:6px 12px; border:none; border-radius:6px; cursor:pointer;}
+    button.primary {background:#3b82f6; color:white;}
   </style>
 </head>
 <body>
   <button id="toggleBtn">☰</button>
-  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <h2 id="ispName">Starnet 💫</h2>
     <a href="#" class="active" onclick="showSection('dashboard',this)">📊 Dashboard</a>
@@ -54,40 +32,15 @@
     <a href="#" onclick="showSection('paket',this)">📦 Paket</a>
     <a href="#" onclick="showSection('billing',this)">💳 Billing</a>
     <a href="#" onclick="showSection('kas',this)">💰 Kas</a>
-    <a href="#" onclick="showSection('teknisi',this)">🛠 Teknisi</a>
-    <a href="#" onclick="showSection('gangguan',this)">⚠ Gangguan</a>
-    <a href="#" onclick="showSection('material',this)">📑 Material</a>
-    <a href="#" onclick="showSection('editisp',this)">⚙ Edit ISP</a>
     <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
 
-  <!-- Main -->
   <div class="main">
     <!-- Dashboard -->
     <div id="dashboard" class="section">
       <h2>Dashboard</h2>
-      <div class="grid">
-        <div class="card" onclick="showSection('user')" style="cursor:pointer;background:#dbeafe;">
-          <div class="stat"><span id="totalUser">0</span><small>Total User</small></div>
-        </div>
-        <div class="card" onclick="showSection('kas')" style="cursor:pointer;background:#dcfce7;">
-          <div class="stat"><span id="saldoKas">0</span><small>Saldo Kas</small></div>
-        </div>
-        <div class="card" onclick="showSection('billing')" style="cursor:pointer;background:#fef9c3;">
-          <div class="stat"><span id="totalTunggakan">0</span><small>Tunggakan</small></div>
-        </div>
-        <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;background:#fee2e2;">
-          <div class="stat"><span id="totalGangguan">0</span><small>Gangguan Aktif</small></div>
-        </div>
-      </div>
-      <div class="card">
-        <canvas id="ispChart"></canvas>
-      </div>
-      <div class="card">
-        <h3>Detail TTR</h3>
-        <p>Rata-rata TTR: <span id="avgTTR">00:00:00</span></p>
-        <p>Gangguan Terlama: <span id="maxTTR">00:00:00</span></p>
-      </div>
+      <div class="card"><span>Total User: <b id="totalUser">0</b></span></div>
+      <div class="card"><span>Saldo Kas: <b id="saldoKas">0</b></span></div>
     </div>
 
     <!-- User -->
@@ -96,19 +49,11 @@
       <form id="userForm">
         <input type="hidden" id="userId">
         <label>Nama</label><input id="userName" required>
-        <label>No HP</label><input id="userPhone">
-        <label>Alamat</label><input id="userAddress">
-        <label>MAC / SN ONT</label><input id="userMac">
-        <label>ODP</label><input id="userOdp">
         <label>Paket</label><select id="planName" required></select>
-        <label>Status Bayar</label>
-        <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
-        <button class="primary" type="submit">Simpan User</button>
+        <label>Status Bayar</label><select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
+        <button class="primary" type="submit">Simpan</button>
       </form>
-      <div class="card"><table id="userTable">
-        <thead><tr><th>Nama</th><th>No HP</th><th>Alamat</th><th>MAC/SN</th><th>ODP</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody></tbody></table>
-      </div>
+      <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Paket -->
@@ -118,244 +63,83 @@
         <input type="hidden" id="paketId">
         <label>Nama Paket</label><input id="namaPaket" required>
         <label>Bandwidth</label><input id="bandwidth" required>
+        <label>Harga</label><input id="hargaPaket" required>
         <button class="primary" type="submit">Simpan Paket</button>
       </form>
-      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Harga</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Billing -->
     <div id="billing" class="section" style="display:none;">
       <h2>Billing</h2>
-      <form id="billingForm">
-        <input type="hidden" id="billingId">
-        <label>User</label><input id="billingUser" required>
-        <label>Jumlah</label><input id="billingAmount" required>
-        <label>Prorata</label><input id="billingProrata">
-        <button class="primary" type="submit">Simpan Billing</button>
-      </form>
-      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Prorata</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+      <button class="primary" onclick="generateBilling()">Generate Billing Sekarang</button>
+      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Paket</th><th>Harga</th><th>Prorata</th><th>Status</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Kas -->
     <div id="kas" class="section" style="display:none;">
-      <h2>Kas Perusahaan</h2>
+      <h2>Kas</h2>
       <form id="kasForm">
         <input type="hidden" id="kasId">
         <label>Keterangan</label><input id="kasKet" required>
         <label>Jumlah</label><input id="kasJumlah" required>
-        <label>Tipe</label>
-        <select id="kasTipe"><option value="Masuk">Kas Masuk</option><option value="Keluar">Kas Keluar</option></select>
-        <button class="primary" type="submit">Simpan Transaksi</button>
+        <button class="primary" type="submit">Simpan</button>
       </form>
-      <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Tipe</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <!-- Material -->
-    <div id="material" class="section" style="display:none;">
-      <h2>Material</h2>
-      <form id="materialForm">
-        <input type="hidden" id="materialId">
-        <label>Nama Material</label><input id="namaMaterial" required>
-        <label>Stok</label><input id="stokMaterial" required>
-        <label>Harga per Unit</label><input id="hargaMaterial" required>
-        <button class="primary" type="submit">Simpan Material</button>
-      </form>
-      <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Harga</th><th>Total Nilai</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
-    </div>
-
-    <!-- Edit ISP -->
-    <div id="editisp" class="section" style="display:none;">
-      <h2>Edit Nama ISP</h2>
-      <input id="newISPName" placeholder="Nama ISP baru">
-      <button class="primary" onclick="editISP()">Simpan</button>
+      <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
   </div>
 
 <script>
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
-    authDomain: "dnt-network-7.firebaseapp.com",
-    projectId: "dnt-network-7",
-    storageBucket: "dnt-network-7.firebasestorage.app",
-    messagingSenderId: "761179668371",
-    appId: "1:761179668371:web:7d1468d0298041d4783266",
-    measurementId: "G-CD3EQ350R4"
-  };
+  const firebaseConfig={apiKey:"AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",authDomain:"dnt-network-7.firebaseapp.com",projectId:"dnt-network-7"};
   firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const db=firebase.firestore();
 
-  // Sidebar toggle
   document.getElementById("toggleBtn").onclick=()=>{document.getElementById("sidebar").classList.toggle("active");};
-
-  function showSection(id,el){
-    document.querySelectorAll('.section').forEach(s=>s.style.display="none");
-    document.getElementById(id).style.display="block";
-    document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove("active"));
-    if(el) el.classList.add("active");
-  }
+  function showSection(id,el){document.querySelectorAll('.section').forEach(s=>s.style.display="none");document.getElementById(id).style.display="block";document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove("active"));if(el)el.classList.add("active");}
   function logout(){alert("Logout sukses!");}
-  function editISP(){document.getElementById("ispName").innerText=document.getElementById("newISPName").value || "Starnet 💫";}
 
-  // Load Paket ke dropdown User
-  function loadPaketSelect(){
-    const sel=document.getElementById("planName");
-    sel.innerHTML="<option value=''>--Pilih Paket--</option>";
-    db.collection("paket").get().then(snap=>{
-      snap.forEach(doc=>{
-        let d=doc.data(); let o=document.createElement("option");
-        o.value=d.namaPaket; o.textContent=d.namaPaket+" ("+d.bandwidth+")";
-        sel.appendChild(o);
-      })
-    })
-  }
-  document.addEventListener("DOMContentLoaded", loadPaketSelect);
+  // CRUD Helper
+  function renderTable(collection,tableId,fields){db.collection(collection).onSnapshot(snap=>{let tbody=document.querySelector(`#${tableId} tbody`);tbody.innerHTML="";snap.forEach(doc=>{let d=doc.data();let tr=document.createElement("tr");fields.forEach(f=>{let td=document.createElement("td");td.textContent=d[f]||"";tr.appendChild(td);});let td=document.createElement("td");td.innerHTML=`<button onclick="editItem('${collection}','${doc.id}')">Edit</button><button onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>`;tr.appendChild(td);tbody.appendChild(tr);});});}
+  function saveForm(e,collection,idField,fields){e.preventDefault();const id=document.getElementById(idField).value;let data={};fields.forEach(f=>data[f]=document.getElementById(f).value);if(id){db.collection(collection).doc(id).update(data);}else{db.collection(collection).add(data);}e.target.reset();document.getElementById(idField).value="";}
+  function editItem(c,id){db.collection(c).doc(id).get().then(doc=>{if(doc.exists){let d=doc.data();Object.keys(d).forEach(k=>{if(document.getElementById(k))document.getElementById(k).value=d[k];});if(document.getElementById(c+"Id"))document.getElementById(c+"Id").value=id;}});}
+  function deleteItem(c,id){if(confirm("Yakin hapus?"))db.collection(c).doc(id).delete();}
 
-  // Chart dummy
-  const ctx=document.getElementById("ispChart");
-  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"#3b82f6"},{label:"Download",data:[20,25,30,35],borderColor:"#22c55e"}]}});
+  // User
+  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);
+  renderTable("user","userTable",["userName","planName","statusBayar"]);
 
-  // CRUD renderer
-  function renderTable(collection, tableId, fields, extraCalc){
-    db.collection(collection).onSnapshot(snap=>{
-      let tbody=document.querySelector(`#${tableId} tbody`); tbody.innerHTML="";
-      snap.forEach(doc=>{
-        let d=doc.data(); let tr=document.createElement("tr");
-        fields.forEach(f=>{
-          let td=document.createElement("td");
-          if(extraCalc && extraCalc[f]) td.textContent=extraCalc[f](d);
-          else td.textContent=d[f]||"";
-          tr.appendChild(td);
+  // Paket
+  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth","hargaPaket"]);
+  renderTable("paket","paketTable",["namaPaket","bandwidth","hargaPaket"]);
+
+  // Kas
+  document.getElementById("kasForm").onsubmit=(e)=>saveForm(e,"kas","kasId",["kasKet","kasJumlah"]);
+  renderTable("kas","kasTable",["kasKet","kasJumlah"]);
+
+  // Billing otomatis
+  function generateBilling(){
+    const now=new Date();
+    const periode=`${now.getMonth()+1}-${now.getFullYear()}`;
+    db.collection("billing").where("periode","==",periode).get().then(snap=>{
+      if(!snap.empty){alert("Billing bulan ini sudah digenerate!");return;}
+      db.collection("user").get().then(users=>{
+        users.forEach(u=>{
+          let user=u.data();
+          db.collection("paket").where("namaPaket","==",user.planName).get().then(p=>{
+            if(!p.empty){
+              let harga=p.docs[0].data().hargaPaket;
+              db.collection("billing").add({billingUser:user.userName,billingPaket:user.planName,billingHarga:harga,billingProrata:"-",statusBayar:"Belum",periode:periode});
+            }
+          });
         });
-        let td=document.createElement("td");
-        td.innerHTML=`<button class="success" onclick="editItem('${collection}','${doc.id}')">Edit</button><button class="danger" onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>`;
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-      })
-    })
-  }
-  function saveForm(e, collection, idField, fields){
-    e.preventDefault();
-    const id=document.getElementById(idField).value;
-    let data={}; fields.forEach(f=>data[f]=document.getElementById(f).value);
-    if(id){ db.collection(collection).doc(id).update(data); }
-    else{ db.collection(collection).add(data); }
-    e.target.reset(); document.getElementById(idField).value="";
-  }
-  function editItem(collection,id){
-    db.collection(collection).doc(id).get().then(doc=>{
-      if(doc.exists){
-        let d=doc.data();
-        Object.keys(d).forEach(k=>{ if(document.getElementById(k)) document.getElementById(k).value=d[k]; });
-        if(document.getElementById(collection+"Id")) document.getElementById(collection+"Id").value=id;
-      }
-    })
-  }
-  function deleteItem(collection,id){ if(confirm("Yakin hapus?")) db.collection(collection).doc(id).delete(); }
-
-  // Bind forms
-  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","userPhone","userAddress","userMac","userOdp","planName","statusBayar"]);
-  renderTable("user","userTable",["userName","userPhone","userAddress","userMac","userOdp","planName","statusBayar"]);
-
-  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);
-  renderTable("paket","paketTable",["namaPaket","bandwidth"]);
-
-  document.getElementById("billingForm").onsubmit=(e)=>saveForm(e,"billing","billingId",["billingUser","billingAmount","billingProrata"]);
-  renderTable("billing","billingTable",["billingUser","billingAmount","billingProrata"]);
-
-  document.getElementById("kasForm").onsubmit=(e)=>{
-    e.preventDefault();
-    const id=document.getElementById("kasId").value;
-    let jumlah=parseFloat(document.getElementById("kasJumlah").value||0);
-    if(document.getElementById("kasTipe").value==="Keluar") jumlah=-Math.abs(jumlah);
-    let data={kasKet:document.getElementById("kasKet").value, kasJumlah:jumlah, kasTipe:document.getElementById("kasTipe").value};
-    if(id) db.collection("kas").doc(id).update(data);
-    else db.collection("kas").add(data);
-    e.target.reset(); document.getElementById("kasId").value="";
-  };
-  renderTable("kas","kasTable",["kasKet","kasJumlah","kasTipe"]);
-
-  document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial","hargaMaterial"]);
-  renderTable("material","materialTable",["namaMaterial","stokMaterial","hargaMaterial"],{
-    "hargaMaterial":d=>"Rp "+d.hargaMaterial,
-    "stokMaterial":d=>d.stokMaterial,
-    "namaMaterial":d=>d.namaMaterial,
-    "totalNilai":d=>"Rp "+(d.stokMaterial*d.hargaMaterial)
-  });
-
-  // Dashboard auto count
-  db.collection("user").onSnapshot(snap=>{
-    document.getElementById("totalUser").textContent=snap.size;
-    let tunggakan=0; snap.forEach(doc=>{ if(doc.data().statusBayar==="Belum") tunggakan++; });
-    document.getElementById("totalTunggakan").textContent=tunggakan;
-  });
-  db.collection("kas").onSnapshot(snap=>{
-    let saldo=0; snap.forEach(doc=>{ saldo+=parseFloat(doc.data().kasJumlah||0); });
-    document.getElementById("saldoKas").textContent=saldo;
-  });
-
-  // Gangguan + TTR
-  function loadGangguan(){
-    db.collection("gangguan").orderBy("waktu","desc").limit(10).get().then(snap=>{
-      let tbody=document.querySelector("#gangguanTable tbody"); tbody.innerHTML="";
-      let activeCount=0; let totalDiff=0; let maxDiff=0; let count=0;
-      snap.forEach(doc=>{
-        let d=doc.data(); let tr=document.createElement("tr"); let ttr="00:00:00";
-        let diff=0;
-        if(d.status==="Aktif"){
-          let startTime=new Date(d.waktu); let now=new Date(); diff=now-startTime;
-          activeCount++;
-        } else if(d.ttr){
-          let parts=d.ttr.split(":"); diff=(+parts[0]*3600+ +parts[1]*60+ +parts[2])*1000;
-        }
-        if(diff>0){ totalDiff+=diff; count++; if(diff>maxDiff) maxDiff=diff; }
-        if(d.status==="Aktif"){
-          let hrs=Math.floor(diff/1000/60/60); let mins=Math.floor((diff/1000/60)%60); let secs=Math.floor((diff/1000)%60);
-          ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        } else if(d.ttr){ ttr=d.ttr; }
-        tr.innerHTML=`<td>${d.user||""}</td><td>${d.indikasi||""}</td><td>${new Date(d.waktu).toLocaleString()}</td><td>${ttr}</td><td>${d.status||"Aktif"}</td><td>${d.status==="Aktif"? `<button class="success" onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>`;
-        tbody.appendChild(tr);
       });
-      document.getElementById("totalGangguan").textContent=activeCount;
-      if(count>0){
-        let avgSec=totalDiff/1000/count; let hrs=Math.floor(avgSec/3600); let mins=Math.floor((avgSec%3600)/60); let secs=Math.floor(avgSec%60);
-        document.getElementById("avgTTR").textContent=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        let hrs2=Math.floor(maxDiff/1000/3600); let mins2=Math.floor((maxDiff/1000%3600)/60); let secs2=Math.floor((maxDiff/1000)%60);
-        document.getElementById("maxTTR").textContent=`${hrs2.toString().padStart(2,'0')}:${mins2.toString().padStart(2,'0')}:${secs2.toString().padStart(2,'0')}`;
-      }
-    })
+    });
   }
-  loadGangguan(); setInterval(loadGangguan,60000);
+  renderTable("billing","billingTable",["billingUser","billingPaket","billingHarga","billingProrata","statusBayar"]);
 
-  function simulateGangguan(){
-    db.collection("user").get().then(snap=>{
-      if(!snap.empty){
-        let users=[]; snap.forEach(doc=>users.push(doc.data().userName));
-        let randomUser=users[Math.floor(Math.random()*users.length)];
-        db.collection("gangguan").add({user:randomUser,indikasi:"Koneksi putus",waktu:new Date().toISOString(),status:"Aktif"}).then(()=>loadGangguan());
-      } else { alert("Belum ada user untuk disimulasikan!"); }
-    })
-  }
-  function closeGangguan(id){
-    db.collection("gangguan").doc(id).get().then(doc=>{
-      if(doc.exists){
-        let d=doc.data(); let startTime=new Date(d.waktu); let now=new Date(); let diff=now-startTime;
-        let hrs=Math.floor(diff/1000/60/60); let mins=Math.floor((diff/1000/60)%60); let secs=Math.floor((diff/1000)%60);
-        let ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        db.collection("gangguan").doc(id).update({status:"Selesai",ttr:ttr}).then(()=>loadGangguan());
-      }
-    })
-  }
-  function clearGangguan(){if(confirm("Yakin hapus semua gangguan?")){db.collection("gangguan").get().then(snap=>{snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete());loadGangguan();})}}
-
-  // Insert 10 dummy users jika belum ada
-  db.collection("user").get().then(snap=>{
-    if(snap.size===0){
-      for(let i=1;i<=10;i++){
-        db.collection("user").add({userName:"User"+i,userPhone:"08123"+i,userAddress:"Alamat "+i,userMac:"MAC"+i,userOdp:"ODP-"+i,planName:"Paket A",statusBayar:(i%2==0?"Lunas":"Belum")});
-      }
-    }
-  });
+  // Dashboard counters
+  db.collection("user").onSnapshot(snap=>{document.getElementById("totalUser").textContent=snap.size;});
+  db.collection("kas").onSnapshot(snap=>{let saldo=0;snap.forEach(doc=>{saldo+=parseFloat(doc.data().kasJumlah||0);});document.getElementById("saldoKas").textContent=saldo;});
 </script>
 </body>
 </html>
