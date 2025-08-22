@@ -1,1015 +1,312 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Starnet💫 Admin Panel</title>
-
-<!-- ====== FONT & BASIC RESET ====== -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --brand:#1862ff;             /* biru sidebar */
-    --brand-grad:#0f57ff;
-    --brand-2:#0f9bff;
-    --text:#0f172a;
-    --muted:#6b7280;
-    --bg:#f5f7fb;
-    --card:#ffffff;
-    --ring:#e5ecff;
-    --success:#10b981;
-    --danger:#ef4444;
-    --warning:#f59e0b;
-    --cyan:#06b6d4;
-    --sidebar-w:280px;           /* lebar sidebar saat terbuka */
-    --sidebar-w-collapsed:82px;  /* lebar sidebar saat collapse */
-    --radius:18px;
-    --radius-sm:12px;
-    --shadow:0 8px 24px rgba(15, 23, 42, .08);
-    --shadow-sm:0 6px 16px rgba(15, 23, 42, .06);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
-    color:var(--text);
-    background:var(--bg);
-  }
-
-  /* ====== LAYOUT ====== */
-  .app{
-    display:flex;
-    min-height:100dvh;
-    overflow:hidden;
-  }
-  .sidebar{
-    position:fixed;
-    inset:0 auto 0 0;
-    width:var(--sidebar-w);
-    background:linear-gradient(180deg,var(--brand),var(--brand-grad));
-    color:#fff;
-    border-right:1px solid rgba(255,255,255,.08);
-    padding:22px 14px;
-    transition:width .25s ease;
-    z-index:50;
-  }
-  .sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
-  .brand{
-    display:flex; align-items:center; gap:12px;
-    margin:4px 8px 20px 8px; font-weight:800; font-size:22px;
-    letter-spacing:.2px;
-  }
-  .brand .logo{
-    width:40px; height:40px; border-radius:12px;
-    display:grid; place-items:center;
-    background:#fff; color:#ffb800; font-size:22px; font-weight:900;
-    box-shadow:var(--shadow-sm);
-  }
-  .collapse-btn{
-    position:absolute; right:-14px; top:58px;
-    width:34px; height:34px; border-radius:50%;
-    background:#fff; color:var(--brand);
-    display:grid; place-items:center; cursor:pointer;
-    box-shadow:0 6px 16px rgba(15,23,42,.25);
-    border:3px solid var(--ring);
-  }
-  .nav{
-    margin-top:8px; display:flex; flex-direction:column; gap:8px;
-  }
-  .nav a{
-    display:flex; align-items:center; gap:14px;
-    padding:14px 14px; text-decoration:none; color:#eaf1ff;
-    border-radius:14px; transition:.2s;
-  }
-  .nav a .ic{ width:22px; height:22px; display:inline-grid; place-items:center; }
-  .nav a.active, .nav a:hover{
-    background:rgba(255,255,255,.12);
-  }
-  .nav span.label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  /* hide label when collapsed */
-  .sidebar.collapsed .label{ display:none; }
-  .sidebar.collapsed .brand span{ display:none; }
-  .sidebar.collapsed .brand{ justify-content:center; }
-  .sidebar.collapsed .brand .logo{ margin:0 auto; }
-  .sidebar.collapsed .collapse-btn{ right:-14px; }
-
-  .main{
-    flex:1;
-    margin-left:var(--sidebar-w);
-    transition:margin-left .25s ease;
-    padding:22px;
-  }
-  .sidebar.collapsed + .main{
-    margin-left:var(--sidebar-w-collapsed);
-  }
-
-  /* ====== TOPBAR ====== */
-  .topbar{
-    display:flex; align-items:center; justify-content:space-between;
-    background:var(--card); border-radius:var(--radius);
-    padding:14px 18px; box-shadow:var(--shadow);
-    position:sticky; top:12px; z-index:10;
-  }
-  .topbar h1{ font-size:20px; margin:0; font-weight:800; letter-spacing:.2px;}
-  .userchip{
-    display:flex; align-items:center; gap:10px; color:#1f2937; font-weight:600;
-  }
-  .userchip .avatar{
-    width:38px; height:38px; border-radius:50%;
-    background:linear-gradient(135deg,#3b82f6,#06b6d4);
-    display:grid; place-items:center; color:#fff; font-weight:800;
-    box-shadow:var(--shadow-sm);
-  }
-
-  /* ====== GRID CARDS ====== */
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(12,1fr);
-    gap:18px; margin-top:18px;
-  }
-  .card{
-    background:var(--card); border-radius:var(--radius);
-    box-shadow:var(--shadow); padding:18px;
-  }
-  .kpi{
-    display:flex; align-items:center; justify-content:space-between;
-    border:1px solid var(--ring);
-  }
-  .kpi h3{ margin:2px 0 8px; font-size:15px; color:#4b5563; font-weight:700; }
-  .kpi .num{ font-size:28px; font-weight:800; letter-spacing:.3px;}
-  .kpi .badge{
-    width:44px; height:44px; border-radius:14px;
-    display:grid; place-items:center; color:#fff; font-weight:800;
-    box-shadow:var(--shadow-sm);
-  }
-  .kpi .green{ background:linear-gradient(135deg,#22c55e,#16a34a); }
-  .kpi .red{ background:linear-gradient(135deg,#ef4444,#f43f5e); }
-  .kpi .cyan{ background:linear-gradient(135deg,#06b6d4,#0ea5e9); }
-  .kpi .amber{ background:linear-gradient(135deg,#f59e0b,#f97316); }
-  .kpi .purple{ background:linear-gradient(135deg,#8b5cf6,#6366f1); }
-  .kpi .slate{ background:linear-gradient(135deg,#64748b,#475569); }
-
-  /* ====== TABS ====== */
-  .tabs{
-    display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; margin-bottom:10px;
-  }
-  .tab-btn{
-    background:#eef2ff; color:#1d4ed8; border:1px solid #dbe3ff;
-    padding:8px 12px; border-radius:12px; font-weight:700; cursor:pointer;
-  }
-  .tab-btn.active{ background:#1d4ed8; color:#fff; }
-
-  /* ====== TABLE ====== */
-  .table-wrap{ overflow:auto; border:1px solid var(--ring); border-radius:14px; }
-  table{ border-collapse:separate; border-spacing:0; width:100%; min-width:720px; }
-  thead th{
-    text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.12em;
-    color:#6b7280; background:#f8fbff; position:sticky; top:0; z-index:1;
-    padding:12px 14px; border-bottom:1px solid var(--ring);
-  }
-  tbody td{ padding:12px 14px; border-bottom:1px solid #f1f5f9; }
-  tbody tr:hover{ background:#fafcff; }
-  .actions button{
-    border:0; padding:6px 10px; border-radius:10px; cursor:pointer; font-weight:700;
-  }
-  .btn{ border:0; background:#1d4ed8; color:#fff; padding:10px 14px; border-radius:12px; font-weight:800; box-shadow:var(--shadow-sm); }
-  .btn.secondary{ background:#0ea5e9; }
-  .btn.warn{ background:#f59e0b; }
-  .btn.ghost{ background:#eef2ff; color:#1d4ed8; }
-  .btn.danger{ background:#ef4444; }
-  .btn.small{ padding:6px 10px; font-size:12px; border-radius:10px; }
-  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-  .grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-
-  /* ====== FORM ====== */
-  .field{ display:flex; flex-direction:column; gap:6px; }
-  .field label{ font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:.12em;}
-  input, select, textarea{
-    width:100%; padding:12px 12px; border-radius:12px; border:1px solid #e5e7eb; outline:0;
-    background:#fff; font:inherit;
-  }
-  textarea{ min-height:96px; resize:vertical; }
-  .muted{ color:var(--muted); font-size:12px; }
-  .right{ text-align:right; }
-  .hidden{ display:none !important; }
-
-  /* ====== FOOT ====== */
-  .foot{ color:#64748b; font-size:12px; text-align:center; margin:22px 0 8px; }
-
-  /* ====== RESPONSIVE ====== */
-  @media (max-width: 980px){
-    .grid{ grid-template-columns:repeat(6,1fr); }
-  }
-  @media (max-width: 720px){
-    .grid{ grid-template-columns:repeat(1,1fr); }
-    .sidebar{ width:var(--sidebar-w-collapsed); }
-    .main{ margin-left:var(--sidebar-w-collapsed); }
-  }
-
-  /* ====== TOAST ====== */
-  .toast{
-    position:fixed; right:18px; bottom:18px; z-index:100;
-    display:flex; flex-direction:column; gap:10px;
-  }
-  .toast .t{
-    background:#111827; color:#fff; padding:10px 14px; border-radius:12px; box-shadow:var(--shadow);
-    font-weight:700; opacity:.98;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Starnet 💫 Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {margin:0; font-family:Arial,sans-serif; background:#f4f6f9;}
+    .sidebar {width:250px; height:100%; position:fixed; top:0; left:0;
+      background:linear-gradient(180deg,#007bff,#0056b3); color:#fff; padding-top:20px; transition:0.3s;}
+    .sidebar h2 {text-align:center; margin-bottom:20px;}
+    .sidebar a {display:block; color:white; padding:12px 20px; text-decoration:none; transition:0.3s;}
+    .sidebar a:hover {background:rgba(255,255,255,0.2);}
+    .main {margin-left:250px; padding:20px;}
+    .card {background:white; padding:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;}
+    h3 {margin-top:0;}
+    table {width:100%; border-collapse:collapse;}
+    th,td {padding:8px; border:1px solid #ddd; text-align:left;}
+    th {background:#007bff; color:white;}
+    input,select {padding:6px; margin:4px 0; width:100%;}
+    button {padding:8px 12px; margin:4px 2px; border:none; background:#007bff; color:white;
+      border-radius:4px; cursor:pointer;}
+    button:hover {background:#0056b3;}
+    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px;}
+  </style>
 </head>
 <body>
-<div class="app">
-  <!-- ========== SIDEBAR ========== -->
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="logo">⭐</div>
-      <span>Starnet💫</span>
-    </div>
-    <button class="collapse-btn" id="collapseBtn" aria-label="Toggle sidebar">❮</button>
-    <nav class="nav" id="nav">
-      <a href="#dashboard" data-view="dashboard" class="active"><span class="ic">📊</span><span class="label">Dashboard</span></a>
-      <a href="#users" data-view="users"><span class="ic">👥</span><span class="label">User</span></a>
-      <a href="#packages" data-view="packages"><span class="ic">📶</span><span class="label">Paket</span></a>
-      <a href="#billing" data-view="billing"><span class="ic">🧾</span><span class="label">Billing</span></a>
-      <a href="#cash" data-view="cash"><span class="ic">🏛️</span><span class="label">Kas Perusahaan</span></a>
-      <a href="#techs" data-view="techs"><span class="ic">🧑‍🔧</span><span class="label">Teknisi</span></a>
-      <a href="#issues" data-view="issues"><span class="ic">⚡</span><span class="label">Gangguan</span></a>
-      <a href="#materials" data-view="materials"><span class="ic">🛠️</span><span class="label">Material</span></a>
-      <a href="#settings" data-view="settings"><span class="ic">⚙️</span><span class="label">Pengaturan</span></a>
-      <a href="#" id="btnLogout"><span class="ic">↩️</span><span class="label">Logout</span></a>
-    </nav>
-  </aside>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2 id="ispName">Starnet 💫</h2>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <a href="#" onclick="showSection('user')">User</a>
+    <a href="#" onclick="showSection('paket')">Paket</a>
+    <a href="#" onclick="showSection('billing')">Billing</a>
+    <a href="#" onclick="showSection('kas')">Kas</a>
+    <a href="#" onclick="showSection('teknisi')">Teknisi</a>
+    <a href="#" onclick="showSection('gangguan')">Gangguan</a>
+    <a href="#" onclick="showSection('material')">Material</a>
+    <a href="#" onclick="showSection('editisp')">Edit ISP</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
 
-  <!-- ========== MAIN ========== -->
-  <main class="main">
-    <header class="topbar">
-      <h1>Starnet💫 Admin Panel</h1>
-      <div class="userchip"><div class="avatar" id="avatar">S</div><span id="whoami">-</span></div>
-    </header>
-
-    <!-- ====== DASHBOARD ====== -->
-    <section id="view-dashboard" class="view">
+  <!-- Main Content -->
+  <div class="main">
+    <!-- Dashboard -->
+    <div id="dashboard" class="section">
+      <h2>Dashboard</h2>
       <div class="grid">
-        <div class="card kpi" style="grid-column:span 6;">
-          <div>
-            <h3>Total User</h3>
-            <div class="num" id="kpiUsers">0</div>
-          </div>
-          <div class="badge purple">👥</div>
-        </div>
-        <div class="card kpi" style="grid-column:span 6;">
-          <div>
-            <h3>Pendapatan</h3>
-            <div class="num" id="kpiRevenue">Rp 0</div>
-          </div>
-          <div class="badge green">💸</div>
-        </div>
-        <div class="card kpi" style="grid-column:span 6;">
-          <div>
-            <h3>Tunggakan</h3>
-            <div class="num" id="kpiArrears">Rp 0</div>
-          </div>
-          <div class="badge red">❗</div>
-        </div>
-        <div class="card kpi" style="grid-column:span 6;">
-          <div>
-            <h3>Saldo Kas</h3>
-            <div class="num" id="kpiCash">Rp 0</div>
-          </div>
-          <div class="badge cyan">🏛️</div>
-        </div>
-        <div class="card kpi" style="grid-column:span 6;">
-          <div>
-            <h3>Teknisi</h3>
-            <div class="num" id="kpiTechs">0</div>
-          </div>
-          <div class="badge slate">🧑‍🔧</div>
-        </div>
-        <div class="card kpi" style="grid-column:span 6;">
-          <div>
-            <h3>Gangguan Aktif</h3>
-            <div class="num" id="kpiIssues">0</div>
-          </div>
-          <div class="badge amber">⚡</div>
-        </div>
+        <div class="card"><h3>Total User</h3><p id="totalUser">0</p></div>
+        <div class="card"><h3>Saldo Kas</h3><p id="saldoKas">0</p></div>
+        <div class="card"><h3>Tunggakan</h3><p id="totalTunggakan">0</p></div>
+        <div class="card"><h3>Gangguan Aktif</h3><p id="totalGangguan">0</p></div>
       </div>
+      <div class="card"><canvas id="ispChart"></canvas></div>
+    </div>
 
-      <div class="grid" style="margin-top:10px;">
-        <div class="card" style="grid-column:span 12;">
-          <h3 style="margin:0 0 10px">Grafik ISP (simulasi)</h3>
-          <canvas id="chart" height="120"></canvas>
-          <p class="muted">Grafik sementara dummy. Integrasi Mikrotik bisa disambung kemudian.</p>
-        </div>
-      </div>
-    </section>
+    <!-- User -->
+    <div id="user" class="section" style="display:none;">
+      <h2>User</h2>
+      <form id="userForm">
+        <input type="hidden" id="userId">
+        <label>Nama</label><input id="userName" required>
+        <label>Paket</label><select id="planName" required></select>
+        <label>Status Bayar</label>
+        <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
+        <button type="submit">Simpan User</button>
+      </form>
+      <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
 
-    <!-- ====== USERS ====== -->
-    <section id="view-users" class="view hidden">
+    <!-- Paket -->
+    <div id="paket" class="section" style="display:none;">
+      <h2>Paket</h2>
+      <form id="paketForm">
+        <input type="hidden" id="paketId">
+        <label>Nama Paket</label><input id="namaPaket" required>
+        <label>Bandwidth</label><input id="bandwidth" required>
+        <button type="submit">Simpan Paket</button>
+      </form>
+      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Billing -->
+    <div id="billing" class="section" style="display:none;">
+      <h2>Billing</h2>
+      <form id="billingForm">
+        <input type="hidden" id="billingId">
+        <label>User</label><input id="billingUser" required>
+        <label>Jumlah</label><input id="billingAmount" required>
+        <button type="submit">Simpan Billing</button>
+      </form>
+      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Kas -->
+    <div id="kas" class="section" style="display:none;">
+      <h2>Kas Perusahaan</h2>
+      <form id="kasForm">
+        <input type="hidden" id="kasId">
+        <label>Keterangan</label><input id="kasKet" required>
+        <label>Jumlah (+/-)</label><input id="kasJumlah" required>
+        <button type="submit">Simpan Transaksi</button>
+      </form>
+      <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Teknisi -->
+    <div id="teknisi" class="section" style="display:none;">
+      <h2>Teknisi</h2>
+      <form id="teknisiForm">
+        <input type="hidden" id="teknisiId">
+        <label>Nama Teknisi</label><input id="namaTeknisi" required>
+        <label>Kontak</label><input id="kontakTeknisi" required>
+        <button type="submit">Simpan Teknisi</button>
+      </form>
+      <div class="card"><table id="teknisiTable"><thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Gangguan -->
+    <div id="gangguan" class="section" style="display:none;">
+      <h2>Gangguan</h2>
+      <button onclick="simulateGangguan()">➕ Tambah Gangguan Random Sekarang</button>
+      <button onclick="clearGangguan()">🗑️ Hapus Semua Gangguan</button>
       <div class="card">
-        <h2 style="margin:0 0 12px">User</h2>
-        <div class="grid-3">
-          <div class="field"><label>Nama</label><input id="u_name" placeholder="Nama pelanggan"></div>
-          <div class="field"><label>Username</label><input id="u_username" placeholder="username PPPoE / hotspot"></div>
-          <div class="field"><label>Paket</label><select id="u_plan"></select></div>
-          <div class="field"><label>Kontak</label><input id="u_contact" placeholder="WA / email / telp"></div>
-          <div class="field"><label>Tanggal Mulai</label><input id="u_start" type="date"></div>
-          <div class="field"><label>Status Aktif</label>
-            <select id="u_enabled"><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
-          </div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnUserSave">Simpan User</button>
-          <button class="btn ghost" id="btnUserReset">Reset Form</button>
-        </div>
+        <table id="gangguanTable">
+          <thead><tr><th>User</th><th>Indikasi</th><th>Waktu</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblUsers">
-            <thead><tr>
-              <th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th><th class="right">Aksi</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    </div>
 
-    <!-- ====== PACKAGES ====== -->
-    <section id="view-packages" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Paket</h2>
-        <div class="grid-3">
-          <div class="field"><label>Nama Paket</label><input id="p_name" placeholder="cth: 20Mbps"></div>
-          <div class="field"><label>Harga Bulanan (Rp)</label><input id="p_price" type="number" min="0" step="1000" placeholder="150000"></div>
-          <div class="field"><label>Deskripsi</label><input id="p_desc" placeholder="opsional"></div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnPkgSave">Simpan Paket</button>
-          <button class="btn ghost" id="btnPkgReset">Reset</button>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblPkgs">
-            <thead><tr><th>Nama</th><th>Harga</th><th>Deskripsi</th><th class="right">Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <!-- Material -->
+    <div id="material" class="section" style="display:none;">
+      <h2>Material</h2>
+      <form id="materialForm">
+        <input type="hidden" id="materialId">
+        <label>Nama Material</label><input id="namaMaterial" required>
+        <label>Stok</label><input id="stokMaterial" required>
+        <button type="submit">Simpan Material</button>
+      </form>
+      <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
 
-    <!-- ====== BILLING ====== -->
-    <section id="view-billing" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Billing</h2>
-        <div class="grid-4">
-          <div class="field"><label>User</label><select id="b_user"></select></div>
-          <div class="field"><label>Bulan</label><input id="b_month" type="month"></div>
-          <div class="field"><label>Nominal (Rp)</label><input id="b_amount" type="number" step="1000"></div>
-          <div class="field"><label>Status</label>
-            <select id="b_status"><option value="unpaid">Unpaid</option><option value="paid">Paid</option></select>
-          </div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnBillSave">Simpan Tagihan</button>
-          <button class="btn ghost" id="btnBillReset">Reset</button>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblBills">
-            <thead><tr><th>User</th><th>Bulan</th><th>Nominal</th><th>Status</th><th class="right">Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== CASH ====== -->
-    <section id="view-cash" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Kas Perusahaan</h2>
-        <div class="grid-4">
-          <div class="field"><label>Jenis</label>
-            <select id="c_type"><option value="in">Kas Masuk</option><option value="out">Kas Keluar</option></select>
-          </div>
-          <div class="field"><label>Nominal (Rp)</label><input id="c_amount" type="number" step="1000"></div>
-          <div class="field"><label>Keterangan</label><input id="c_note" placeholder="misal: pembayaran bulan Agustus"></div>
-          <div class="field"><label>Tanggal</label><input id="c_date" type="date"></div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnCashSave">Simpan Transaksi</button>
-          <button class="btn ghost" id="btnCashReset">Reset</button>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblCash">
-            <thead><tr><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Tanggal</th><th class="right">Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== TECHNICIANS ====== -->
-    <section id="view-techs" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Teknisi</h2>
-        <div class="grid-3">
-          <div class="field"><label>Nama</label><input id="t_name" placeholder="Nama teknisi"></div>
-          <div class="field"><label>Kontak</label><input id="t_contact" placeholder="WA / telepon"></div>
-          <div class="field"><label>Keahlian</label><input id="t_skill" placeholder="Fiber, RF, Core, dll"></div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnTechSave">Simpan Teknisi</button>
-          <button class="btn ghost" id="btnTechReset">Reset</button>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblTechs">
-            <thead><tr><th>Nama</th><th>Kontak</th><th>Keahlian</th><th class="right">Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== ISSUES ====== -->
-    <section id="view-issues" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Gangguan</h2>
-        <div class="grid-4">
-          <div class="field"><label>Judul</label><input id="i_title" placeholder="cth: ODP-12 terputus"></div>
-          <div class="field"><label>Status</label>
-            <select id="i_status"><option value="open">Aktif</option><option value="progress">Proses</option><option value="closed">Selesai</option></select>
-          </div>
-          <div class="field"><label>ODP / Area</label><input id="i_area" placeholder="kode ODP / wilayah"></div>
-          <div class="field"><label>Teknisi Penanggung</label><select id="i_tech"></select></div>
-          <div class="field" style="grid-column:span 4"><label>Deskripsi</label><textarea id="i_desc" placeholder="Rincian gangguan"></textarea></div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnIssueSave">Simpan Gangguan</button>
-          <button class="btn ghost" id="btnIssueReset">Reset</button>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblIssues">
-            <thead><tr><th>Judul</th><th>Status</th><th>Area</th><th>Teknisi</th><th>Dibuat</th><th class="right">Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== MATERIALS ====== -->
-    <section id="view-materials" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Material</h2>
-        <div class="grid-4">
-          <div class="field"><label>Nama</label><input id="m_name" placeholder="cth: RJ45, ODP-8, Dropcore"></div>
-          <div class="field"><label>Stok</label><input id="m_qty" type="number" step="1"></div>
-          <div class="field"><label>Satuan</label><input id="m_unit" placeholder="pcs / roll / box"></div>
-          <div class="field"><label>Ambang Kritis</label><input id="m_min" type="number" step="1" value="5"></div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnMatSave">Simpan Material</button>
-          <button class="btn ghost" id="btnMatReset">Reset</button>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px;">
-        <div class="table-wrap">
-          <table id="tblMaterials">
-            <thead><tr><th>Nama</th><th>Stok</th><th>Satuan</th><th>Kritis ≤</th><th class="right">Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== SETTINGS ====== -->
-    <section id="view-settings" class="view hidden">
-      <div class="card">
-        <h2 style="margin:0 0 12px">Pengaturan</h2>
-        <div class="grid-3">
-          <div class="field"><label>Nama ISP</label><input id="s_isp" placeholder="Starnet💫"></div>
-          <div class="field"><label>Durasi Last Seen (menit)</label><input id="s_last" type="number" min="1" value="15"></div>
-          <div class="field"><label>Catatan</label><input id="s_note" placeholder="opsional"></div>
-        </div>
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button class="btn" id="btnSetSave">Simpan</button>
-          <button class="btn ghost" id="btnSetReset">Reset</button>
-        </div>
-      </div>
-    </section>
-
-    <div class="foot">Starnet💫 — dashboard sederhana. Semua data tersimpan di Firestore milikmu.</div>
-  </main>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<!-- ====== FIREBASE SDK ====== -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- Edit ISP -->
+    <div id="editisp" class="section" style="display:none;">
+      <h2>Edit Nama ISP</h2>
+      <input id="newISPName" placeholder="Nama ISP baru">
+      <button onclick="editISP()">Simpan</button>
+    </div>
+  </div>
 
 <script>
-/* ======================= INIT FIREBASE ======================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
-  authDomain: "dnt-network-7.firebaseapp.com",
-  projectId: "dnt-network-7",
-  storageBucket: "dnt-network-7.firebasestorage.app",
-  messagingSenderId: "761179668371",
-  appId: "1:761179668371:web:7d1468d0298041d4783266",
-  measurementId: "G-CD3EQ350R4"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-/* ======================= HELPERS ======================= */
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-const money = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
-const toast = (msg)=> {
-  const el = document.createElement('div');
-  el.className='t'; el.textContent=msg; $('#toast').appendChild(el);
-  setTimeout(()=>{ el.remove(); }, 2600);
-};
-const setActiveNav = (view) => {
-  $$('#nav a').forEach(a => a.classList.toggle('active', a.dataset.view === view));
-  $$('.view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-'+view));
-  location.hash = view;
-};
-
-/* ======================= LAYOUT: SIDEBAR TOGGLE ======================= */
-const sidebar = $('#sidebar');
-$('#collapseBtn').onclick = () => {
-  sidebar.classList.toggle('collapsed');
-  $('#collapseBtn').textContent = sidebar.classList.contains('collapsed') ? '❯' : '❮';
-};
-$('#nav').addEventListener('click', e=>{
-  const a = e.target.closest('a[data-view]');
-  if(!a) return;
-  e.preventDefault();
-  setActiveNav(a.dataset.view);
-});
-
-/* ======================= AUTH ======================= */
-$('#btnLogout').onclick = async (e)=>{
-  e.preventDefault();
-  await auth.signOut();
-  location.href = './index.html';
-};
-auth.onAuthStateChanged(u=>{
-  if(!u){ location.href='./index.html'; return; }
-  $('#whoami').textContent = u.email || 'admin';
-  $('#avatar').textContent = (u.email||'S')[0].toUpperCase();
-});
-
-/* ======================= COLLECTION REFS ======================= */
-const colUsers = db.collection('customers');
-const colPkgs  = db.collection('packages');
-const colBills = db.collection('billing');
-const colCash  = db.collection('cash');
-const colTechs = db.collection('technicians');
-const colIssues= db.collection('issues');
-const colMats  = db.collection('materials');
-const colSets  = db.collection('settings');
-
-/* ======================= SETTINGS ======================= */
-async function loadSettings(){
-  const doc = await colSets.doc('app').get();
-  const data = doc.exists ? doc.data() : { ispName:'Starnet💫', lastSeenMins:15, note:'' };
-  $('#s_isp').value = data.ispName || 'Starnet💫';
-  $('#s_last').value = data.lastSeenMins || 15;
-  $('#s_note').value = data.note || '';
-  // update brand title
-  document.title = (data.ispName||'Starnet💫') + ' Admin Panel';
-}
-$('#btnSetSave').onclick = async ()=>{
-  const payload = {
-    ispName: $('#s_isp').value.trim() || 'Starnet💫',
-    lastSeenMins: Number($('#s_last').value)||15,
-    note: $('#s_note').value.trim()
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+    authDomain: "dnt-network-7.firebaseapp.com",
+    projectId: "dnt-network-7",
+    storageBucket: "dnt-network-7.firebasestorage.app",
+    messagingSenderId: "761179668371",
+    appId: "1:761179668371:web:7d1468d0298041d4783266",
+    measurementId: "G-CD3EQ350R4"
   };
-  await colSets.doc('app').set(payload, { merge:true });
-  toast('Pengaturan disimpan');
-  document.title = payload.ispName + ' Admin Panel';
-};
-$('#btnSetReset').onclick = loadSettings;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-/* ======================= PACKAGES CRUD ======================= */
-let editPkgId = null;
-function fillPlanOptions(selectId){
-  colPkgs.orderBy('name').get().then(snap=>{
-    const sel = $(selectId); sel.innerHTML='';
-    snap.forEach(d=>{
-      const o = document.createElement('option');
-      o.value=d.id; o.textContent=`${d.data().name} — ${money(d.data().price)}`;
-      sel.appendChild(o);
-    });
-  });
-}
-function renderPkgs(){
-  colPkgs.orderBy('name').onSnapshot(snap=>{
-    const tb = $('#tblPkgs tbody'); tb.innerHTML='';
-    snap.forEach(doc=>{
-      const d=doc.data();
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${d.name||''}</td>
-        <td>${money(d.price)}</td>
-        <td>${d.desc||''}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-  });
-  // refresh dropdowns yang pakai paket
-  fillPlanOptions('#u_plan');
-}
-$('#btnPkgSave').onclick = async ()=>{
-  const payload = {
-    name: $('#p_name').value.trim(),
-    price: Number($('#p_price').value||0),
-    desc: $('#p_desc').value.trim()
-  };
-  if(!payload.name){ toast('Nama paket wajib'); return; }
-  if(editPkgId){ await colPkgs.doc(editPkgId).set(payload,{merge:true}); toast('Paket diupdate'); }
-  else{ await colPkgs.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Paket ditambah'); }
-  editPkgId=null; $('#p_name').value=''; $('#p_price').value=''; $('#p_desc').value='';
-};
-$('#btnPkgReset').onclick = ()=>{ editPkgId=null; $('#p_name').value=''; $('#p_price').value=''; $('#p_desc').value=''; };
-$('#tblPkgs').addEventListener('click', async e=>{
-  const idE = e.target.dataset.e, idX = e.target.dataset.x;
-  if(idE){
-    const d = (await colPkgs.doc(idE).get()).data();
-    editPkgId=idE; $('#p_name').value=d.name||''; $('#p_price').value=d.price||0; $('#p_desc').value=d.desc||'';
-    toast('Edit mode paket');
+  function showSection(id){
+    document.querySelectorAll('.section').forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
   }
-  if(idX){
-    if(confirm('Hapus paket ini?')){ await colPkgs.doc(idX).delete(); toast('Paket dihapus'); }
-  }
-});
+  function logout(){alert("Logout sukses!");}
+  function editISP(){ document.getElementById("ispName").innerText=document.getElementById("newISPName").value || "Starnet 💫"; }
 
-/* ======================= USERS CRUD ======================= */
-let editUserId = null;
-function userPlanName(planId, cache){
-  const p = cache.get(planId); return p ? p.name : '-';
-}
-async function loadPlansCache(){
-  const cache = new Map();
-  const snap = await colPkgs.get();
-  snap.forEach(d=>cache.set(d.id,d.data()));
-  return cache;
-}
-async function rebuildUserDropdownForBilling(){
-  const sel = $('#b_user'); sel.innerHTML='';
-  const qs = await colUsers.orderBy('name').get();
-  qs.forEach(doc=>{
-    const d=doc.data();
-    const o=document.createElement('option');
-    o.value=doc.id; o.textContent=`${d.name} (${d.username})`;
-    sel.appendChild(o);
-  });
-}
-async function renderUsers(){
-  const plans = await loadPlansCache();
-  colUsers.orderBy('name').onSnapshot(snap=>{
-    const tb = $('#tblUsers tbody'); tb.innerHTML='';
-    $('#kpiUsers').textContent = snap.size;
-    snap.forEach(doc=>{
-      const d=doc.data();
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${d.name||''}</td>
-        <td>${d.username||''}</td>
-        <td>${userPlanName(d.planId, plans)}</td>
-        <td>${d.contact||''}</td>
-        <td>${d.enabled ? 'Aktif':'Nonaktif'}</td>
-        <td>${money(d.arrears||0)}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-    rebuildUserDropdownForBilling();
-  });
-}
-$('#btnUserSave').onclick = async ()=>{
-  const name = $('#u_name').value.trim();
-  const username = $('#u_username').value.trim();
-  const planId = $('#u_plan').value || null;
-  const contact = $('#u_contact').value.trim();
-  const start = $('#u_start').value || null;
-  const enabled = $('#u_enabled').value === 'true';
-  if(!name || !username || !planId){ toast('Nama, username, paket wajib'); return; }
-  const payload = { name, username, planId, contact, startDate:start, enabled, arrears: 0 };
-  if(editUserId){ await colUsers.doc(editUserId).set(payload,{merge:true}); toast('User diupdate'); }
-  else{ await colUsers.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('User ditambah'); }
-  editUserId=null; $('#u_name').value=''; $('#u_username').value=''; $('#u_contact').value=''; $('#u_start').value='';
-};
-$('#btnUserReset').onclick = ()=>{ editUserId=null; $('#u_name').value=''; $('#u_username').value=''; $('#u_contact').value=''; $('#u_start').value=''; };
-$('#tblUsers').addEventListener('click', async e=>{
-  const idE = e.target.dataset.e, idX = e.target.dataset.x;
-  if(idE){
-    const d=(await colUsers.doc(idE).get()).data();
-    editUserId=idE;
-    $('#u_name').value=d.name||''; $('#u_username').value=d.username||'';
-    $('#u_plan').value=d.planId||''; $('#u_contact').value=d.contact||'';
-    $('#u_start').value=d.startDate||''; $('#u_enabled').value= String(!!d.enabled);
-    toast('Edit mode user');
+  // Load Paket ke dropdown User
+  function loadPaketSelect(){
+    const sel=document.getElementById("planName");
+    sel.innerHTML="<option value=''>--Pilih Paket--</option>";
+    db.collection("paket").get().then(snap=>{
+      snap.forEach(doc=>{
+        let d=doc.data(); let o=document.createElement("option");
+        o.value=d.namaPaket; o.textContent=d.namaPaket+" ("+d.bandwidth+")";
+        sel.appendChild(o);
+      })
+    })
   }
-  if(idX){
-    if(confirm('Hapus user ini?')){ await colUsers.doc(idX).delete(); toast('User dihapus'); }
-  }
-});
+  document.addEventListener("DOMContentLoaded", loadPaketSelect);
 
-/* ======================= BILLING CRUD ======================= */
-let editBillId=null;
-function renderBills(){
-  colBills.orderBy('month','desc').onSnapshot(async snap=>{
-    const tb=$('#tblBills tbody'); tb.innerHTML='';
-    let revenue=0, arrears=0;
-    const usersMap = new Map();
-    (await colUsers.get()).forEach(d=>usersMap.set(d.id,d.data()));
-    snap.forEach(doc=>{
-      const d=doc.data();
-      if(d.status==='paid') revenue += Number(d.amount||0); else arrears += Number(d.amount||0);
-      const userName = (usersMap.get(d.userId)||{}).name || '-';
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${userName}</td>
-        <td>${d.month||''}</td>
-        <td>${money(d.amount)}</td>
-        <td>${d.status}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-    $('#kpiRevenue').textContent = money(revenue);
-    $('#kpiArrears').textContent = money(arrears);
-  });
-}
-$('#btnBillSave').onclick = async ()=>{
-  const payload = {
-    userId: $('#b_user').value,
-    month: $('#b_month').value,
-    amount: Number($('#b_amount').value||0),
-    status: $('#b_status').value
-  };
-  if(!payload.userId || !payload.month || !payload.amount){ toast('User, bulan, nominal wajib'); return; }
-  if(editBillId){ await colBills.doc(editBillId).set(payload,{merge:true}); toast('Billing diupdate'); }
-  else{ await colBills.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Billing ditambah'); }
-  editBillId=null; $('#b_amount').value=''; 
-};
-$('#btnBillReset').onclick = ()=>{ editBillId=null; $('#b_amount').value=''; };
-$('#tblBills').addEventListener('click', async e=>{
-  const idE=e.target.dataset.e, idX=e.target.dataset.x;
-  if(idE){
-    const d=(await colBills.doc(idE).get()).data();
-    editBillId=idE; $('#b_user').value=d.userId||''; $('#b_month').value=d.month||''; $('#b_amount').value=d.amount||0; $('#b_status').value=d.status||'unpaid';
-    toast('Edit mode billing');
-  }
-  if(idX){ if(confirm('Hapus tagihan?')){ await colBills.doc(idX).delete(); toast('Tagihan dihapus'); } }
-});
+  // Chart dummy
+  const ctx=document.getElementById("ispChart");
+  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"blue"},{label:"Download",data:[20,25,30,35],borderColor:"green"}]}});
 
-/* ======================= CASH CRUD ======================= */
-let editCashId=null;
-function renderCash(){
-  colCash.orderBy('date','desc').onSnapshot(snap=>{
-    const tb=$('#tblCash tbody'); tb.innerHTML='';
+  // ===================== CRUD FIRESTORE =====================
+  function renderTable(collection, tableId, fields){
+    db.collection(collection).onSnapshot(snap=>{
+      let tbody=document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML="";
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+        fields.forEach(f=>{let td=document.createElement("td"); td.textContent=d[f]||""; tr.appendChild(td);});
+        let td=document.createElement("td");
+        td.innerHTML=`<button onclick="editItem('${collection}','${doc.id}')">✏️</button><button onclick="deleteItem('${collection}','${doc.id}')">🗑️</button>`;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      })
+    })
+  }
+  function saveForm(e, collection, idField, fields){
+    e.preventDefault();
+    const id=document.getElementById(idField).value;
+    let data={};
+    fields.forEach(f=>data[f]=document.getElementById(f).value);
+    if(id){ db.collection(collection).doc(id).update(data); }
+    else{ db.collection(collection).add(data); }
+    e.target.reset();
+    document.getElementById(idField).value="";
+  }
+  function editItem(collection,id){
+    db.collection(collection).doc(id).get().then(doc=>{
+      if(doc.exists){
+        let d=doc.data();
+        Object.keys(d).forEach(k=>{ if(document.getElementById(k)) document.getElementById(k).value=d[k]; });
+        if(document.getElementById(collection+"Id")) document.getElementById(collection+"Id").value=id;
+      }
+    })
+  }
+  function deleteItem(collection,id){ if(confirm("Yakin hapus?")) db.collection(collection).doc(id).delete(); }
+
+  // Bind forms
+  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);
+  renderTable("user","userTable",["userName","planName","statusBayar"]);
+
+  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);
+  renderTable("paket","paketTable",["namaPaket","bandwidth"]);
+
+  document.getElementById("billingForm").onsubmit=(e)=>saveForm(e,"billing","billingId",["billingUser","billingAmount"]);
+  renderTable("billing","billingTable",["billingUser","billingAmount"]);
+
+  document.getElementById("kasForm").onsubmit=(e)=>saveForm(e,"kas","kasId",["kasKet","kasJumlah"]);
+  renderTable("kas","kasTable",["kasKet","kasJumlah"]);
+
+  document.getElementById("teknisiForm").onsubmit=(e)=>saveForm(e,"teknisi","teknisiId",["namaTeknisi","kontakTeknisi"]);
+  renderTable("teknisi","teknisiTable",["namaTeknisi","kontakTeknisi"]);
+
+  document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);
+  renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
+
+  // ================== Dashboard Auto Count ==================
+  db.collection("user").onSnapshot(snap=>{
+    document.getElementById("totalUser").textContent=snap.size;
+    let tunggakan=0;
+    snap.forEach(doc=>{ if(doc.data().statusBayar==="Belum") tunggakan++; });
+    document.getElementById("totalTunggakan").textContent=tunggakan;
+  });
+  db.collection("kas").onSnapshot(snap=>{
     let saldo=0;
-    snap.forEach(doc=>{
-      const d=doc.data();
-      saldo += (d.type==='in'?1:-1) * Number(d.amount||0);
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${d.type==='in'?'Masuk':'Keluar'}</td>
-        <td>${money(d.amount)}</td>
-        <td>${d.note||''}</td>
-        <td>${d.date||''}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-    $('#kpiCash').textContent = money(saldo);
+    snap.forEach(doc=>{ saldo+=parseFloat(doc.data().kasJumlah||0); });
+    document.getElementById("saldoKas").textContent=saldo;
   });
-}
-$('#btnCashSave').onclick = async ()=>{
-  const payload = {
-    type: $('#c_type').value,
-    amount: Number($('#c_amount').value||0),
-    note: $('#c_note').value.trim(),
-    date: $('#c_date').value || new Date().toISOString().slice(0,10)
-  };
-  if(!payload.amount){ toast('Nominal wajib'); return; }
-  if(editCashId){ await colCash.doc(editCashId).set(payload,{merge:true}); toast('Kas diupdate'); }
-  else{ await colCash.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Kas ditambah'); }
-  editCashId=null; $('#c_amount').value=''; $('#c_note').value='';
-};
-$('#btnCashReset').onclick = ()=>{ editCashId=null; $('#c_amount').value=''; $('#c_note').value=''; };
-$('#tblCash').addEventListener('click', async e=>{
-  const idE=e.target.dataset.e, idX=e.target.dataset.x;
-  if(idE){ const d=(await colCash.doc(idE).get()).data(); editCashId=idE; $('#c_type').value=d.type; $('#c_amount').value=d.amount; $('#c_note').value=d.note; $('#c_date').value=d.date||''; toast('Edit mode kas'); }
-  if(idX){ if(confirm('Hapus transaksi kas?')){ await colCash.doc(idX).delete(); toast('Transaksi dihapus'); } }
-});
 
-/* ======================= TECHS CRUD ======================= */
-let editTechId=null;
-function renderTechs(){
-  colTechs.orderBy('name').onSnapshot(snap=>{
-    const tb=$('#tblTechs tbody'); tb.innerHTML='';
-    $('#kpiTechs').textContent = snap.size;
-    // isi dropdown pada gangguan
-    const sel = $('#i_tech'); sel.innerHTML='';
-    snap.forEach(doc=>{
-      const d=doc.data();
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${d.name||''}</td>
-        <td>${d.contact||''}</td>
-        <td>${d.skill||''}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-      // dropdown gangguan
-      const o=document.createElement('option'); o.value=doc.id; o.textContent=d.name; sel.appendChild(o);
-    });
-  });
-}
-$('#btnTechSave').onclick = async ()=>{
-  const payload = { name: $('#t_name').value.trim(), contact: $('#t_contact').value.trim(), skill: $('#t_skill').value.trim() };
-  if(!payload.name){ toast('Nama teknisi wajib'); return; }
-  if(editTechId){ await colTechs.doc(editTechId).set(payload,{merge:true}); toast('Teknisi diupdate'); }
-  else{ await colTechs.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Teknisi ditambah'); }
-  editTechId=null; $('#t_name').value=''; $('#t_contact').value=''; $('#t_skill').value='';
-};
-$('#btnTechReset').onclick = ()=>{ editTechId=null; $('#t_name').value=''; $('#t_contact').value=''; $('#t_skill').value=''; };
-$('#tblTechs').addEventListener('click', async e=>{
-  const idE=e.target.dataset.e, idX=e.target.dataset.x;
-  if(idE){ const d=(await colTechs.doc(idE).get()).data(); editTechId=idE; $('#t_name').value=d.name; $('#t_contact').value=d.contact; $('#t_skill').value=d.skill; toast('Edit mode teknisi'); }
-  if(idX){ if(confirm('Hapus teknisi?')){ await colTechs.doc(idX).delete(); toast('Teknisi dihapus'); } }
-});
-
-/* ======================= ISSUES CRUD ======================= */
-let editIssueId=null;
-function renderIssues(){
-  colIssues.orderBy('createdAt','desc').onSnapshot(async snap=>{
-    const tb=$('#tblIssues tbody'); tb.innerHTML='';
-    let active=0;
-    const techMap=new Map(); (await colTechs.get()).forEach(d=>techMap.set(d.id,d.data()));
-    snap.forEach(doc=>{
-      const d=doc.data(); if(d.status!=='closed') active++;
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${d.title||''}</td>
-        <td>${d.status||''}</td>
-        <td>${d.area||''}</td>
-        <td>${(techMap.get(d.techId)||{}).name||'-'}</td>
-        <td>${d.createdAt? d.createdAt.toDate().toLocaleString('id-ID'):''}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-    $('#kpiIssues').textContent = active;
-  });
-}
-$('#btnIssueSave').onclick = async ()=>{
-  const payload = {
-    title: $('#i_title').value.trim(),
-    status: $('#i_status').value,
-    area: $('#i_area').value.trim(),
-    techId: $('#i_tech').value || null,
-    desc: $('#i_desc').value.trim()
-  };
-  if(!payload.title){ toast('Judul wajib'); return; }
-  if(editIssueId){ await colIssues.doc(editIssueId).set(payload,{merge:true}); toast('Gangguan diupdate'); }
-  else{ await colIssues.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Gangguan ditambah'); }
-  editIssueId=null; $('#i_title').value=''; $('#i_area').value=''; $('#i_desc').value='';
-};
-$('#btnIssueReset').onclick = ()=>{ editIssueId=null; $('#i_title').value=''; $('#i_area').value=''; $('#i_desc').value=''; };
-$('#tblIssues').addEventListener('click', async e=>{
-  const idE=e.target.dataset.e, idX=e.target.dataset.x;
-  if(idE){ const d=(await colIssues.doc(idE).get()).data(); editIssueId=idE; $('#i_title').value=d.title; $('#i_status').value=d.status; $('#i_area').value=d.area; $('#i_tech').value=d.techId||''; $('#i_desc').value=d.desc||''; toast('Edit mode gangguan'); }
-  if(idX){ if(confirm('Hapus gangguan?')){ await colIssues.doc(idX).delete(); toast('Gangguan dihapus'); } }
-});
-
-/* ======================= MATERIALS CRUD ======================= */
-let editMatId=null;
-function renderMaterials(){
-  colMats.orderBy('name').onSnapshot(snap=>{
-    const tb=$('#tblMaterials tbody'); tb.innerHTML='';
-    let kritis=0;
-    snap.forEach(doc=>{
-      const d=doc.data(); if(Number(d.qty||0)<=Number(d.min||5)) kritis++;
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td>${d.name||''}</td>
-        <td>${d.qty||0}</td>
-        <td>${d.unit||''}</td>
-        <td>${d.min||5}</td>
-        <td class="right actions">
-          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
-          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-    // tampilkan di dashboard (kita pakai kartu terakhir "Material Kritis")
-    // Kartu sudah ada, kita hanya update angka kecil ini di judul? 
-    // Untuk simpel, tidak perlu — tapi kamu bisa lihat daftar kritis di tabel.
-  });
-}
-$('#btnMatSave').onclick = async ()=>{
-  const payload = {
-    name: $('#m_name').value.trim(),
-    qty: Number($('#m_qty').value||0),
-    unit: $('#m_unit').value.trim(),
-    min: Number($('#m_min').value||5),
-  };
-  if(!payload.name){ toast('Nama material wajib'); return; }
-  if(editMatId){ await colMats.doc(editMatId).set(payload,{merge:true}); toast('Material diupdate'); }
-  else{ await colMats.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Material ditambah'); }
-  editMatId=null; $('#m_name').value=''; $('#m_qty').value=''; $('#m_unit').value=''; $('#m_min').value='5';
-};
-$('#btnMatReset').onclick = ()=>{ editMatId=null; $('#m_name').value=''; $('#m_qty').value=''; $('#m_unit').value=''; $('#m_min').value='5'; };
-$('#tblMaterials').addEventListener('click', async e=>{
-  const idE=e.target.dataset.e, idX=e.target.dataset.x;
-  if(idE){ const d=(await colMats.doc(idE).get()).data(); editMatId=idE; $('#m_name').value=d.name; $('#m_qty').value=d.qty; $('#m_unit').value=d.unit; $('#m_min').value=d.min||5; toast('Edit mode material'); }
-  if(idX){ if(confirm('Hapus material?')){ await colMats.doc(idX).delete(); toast('Material dihapus'); } }
-});
-
-/* ======================= DASHBOARD CHART (DUMMY) ======================= */
-function drawChart(){
-  const cvs = document.getElementById('chart');
-  const ctx = cvs.getContext('2d');
-  // simple lightweight draw (tanpa library)
-  const W = cvs.width = cvs.clientWidth; const H = cvs.height = 260;
-  ctx.clearRect(0,0,W,H);
-  const pad=40;
-  function line(points){
-    ctx.beginPath();
-    points.forEach((p,i)=>{ i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); });
-    ctx.stroke();
+  // ================== Gangguan Auto Refresh & Simulasi ==================
+  function loadGangguan(){
+    db.collection("gangguan").orderBy("waktu","desc").limit(10).get().then(snap=>{
+      let tbody=document.querySelector("#gangguanTable tbody");
+      tbody.innerHTML="";
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+        tr.innerHTML=`<td>${d.user||""}</td><td>${d.indikasi||""}</td><td>${d.waktu||""}</td>`;
+        tbody.appendChild(tr);
+      });
+      document.getElementById("totalGangguan").textContent=snap.size;
+    })
   }
-  const xs = [0,1,2,3,4,5].map(i=> pad + i*(W-2*pad)/5 );
-  const baseY = y => pad + (1-y)*(H-2*pad);
-  // fake data
-  const up   = [0.32,0.41,0.35,0.48,0.42,0.50];
-  const down = [0.52,0.62,0.58,0.66,0.61,0.70];
-  const lb   = [0.73,0.84,0.78,0.86,0.81,0.90];
-  ctx.lineWidth=3; ctx.strokeStyle='#60a5fa'; line(xs.map((x,i)=>[x,baseY(up[i])]));
-  ctx.strokeStyle='#fb7185'; line(xs.map((x,i)=>[x,baseY(down[i])]));
-  ctx.strokeStyle='#f59e0b'; line(xs.map((x,i)=>[x,baseY(lb[i])]));
-}
+  loadGangguan();
+  setInterval(loadGangguan, 15*60*1000);
 
-/* ======================= INIT LOAD ======================= */
-window.addEventListener('load', async ()=>{
-  // view dari hash
-  const hv = (location.hash||'#dashboard').slice(1);
-  setActiveNav(hv);
-
-  await loadSettings();
-  renderPkgs();     // akan memanggil fillPlanOptions juga
-  renderUsers();
-  renderBills();
-  renderCash();
-  renderTechs();
-  renderIssues();
-  renderMaterials();
-  drawChart();
-  window.addEventListener('resize', drawChart);
-});
-
-/* ======================= SMALL SAFETY ======================= */
-/* Firestore rules sebaiknya minimal seperti berikut:
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} { allow read, write: if request.auth != null; }
+  // Simulasi gangguan
+  function simulateGangguan(){
+    db.collection("user").get().then(snap=>{
+      if(!snap.empty){
+        let users=[];
+        snap.forEach(doc=>users.push(doc.data().userName));
+        let randomUser=users[Math.floor(Math.random()*users.length)];
+        db.collection("gangguan").add({
+          user: randomUser,
+          indikasi: "Koneksi putus",
+          waktu: new Date().toLocaleString()
+        }).then(()=>loadGangguan());
+      } else {
+        alert("Belum ada user untuk disimulasikan!");
+      }
+    })
   }
-}
-*/
+  setInterval(simulateGangguan, 15*60*1000); // auto tiap 15 menit
+
+  // Clear semua gangguan
+  function clearGangguan(){
+    if(confirm("Yakin hapus semua gangguan?")){
+      db.collection("gangguan").get().then(snap=>{
+        snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete());
+        loadGangguan();
+      })
+    }
+  }
 </script>
 </body>
 </html>
