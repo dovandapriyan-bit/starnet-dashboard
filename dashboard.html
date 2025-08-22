@@ -9,12 +9,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root{
-    --pri:#007bff;--pri-d:#0056b3;--bg:#f4f6f9;--card:#fff;--ink:#1e293b;--mut:#64748b;
-    --ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;
+    --pri:#6d28d9; --pri-d:#4c1d95; --bg:#f4f6f9; --card:#fff; --ink:#0f172a; --mut:#64748b;
+    --ok:#16a34a; --warn:#f59e0b; --bad:#ef4444;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-  /* SIDEBAR + HAMBURGER */
+  /* TOPBAR + HAMBURGER (dirapikan) */
   .topbar{position:fixed;top:0;left:0;right:0;height:56px;background:var(--card);display:flex;align-items:center;gap:10px;padding:0 12px 0 8px;border-bottom:1px solid #e5e7eb;z-index:30}
   .hamburger{width:38px;height:38px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:transform .15s}
   .hamburger:hover{transform:scale(1.04)}
@@ -22,14 +22,15 @@
   .hamburger .bar::before,.hamburger .bar::after{content:"";position:absolute;left:0;width:18px;height:2px;background:var(--pri);border-radius:2px}
   .hamburger .bar::before{top:-6px}.hamburger .bar::after{top:6px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-  .brand img{height:28px;width:28px;border-radius:6px;object-fit:cover;display:none} /* ditampilkan setelah upload */
+  .brand img{height:28px;width:28px;border-radius:6px;object-fit:cover;display:none}
   .brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+  /* SIDEBAR (warna diubah) */
   .sidebar{position:fixed;top:56px;left:0;width:250px;bottom:0;background:linear-gradient(180deg,var(--pri),var(--pri-d));color:#fff;overflow:hidden;transition:width .25s;z-index:20}
   .sidebar.minimized{width:64px}
   .nav{padding:10px}
   .nav a{display:flex;align-items:center;gap:12px;color:#fff;text-decoration:none;padding:10px 12px;border-radius:12px;margin:4px 0;transition:background .2s}
-  .nav a:hover{background:rgba(255,255,255,.2)}
-  .nav .icon{width:28px;text-align:center;color:#ffdd00} /* kontras agar terlihat */
+  .nav a:hover{background:rgba(255,255,255,.18)}
+  .nav .icon{width:28px;text-align:center;color:#ffdd00}
   .nav .text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sidebar.minimized .text{display:none}
   /* MAIN */
@@ -38,9 +39,7 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
   .card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:transform .15s}
   .card:hover{transform:translateY(-2px)}
-  h2{margin:8px 0 14px}
-  h3{margin:0 0 8px}
-  .muted{color:var(--mut);font-size:12px}
+  h2{margin:8px 0 14px} h3{margin:0 0 8px} .muted{color:var(--mut);font-size:12px}
   /* tables */
   table{width:100%;border-collapse:collapse}
   .table{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.05)}
@@ -51,47 +50,51 @@
   .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
   .field{display:flex;flex-direction:column;gap:6px}
   .field input,.field select,.field textarea{padding:10px;border:1px solid #e5e7eb;border-radius:10px}
-  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   button{padding:10px 12px;border:none;border-radius:12px;cursor:pointer}
-  .btn{background:var(--pri);color:#fff}
-  .btn:hover{background:var(--pri-d)}
+  .btn{background:var(--pri);color:#fff} .btn:hover{background:var(--pri-d)}
   .btn-ghost{background:#fff;border:1px solid #e5e7eb}
-  .btn-bad{background:var(--bad);color:#fff}
-  .btn-ok{background:var(--ok);color:#fff}
+  .btn-bad{background:var(--bad);color:#fff} .btn-ok{background:var(--ok);color:#fff}
   /* dashboard gangguan list */
   #dashboardGangguanContainer{max-height:260px;overflow-y:auto;margin-top:10px}
-  #dashboardGangguan td,#dashboardGangguan th{text-align:center} /* center termasuk TTR */
+  #dashboardGangguan td,#dashboardGangguan th{text-align:center}
   .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:12px}
   .pill.ok{background:#dcfce7;color:#166534}.pill.bad{background:#fee2e2;color:#991b1b}.pill.warn{background:#fef3c7;color:#92400e}
-  /* modal for logs */
+  /* modal */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:40}
   .modal .sheet{background:#fff;max-width:720px;width:95%;border-radius:16px;padding:16px;max-height:80vh;overflow:auto}
-  /* ODP details */
+  /* layout helper */
   .split{display:grid;grid-template-columns:320px 1fr;gap:12px}
   @media (max-width:900px){.split{grid-template-columns:1fr}}
+  /* tabs */
+  .tabs{display:flex;gap:8px;margin-bottom:10px}
+  .tab{padding:8px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+  .tab.active{background:var(--pri);color:#fff;border-color:transparent}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="hamburger" id="hamburger" title="Toggle menu">
-    <div class="bar"></div>
-  </div>
+  <div class="hamburger" id="hamburger" title="Toggle menu"><div class="bar"></div></div>
   <div class="brand">
     <img id="brandLogo" alt="logo" />
     <span id="ispName">Starnet 💫</span>
   </div>
 </div>
 
-<!-- SIDEBAR -->
+<!-- SIDEBAR (lengkap) -->
 <div class="sidebar" id="sidebar">
   <nav class="nav">
     <a href="#" onclick="showSection('dashboard')"><span class="icon">🏠</span><span class="text">Dashboard</span></a>
     <a href="#" onclick="showSection('user')"><span class="icon">👤</span><span class="text">User</span></a>
     <a href="#" onclick="showSection('odp')"><span class="icon">🗂️</span><span class="text">ODP</span></a>
+    <a href="#" onclick="showSection('paket')"><span class="icon">📦</span><span class="text">Paket</span></a>
     <a href="#" onclick="showSection('billing')"><span class="icon">💵</span><span class="text">Billing</span></a>
+    <a href="#" onclick="showSection('kas')"><span class="icon">🏦</span><span class="text">Kas</span></a>
+    <a href="#" onclick="showSection('teknisi')"><span class="icon">🛠️</span><span class="text">Teknisi</span></a>
     <a href="#" onclick="showSection('gangguan')"><span class="icon">⚠️</span><span class="text">Gangguan</span></a>
+    <a href="#" onclick="showSection('material')"><span class="icon">📋</span><span class="text">Material</span></a>
     <a href="#" onclick="showSection('laporan')"><span class="icon">📑</span><span class="text">Laporan (Pelanggan)</span></a>
     <a href="#" onclick="showSection('editisp')"><span class="icon">✏️</span><span class="text">Edit ISP</span></a>
     <a href="#" onclick="logout()"><span class="icon">🔓</span><span class="text">Logout</span></a>
@@ -147,7 +150,6 @@
       </div>
       <div class="muted" id="userFormMode" style="margin-top:6px">Mode: Tambah</div>
     </div>
-
     <div class="card">
       <h3>Daftar User</h3>
       <table class="table" id="userTable">
@@ -167,7 +169,9 @@
           <input id="odpNama" placeholder="Nama ODP (mis. ODP-01)" style="flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:10px">
           <button class="btn" onclick="addODP()">Tambah</button>
         </div>
-        <div class="muted" style="margin-top:6px">Pastikan nama ODP unik.</div>
+        <div class="row" style="margin-top:10px">
+          <input id="odpSearch" placeholder="Cari ODP..." oninput="filterODP()" style="flex:1;padding:10px;border:1px solid #e5e7eb;border-radius:10px">
+        </div>
         <div style="height:12px"></div>
         <h3>Daftar ODP</h3>
         <table class="table" id="odpTable">
@@ -185,16 +189,89 @@
     </div>
   </div>
 
+  <!-- PAKET -->
+  <div id="paket" class="section">
+    <h2>Manajemen Paket</h2>
+    <div class="card">
+      <div class="form">
+        <div class="field"><label>Nama Paket</label><input id="p_nama" placeholder="Home 10"></div>
+        <div class="field"><label>Bandwidth</label><input id="p_bw" placeholder="10 Mbps"></div>
+        <div class="field"><label>Harga</label><input id="p_harga" type="number" placeholder="150000"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="savePaket()">Simpan</button>
+        <button class="btn-ghost" onclick="resetPaket()">Reset</button>
+      </div>
+    </div>
+    <div class="card">
+      <table class="table" id="paketTable"><thead><tr><th>Nama</th><th>Bandwidth</th><th>Harga</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
   <!-- BILLING -->
   <div id="billing" class="section">
     <h2>Billing</h2>
-    <div id="billingList" class="card"></div>
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="tabPeriode" onclick="switchBillingTab('periode')">Periode</div>
+        <div class="tab" id="tabTunggakan" onclick="switchBillingTab('tunggakan')">Tunggakan</div>
+      </div>
+      <div class="row">
+        <select id="billMonth" onchange="loadBillingTable()">
+          <option value="">Bulan (semua)</option>
+          <script>/* options injected later */</script>
+        </select>
+        <select id="billYear" onchange="loadBillingTable()">
+          <option value="">Tahun (semua)</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <table class="table" id="billingTable"><thead><tr><th>Tanggal</th><th>User</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- KAS -->
+  <div id="kas" class="section">
+    <h2>Kas</h2>
+    <div class="card">
+      <div class="form">
+        <div class="field"><label>Tipe</label><select id="k_tipe"><option value="masuk">Masuk</option><option value="keluar">Keluar</option></select></div>
+        <div class="field"><label>Jumlah</label><input id="k_jumlah" type="number" placeholder="0"></div>
+        <div class="field"><label>Keterangan</label><input id="k_ket" placeholder="Deskripsi"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="addKas()">Tambah</button></div>
+    </div>
+    <div class="card">
+      <table class="table" id="kasTable"><thead><tr><th>Tanggal</th><th>Tipe</th><th>Jumlah</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- TEKNISI -->
+  <div id="teknisi" class="section">
+    <h2>Teknisi</h2>
+    <div class="card">
+      <div class="form">
+        <div class="field"><label>Nama</label><input id="t_nama" placeholder="Nama teknisi"></div>
+        <div class="field"><label>Telp</label><input id="t_telp" placeholder="08xx"></div>
+        <div class="field"><label>Status</label>
+          <select id="t_standby"><option value="true">Standby</option><option value="false">Off</option></select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="saveTeknisi()">Simpan</button><button class="btn-ghost" onclick="resetTeknisi()">Reset</button></div>
+    </div>
+    <div class="card">
+      <table class="table" id="teknisiTable"><thead><tr><th>Nama</th><th>Telp</th><th>Standby</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+    </div>
   </div>
 
   <!-- GANGGUAN -->
   <div id="gangguan" class="section">
     <h2>Gangguan</h2>
     <div class="card">
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn" onclick="refreshGangguan()">Refresh</button>
+      </div>
       <table class="table" id="gangguanTable">
         <thead><tr><th>User</th><th>Indikasi</th><th>Teknisi</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody></tbody>
@@ -210,7 +287,23 @@
     </div>
   </div>
 
-  <!-- LAPORAN (ROLE PELANGGAN) -->
+  <!-- MATERIAL -->
+  <div id="material" class="section">
+    <h2>Material</h2>
+    <div class="card">
+      <div class="form">
+        <div class="field"><label>Nama Material</label><input id="m_nama" placeholder="Dropcore 1F"></div>
+        <div class="field"><label>Stok</label><input id="m_stok" type="number" placeholder="0"></div>
+        <div class="field"><label>Satuan</label><input id="m_satuan" placeholder="meter, pcs, dll"></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="saveMaterial()">Simpan</button><button class="btn-ghost" onclick="resetMaterial()">Reset</button></div>
+    </div>
+    <div class="card">
+      <table class="table" id="materialTable"><thead><tr><th>Nama</th><th>Stok</th><th>Satuan</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <!-- LAPORAN -->
   <div id="laporan" class="section">
     <h2>Laporan Pelanggan</h2>
     <div class="card">
@@ -264,27 +357,35 @@
   </div>
 </div>
 
+<!-- MODAL ORDER TEKNISI -->
+<div class="modal" id="orderModal">
+  <div class="sheet">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3>Pilih Teknisi Standby</h3>
+      <button class="btn-ghost" onclick="closeOrder()">Tutup</button>
+    </div>
+    <table class="table" id="orderTeknisiTable"><thead><tr><th>Nama</th><th>Telp</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
 <script>
-/* ============== Firebase ============== */
+/* ========= Firebase ========= */
 const firebaseConfig={apiKey:"AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",authDomain:"dnt-network-7.firebaseapp.com",projectId:"dnt-network-7",storageBucket:"dnt-network-7.firebasestorage.app",messagingSenderId:"761179668371",appId:"1:761179668371:web:7d1468d0298041d4783266"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
-/* ============== UI Helpers ============== */
-const $=sel=>document.querySelector(sel);
-const $$=sel=>document.querySelectorAll(sel);
+/* ========= Helpers ========= */
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 function showSection(id){$$(".section").forEach(s=>s.style.display="none");$("#"+id).style.display="block"}
-function logout(){alert("Logout sukses!")}
 $("#hamburger").addEventListener("click",()=>{document.getElementById("sidebar").classList.toggle("minimized");document.getElementById("mainContent").classList.toggle("sidebar-minimized")});
-
-/* ============== Format Helpers ============== */
+function logout(){alert("Logout sukses!")}
 function tsToDate(ts){ if(!ts) return null; if(ts.seconds) return new Date(ts.seconds*1000); if(typeof ts==="number") return new Date(ts); return null;}
 function pad(n){return n<10?"0"+n:n}
 function fmtDate(d){ if(!d) return "-"; return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}` }
 function fmtRupiah(n){ if(n==null || isNaN(n)) return "-"; return new Intl.NumberFormat('id-ID').format(n)}
 function durStr(ms){ if(ms==null || ms<0) return "-"; const m=Math.floor(ms/60000);const d=Math.floor(m/1440);const h=Math.floor((m%1440)/60);const mm=m%60; if(d>0) return `${d}h ${h}j ${mm}m`; if(h>0) return `${h}j ${mm}m`; return `${mm}m`; }
 
-/* ============== Dashboard: cards, chart realtime, gangguan terbaru + TTR center ============== */
+/* ========= Dashboard: cards + chart realtime + gangguan terbaru (running TTR) ========= */
 let ispChart;
 function initChart(){
   const ctx=document.getElementById("ispChart").getContext("2d");
@@ -306,66 +407,58 @@ function updateCards(){
   db.collection("billing").where("status","==","unpaid").get().then(s=>$("#totalTunggakan").innerText=s.size);
   db.collection("gangguan").where("status","==","aktif").get().then(s=>$("#totalGangguan").innerText=s.size);
 }
+/* Gangguan terbaru + TTR berjalan */
+let runningTTRRows=[]; // simpan elemen yang perlu diupdate
 function loadDashboardGangguan(){
   const tbody=$("#dashboardGangguan tbody"); tbody.innerHTML="";
+  runningTTRRows=[];
   db.collection("gangguan").orderBy("waktu","desc").limit(5).onSnapshot(snap=>{
-    tbody.innerHTML="";
+    tbody.innerHTML=""; runningTTRRows=[];
     snap.forEach(doc=>{
-      const g=doc.data();
+      const g=doc.data(), id=doc.id;
       const start=tsToDate(g.waktu);
       const end=g.selesai?tsToDate(g.selesai):null;
-      const ttr=end?durStr(end-start): (g.status==="selesai" && g.TTR? g.TTR : "—");
-      const badge = g.status==="selesai"?"ok": (g.status==="aktif"?"warn":"bad");
+      const badge = g.status==="selesai"?"ok": (g.status==="aktif"||g.status==="progres"?"warn":"bad");
       const tr=document.createElement("tr");
+      const ttrSpan=document.createElement("span"); ttrSpan.className=`pill ${badge}`; ttrSpan.id=`ttr-${id}`;
       tr.innerHTML=`<td>${g.user||"-"}</td>
         <td>${g.indikasi||"-"}</td>
         <td>${fmtDate(start)}</td>
-        <td><span class="pill ${badge}">${ttr}</span></td>
+        <td id="ttrcell-${id}"></td>
         <td>${g.status||"-"}</td>`;
       tbody.appendChild(tr);
+      document.getElementById(`ttrcell-${id}`).appendChild(ttrSpan);
+      runningTTRRows.push({el:ttrSpan,start,end,status:g.status});
+      // set teks awal
+      if(end){ ttrSpan.textContent = durStr(end-start); } else { ttrSpan.textContent = durStr(Date.now()-start); }
     });
   });
 }
+setInterval(()=>{ // update running TTR setiap 30 detik
+  runningTTRRows.forEach(r=>{
+    if(!r.start) return;
+    const val = r.end? (r.end - r.start) : (Date.now()-r.start);
+    r.el.textContent = durStr(val);
+  });
+},30000);
 
-/* ============== USER CRUD + LOG ============== */
-let editUserId=null; // null = tambah
-function resetUserForm(){
-  editUserId=null; $("#u_namaLengkap").value="";$("#u_userName").value="";$("#u_alamat").value="";$("#u_telp").value="";$("#u_paket").value="";$("#u_jenisOnt").value="";$("#u_snOnt").value="";$("#u_odp").value="";
-  $("#userFormMode").innerText="Mode: Tambah"; $("#userSaveBtn").innerText="Simpan";
-}
+/* ========= USER CRUD + Log ========= */
+let editUserId=null;
+function resetUserForm(){ editUserId=null; ["u_namaLengkap","u_userName","u_alamat","u_telp","u_paket","u_jenisOnt","u_snOnt","u_odp"].forEach(id=>$("#"+id).value=""); $("#userFormMode").innerText="Mode: Tambah"; $("#userSaveBtn").innerText="Simpan"; }
 function saveUser(){
-  const data={
-    namaLengkap:$("#u_namaLengkap").value.trim(),
-    userName:$("#u_userName").value.trim(),
-    alamat:$("#u_alamat").value.trim(),
-    telp:$("#u_telp").value.trim(),
-    paket:$("#u_paket").value.trim(),
-    jenisOnt:$("#u_jenisOnt").value.trim(),
-    snOnt:$("#u_snOnt").value.trim(),
-    odp:$("#u_odp").value.trim()
-  };
+  const data={ namaLengkap:$("#u_namaLengkap").value.trim(), userName:$("#u_userName").value.trim(), alamat:$("#u_alamat").value.trim(), telp:$("#u_telp").value.trim(), paket:$("#u_paket").value.trim(), jenisOnt:$("#u_jenisOnt").value.trim(), snOnt:$("#u_snOnt").value.trim(), odp:$("#u_odp").value.trim() };
   if(!data.namaLengkap || !data.userName){alert("Nama & Username wajib diisi");return}
   if(editUserId){
     db.collection("user").doc(editUserId).get().then(doc=>{
       const before=doc.data()||{};
       db.collection("user").doc(editUserId).set(data,{merge:true}).then(()=>{
-        // log perubahan
-        db.collection("user").doc(editUserId).collection("logs").add({
-          waktu:firebase.firestore.FieldValue.serverTimestamp(),
-          aksi:"update",
-          detail: JSON.stringify({before, after:data})
-        });
+        db.collection("user").doc(editUserId).collection("logs").add({waktu:firebase.firestore.FieldValue.serverTimestamp(),aksi:"update",detail:JSON.stringify({before,after:data})});
         resetUserForm(); loadUserTable(); loadODPTable(); fillLaporanUserSelect();
       });
     });
   }else{
-    db.collection("user").add(data).then((ref)=>{
-      // log tambah
-      db.collection("user").doc(ref.id).collection("logs").add({
-        waktu:firebase.firestore.FieldValue.serverTimestamp(),
-        aksi:"create",
-        detail: JSON.stringify(data)
-      });
+    db.collection("user").add(data).then(ref=>{
+      db.collection("user").doc(ref.id).collection("logs").add({waktu:firebase.firestore.FieldValue.serverTimestamp(),aksi:"create",detail:JSON.stringify(data)});
       resetUserForm(); loadUserTable(); loadODPTable(); fillLaporanUserSelect();
     });
   }
@@ -373,9 +466,8 @@ function saveUser(){
 function loadUserTable(){
   const tbody=$("#userTable tbody"); tbody.innerHTML="";
   db.collection("user").orderBy("namaLengkap","asc").get().then(snap=>{
-    tbody.innerHTML="";
     snap.forEach(doc=>{
-      const u=doc.data(); const id=doc.id;
+      const u=doc.data(), id=doc.id;
       const tr=document.createElement("tr");
       tr.innerHTML=`<td>${u.namaLengkap||"-"}</td>
         <td>${u.userName||"-"}</td>
@@ -402,55 +494,43 @@ function editUser(id){
     showSection('user');
   });
 }
-function deleteUser(id){
-  if(!confirm("Hapus user ini?"))return;
-  db.collection("user").doc(id).delete().then(()=>{loadUserTable(); loadODPTable(); fillLaporanUserSelect()});
-}
+function deleteUser(id){ if(!confirm("Hapus user ini?"))return; db.collection("user").doc(id).delete().then(()=>{loadUserTable(); loadODPTable(); fillLaporanUserSelect()}); }
 function openLog(userId){
   $("#logModal").style.display="flex";
   const tbody=$("#logTable tbody"); tbody.innerHTML="";
   db.collection("user").doc(userId).collection("logs").orderBy("waktu","desc").get().then(snap=>{
-    snap.forEach(d=>{
-      const l=d.data();
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${fmtDate(tsToDate(l.waktu))}</td><td>${l.aksi}</td><td><pre style="white-space:pre-wrap;margin:0">${(l.detail||"")}</pre></td>`;
-      tbody.appendChild(tr);
-    });
+    snap.forEach(d=>{ const l=d.data(); const tr=document.createElement("tr"); tr.innerHTML=`<td>${fmtDate(tsToDate(l.waktu))}</td><td>${l.aksi}</td><td><pre style="white-space:pre-wrap;margin:0">${(l.detail||"")}</pre></td>`; tbody.appendChild(tr); });
   });
 }
 function closeLog(){ $("#logModal").style.display="none" }
 
-/* ============== ODP CRUD + daftar pelanggan per ODP ============== */
-function addODP(){
-  const nama=$("#odpNama").value.trim(); if(!nama) {alert("Nama ODP wajib");return}
-  db.collection("odp").add({nama}).then(()=>{$("#odpNama").value=""; loadODPTable()});
-}
-function loadODPTable(){
+/* ========= ODP ========= */
+let odpCache=[]; // untuk search
+function addODP(){ const nama=$("#odpNama").value.trim(); if(!nama){alert("Nama ODP wajib");return} db.collection("odp").add({nama}).then(()=>{$("#odpNama").value=""; loadODPTable()}); }
+async function loadODPTable(){
   const tbody=$("#odpTable tbody"); tbody.innerHTML="";
-  // hitung jumlah pelanggan per ODP
-  db.collection("odp").orderBy("nama","asc").get().then(async (snap)=>{
-    tbody.innerHTML="";
-    const odpDocs = snap.docs;
-    for(const doc of odpDocs){
-      const o = doc.data(); const id = doc.id;
-      const countSnap = await db.collection("user").where("odp","==",o.nama).get();
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${o.nama}</td><td>${countSnap.size}</td>
-        <td class="row">
-          <button class="btn" onclick="showODPDetail('${o.nama}')">Lihat</button>
-          <button class="btn-bad" onclick="deleteODP('${id}','${o.nama}')">Hapus</button>
-        </td>`;
-      tbody.appendChild(tr);
-    }
+  const snap=await db.collection("odp").orderBy("nama","asc").get(); odpCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+  for(const o of odpCache){
+    const countSnap=await db.collection("user").where("odp","==",o.nama).get();
+    const tr=document.createElement("tr");
+    tr.dataset.name=o.nama.toLowerCase();
+    tr.innerHTML=`<td>${o.nama}</td><td>${countSnap.size}</td>
+      <td class="row"><button class="btn" onclick="showODPDetail('${o.nama}')">Lihat</button>
+      <button class="btn-bad" onclick="deleteODP('${o.id}','${o.nama}')">Hapus</button></td>`;
+    tbody.appendChild(tr);
+  }
+}
+function filterODP(){
+  const q=$("#odpSearch").value.trim().toLowerCase();
+  $$("#odpTable tbody tr").forEach(tr=>{
+    tr.style.display = (!q || tr.dataset.name.includes(q)) ? "" : "none";
   });
 }
 function showODPDetail(nama){
   $("#detailODPName").innerText=nama;
   const tbody=$("#odpUserTable tbody"); tbody.innerHTML="";
   db.collection("user").where("odp","==",nama).orderBy("namaLengkap","asc").get().then(snap=>{
-    snap.forEach(d=>{
-      const u=d.data();
-      const tr=document.createElement("tr");
+    snap.forEach(d=>{ const u=d.data(); const tr=document.createElement("tr");
       tr.innerHTML=`<td>${u.namaLengkap||"-"}</td><td>${u.userName||"-"}</td><td>${u.telp||"-"}</td><td>${u.paket||"-"}</td><td>${u.alamat||"-"}</td>`;
       tbody.appendChild(tr);
     });
@@ -458,48 +538,127 @@ function showODPDetail(nama){
 }
 function deleteODP(id,nama){
   if(!confirm("Hapus ODP ini? (data user tidak dihapus)"))return;
-  db.collection("odp").doc(id).delete().then(()=>{ // kosongkan field ODP pada user yg refer ke nama ini? tidak wajib
-    loadODPTable();
-    const showing=$("#detailODPName").innerText; if(showing===nama){ $("#detailODPName").innerText="-"; $("#odpUserTable tbody").innerHTML="" }
-  });
+  db.collection("odp").doc(id).delete().then(()=>{loadODPTable(); if($("#detailODPName").innerText===nama){ $("#detailODPName").innerText="-"; $("#odpUserTable tbody").innerHTML="" }});
 }
 
-/* ============== Billing (list + bayar/hapus) ============== */
-function loadBillingList(){
-  const container=$("#billingList"); container.innerHTML="";
-  db.collection("billing").orderBy("waktu","desc").get().then(snap=>{
-    if(snap.empty){container.innerHTML='<div class="muted">Belum ada billing.</div>';return}
-    snap.forEach(d=>{
-      const b=d.data(); const date=fmtDate(tsToDate(b.waktu));
-      const row=document.createElement("div"); row.className="row"; row.style.justifyContent="space-between"; row.style.alignItems="center"; row.style.padding="8px 0"; row.style.borderBottom="1px solid #eef2f7";
-      row.innerHTML=`
-        <div style="display:flex;align-items:center;gap:10px"><span class="icon" style="color:#ffdd00">👤</span><div><div style="font-weight:600">${b.user}</div><div class="muted">${date}</div></div></div>
-        <div class="row">
-          <div class="muted" style="min-width:100px;text-align:right">Rp ${fmtRupiah(b.jumlah)}</div>
-          <div class="pill ${b.status==='paid'?'ok':'warn'}">${b.status}</div>
-          ${b.status==='unpaid'?`<button class="btn-ok" onclick="payBilling('${d.id}')">Bayar</button>`:""}
-          <button class="btn-ghost" onclick="deleteDoc('billing','${d.id}',loadBillingList)">Hapus</button>
-        </div>`;
-      container.appendChild(row);
-    });
-  });
+/* ========= Paket ========= */
+let editPaketId=null;
+function resetPaket(){ editPaketId=null; $("#p_nama").value=""; $("#p_bw").value=""; $("#p_harga").value=""; loadPaketTable(); }
+function savePaket(){
+  const data={namaPaket:$("#p_nama").value.trim(), bandwidth:$("#p_bw").value.trim(), harga:Number($("#p_harga").value||0)};
+  if(!data.namaPaket){alert("Nama paket wajib");return}
+  if(editPaketId){ db.collection("paket").doc(editPaketId).set(data,{merge:true}).then(resetPaket); }
+  else{ db.collection("paket").add(data).then(resetPaket); }
 }
-function payBilling(id){ db.collection("billing").doc(id).update({status:"paid"}).then(()=>{loadBillingList(); updateCards()}) }
-
-/* ============== Gangguan (list + progres realtime) ============== */
-let progUnsub=null;
-function loadGangguan(){
-  const tbody=$("#gangguanTable tbody"); tbody.innerHTML="";
-  db.collection("gangguan").orderBy("waktu","desc").get().then(snap=>{
-    tbody.innerHTML="";
-    snap.forEach(d=>{
-      const g=d.data();
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${g.user||"-"}</td><td>${g.indikasi||"-"}</td><td>${g.teknisi||"-"}</td><td>${g.status||"-"}</td>
-        <td><button class="btn" onclick="showProgressRealtime('${d.id}')">Progres</button></td>`;
+function loadPaketTable(){
+  const tbody=$("#paketTable tbody"); tbody.innerHTML="";
+  db.collection("paket").orderBy("namaPaket","asc").get().then(snap=>{
+    snap.forEach(d=>{ const p=d.data(), id=d.id; const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${p.namaPaket}</td><td>${p.bandwidth||"-"}</td><td>Rp ${fmtRupiah(p.harga)}</td>
+      <td class="row"><button class="btn" onclick="editPaket('${id}')">Edit</button><button class="btn-bad" onclick="deleteDoc('paket','${id}',loadPaketTable)">Hapus</button></td>`;
       tbody.appendChild(tr);
     });
   });
+}
+function editPaket(id){ db.collection("paket").doc(id).get().then(doc=>{ const p=doc.data(); editPaketId=id; $("#p_nama").value=p.namaPaket||""; $("#p_bw").value=p.bandwidth||""; $("#p_harga").value=p.harga||0 })}
+
+/* ========= Billing (Periode & Tunggakan) ========= */
+let billingTab="periode";
+function switchBillingTab(tab){ billingTab=tab; $("#tabPeriode").classList.toggle("active",tab==='periode'); $("#tabTunggakan").classList.toggle("active",tab==='tunggakan'); loadBillingTable(); }
+function initBillingFilters(){
+  const monthSel=$("#billMonth"), yearSel=$("#billYear");
+  // bulan
+  const months=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  months.forEach((m,i)=>{ const opt=document.createElement("option"); opt.value=(i+1); opt.textContent=m; monthSel.appendChild(opt); });
+  // tahun (5 thn ke belakang)
+  const now=new Date().getFullYear();
+  for(let y=now;y>=now-5;y--){ const opt=document.createElement("option"); opt.value=y; opt.textContent=y; yearSel.appendChild(opt); }
+}
+function loadBillingTable(){
+  const tbody=$("#billingTable tbody"); tbody.innerHTML="";
+  let q=db.collection("billing");
+  if(billingTab==='tunggakan') q=q.where("status","==","unpaid");
+  q.orderBy("waktu","desc").get().then(snap=>{
+    const month=$("#billMonth").value, year=$("#billYear").value;
+    snap.forEach(d=>{
+      const b=d.data(); const dt=tsToDate(b.waktu); const m=dt?(""+(dt.getMonth()+1)):""; const y=dt?(""+dt.getFullYear()):"";
+      if(month && m!==month) return;
+      if(year && y!==year) return;
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${fmtDate(dt)}</td><td>${b.user}</td><td>Rp ${fmtRupiah(b.jumlah)}</td><td>${b.status}</td>
+      <td class="row">${b.status==='unpaid'?`<button class="btn-ok" onclick="payBilling('${d.id}')">Bayar</button>`:""}<button class="btn-ghost" onclick="deleteDoc('billing','${d.id}',loadBillingTable)">Hapus</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+function payBilling(id){ db.collection("billing").doc(id).update({status:"paid"}).then(()=>{loadBillingTable(); updateCards()}) }
+
+/* ========= Kas ========= */
+function addKas(){
+  const data={tipe:$("#k_tipe").value, jumlah:Number($("#k_jumlah").value||0), keterangan:$("#k_ket").value.trim(), waktu:firebase.firestore.FieldValue.serverTimestamp()};
+  db.collection("kas").add(data).then(()=>{ $("#k_jumlah").value=""; $("#k_ket").value=""; loadKasTable(); updateCards(); });
+}
+function loadKasTable(){
+  const tbody=$("#kasTable tbody"); tbody.innerHTML="";
+  db.collection("kas").orderBy("waktu","desc").get().then(snap=>{
+    snap.forEach(d=>{
+      const k=d.data(), tr=document.createElement("tr");
+      tr.innerHTML=`<td>${fmtDate(tsToDate(k.waktu))}</td><td>${k.tipe}</td><td>Rp ${fmtRupiah(k.jumlah)}</td><td>${k.keterangan||"-"}</td>
+      <td><button class="btn-ghost" onclick="deleteDoc('kas','${d.id}',loadKasTable)">Hapus</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+/* ========= Teknisi ========= */
+let editTeknisiId=null;
+function resetTeknisi(){ editTeknisiId=null; $("#t_nama").value=""; $("#t_telp").value=""; $("#t_standby").value="true"; loadTeknisiTable(); }
+function saveTeknisi(){
+  const data={nama:$("#t_nama").value.trim(), telp:$("#t_telp").value.trim(), standby:$("#t_standby").value==="true"};
+  if(!data.nama){alert("Nama teknisi wajib");return}
+  if(editTeknisiId){ db.collection("teknisi").doc(editTeknisiId).set(data,{merge:true}).then(resetTeknisi); }
+  else{ db.collection("teknisi").add(data).then(resetTeknisi); }
+}
+function loadTeknisiTable(){
+  const tbody=$("#teknisiTable tbody"); tbody.innerHTML="";
+  db.collection("teknisi").orderBy("nama","asc").get().then(snap=>{
+    snap.forEach(d=>{
+      const t=d.data(), id=d.id;
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${t.nama}</td><td>${t.telp||"-"}</td><td>${t.standby?"Standby":"Off"}</td>
+      <td class="row"><button class="btn" onclick="editTeknisi('${id}')">Edit</button><button class="btn-bad" onclick="deleteDoc('teknisi','${id}',loadTeknisiTable)">Hapus</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+function editTeknisi(id){ db.collection("teknisi").doc(id).get().then(doc=>{ const t=doc.data(); editTeknisiId=id; $("#t_nama").value=t.nama||""; $("#t_telp").value=t.telp||""; $("#t_standby").value=String(!!t.standby); showSection('teknisi') })}
+
+/* ========= Gangguan (Order teknisi + progres) ========= */
+let progUnsub=null, orderGangguanId=null;
+function refreshGangguan(){ loadGangguan(); }
+function loadGangguan(){
+  const tbody=$("#gangguanTable tbody"); tbody.innerHTML="";
+  db.collection("gangguan").orderBy("waktu","desc").get().then(snap=>{
+    snap.forEach(d=>{
+      const g=d.data(), id=d.id;
+      const aksi = (g.status==="menunggu")
+        ? `<button class="btn" onclick="openOrder('${id}')">Order</button>`
+        : (g.status==="progres" ? `<span class="pill warn">progres</span>` : `<span class="pill ok">selesai</span>`);
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${g.user||"-"}</td><td>${g.indikasi||"-"}</td><td>${g.teknisi||"-"}</td><td>${g.status||"-"}</td>
+        <td class="row">
+          ${aksi}
+          <button class="btn" onclick="showProgressRealtime('${id}')">Progres</button>
+          <button class="btn-ghost" onclick="markSelesai('${id}')">Selesai</button>
+          <button class="btn-bad" onclick="deleteDoc('gangguan','${id}',loadGangguan)">Hapus</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+function markSelesai(id){
+  const now=firebase.firestore.FieldValue.serverTimestamp();
+  db.collection("gangguan").doc(id).update({status:"selesai", selesai: now, progres:100}).then(()=>{loadGangguan(); updateCards();});
 }
 function showProgressRealtime(gangguanId){
   if(progUnsub) {progUnsub(); progUnsub=null}
@@ -510,51 +669,71 @@ function showProgressRealtime(gangguanId){
     label.innerText = (Math.max(0,Math.min(100,p)))+"%";
   });
 }
+/* Order teknisi */
+function openOrder(gangguanId){
+  orderGangguanId=gangguanId;
+  $("#orderModal").style.display="flex";
+  const tbody=$("#orderTeknisiTable tbody"); tbody.innerHTML="";
+  db.collection("teknisi").where("standby","==",true).orderBy("nama","asc").get().then(snap=>{
+    if(snap.empty){ const tr=document.createElement("tr"); tr.innerHTML=`<td colspan="3">Tidak ada teknisi standby.</td>`; tbody.appendChild(tr); return }
+    snap.forEach(d=>{
+      const t=d.data(); const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${t.nama}</td><td>${t.telp||"-"}</td><td><button class="btn" onclick="assignTeknisi('${orderGangguanId}','${t.nama}')">Pilih</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+function closeOrder(){ $("#orderModal").style.display="none"; orderGangguanId=null; }
+function assignTeknisi(gangguanId, namaTeknisi){
+  db.collection("gangguan").doc(gangguanId).update({teknisi:namaTeknisi, status:"progres"}).then(()=>{ closeOrder(); loadGangguan(); updateCards(); });
+}
 
-/* ============== Laporan (role pelanggan) ============== */
+/* ========= Material ========= */
+let editMaterialId=null;
+function resetMaterial(){ editMaterialId=null; $("#m_nama").value=""; $("#m_stok").value=""; $("#m_satuan").value=""; loadMaterialTable(); }
+function saveMaterial(){
+  const data={nama:$("#m_nama").value.trim(), stok:Number($("#m_stok").value||0), satuan:$("#m_satuan").value.trim()};
+  if(!data.nama){alert("Nama material wajib");return}
+  if(editMaterialId){ db.collection("material").doc(editMaterialId).set(data,{merge:true}).then(resetMaterial); }
+  else{ db.collection("material").add(data).then(resetMaterial); }
+}
+function loadMaterialTable(){
+  const tbody=$("#materialTable tbody"); tbody.innerHTML="";
+  db.collection("material").orderBy("nama","asc").get().then(snap=>{
+    snap.forEach(d=>{
+      const m=d.data(), id=d.id;
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${m.nama}</td><td>${m.stok}</td><td>${m.satuan||"-"}</td>
+      <td class="row"><button class="btn" onclick="editMaterial('${id}')">Edit</button><button class="btn-bad" onclick="deleteDoc('material','${id}',loadMaterialTable)">Hapus</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+}
+function editMaterial(id){ db.collection("material").doc(id).get().then(doc=>{ const m=doc.data(); editMaterialId=id; $("#m_nama").value=m.nama||""; $("#m_stok").value=m.stok||0; $("#m_satuan").value=m.satuan||""; showSection('material') })}
+
+/* ========= Laporan ========= */
 function fillLaporanUserSelect(){
   const sel=$("#lapUserSelect"); sel.innerHTML="";
   db.collection("user").orderBy("namaLengkap","asc").get().then(snap=>{
-    snap.forEach(d=>{
-      const u=d.data(); const opt=document.createElement("option");
-      opt.value=u.userName; opt.textContent=`${u.namaLengkap} (${u.userName})`;
-      sel.appendChild(opt);
-    });
+    snap.forEach(d=>{ const u=d.data(); const opt=document.createElement("option"); opt.value=u.userName; opt.textContent=`${u.namaLengkap} (${u.userName})`; sel.appendChild(opt); });
   });
 }
 function loadLaporan(){
   const user=$("#lapUserSelect").value; if(!user){alert("Pilih user");return}
-  // Billing summary
   db.collection("billing").where("user","==",user).orderBy("waktu","desc").get().then(snap=>{
-    let unpaid=0,sum=0;
-    const tbody=$("#lapBillingTable tbody"); tbody.innerHTML="";
-    snap.forEach(d=>{
-      const b=d.data(); if(b.status==="unpaid"){unpaid++; sum+=Number(b.jumlah||0)}
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${fmtDate(tsToDate(b.waktu))}</td><td>Rp ${fmtRupiah(b.jumlah)}</td><td>${b.status}</td>`;
-      tbody.appendChild(tr);
-    });
+    let unpaid=0,sum=0; const tbody=$("#lapBillingTable tbody"); tbody.innerHTML="";
+    snap.forEach(d=>{ const b=d.data(); if(b.status==="unpaid"){unpaid++; sum+=Number(b.jumlah||0)} const tr=document.createElement("tr"); tr.innerHTML=`<td>${fmtDate(tsToDate(b.waktu))}</td><td>Rp ${fmtRupiah(b.jumlah)}</td><td>${b.status}</td>`; tbody.appendChild(tr); });
     $("#lapUnpaid").innerText=unpaid; $("#lapUnpaidSum").innerText="Rp "+fmtRupiah(sum);
   });
-  // Gangguan + avg TTR
   db.collection("gangguan").where("user","==",user).orderBy("waktu","desc").get().then(snap=>{
-    const tbody=$("#lapGangTable tbody"); tbody.innerHTML="";
-    let totalTTR=0, cntTTR=0;
-    snap.forEach(d=>{
-      const g=d.data();
-      const start=tsToDate(g.waktu); const end=g.selesai?tsToDate(g.selesai):null;
-      const ttr=end? (end-start) : null;
-      if(ttr!=null){ totalTTR+=ttr; cntTTR++; }
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${fmtDate(start)}</td><td>${fmtDate(end)}</td><td>${ttr==null?"—":durStr(ttr)}</td><td>${g.status||"-"}</td>`;
-      tbody.appendChild(tr);
-    });
-    $("#lapGangCount").innerText=snap.size;
-    $("#lapAvgTTR").innerText= cntTTR? durStr(Math.round(totalTTR/cntTTR)) : "-";
+    const tbody=$("#lapGangTable tbody"); tbody.innerHTML=""; let totalTTR=0,cnt=0;
+    snap.forEach(d=>{ const g=d.data(); const st=tsToDate(g.waktu), en=g.selesai?tsToDate(g.selesai):null; const ttr=en?(en-st):null; if(ttr!=null){totalTTR+=ttr;cnt++}
+      const tr=document.createElement("tr"); tr.innerHTML=`<td>${fmtDate(st)}</td><td>${fmtDate(en)}</td><td>${ttr==null?"—":durStr(ttr)}</td><td>${g.status||"-"}</td>`; tbody.appendChild(tr); });
+    $("#lapGangCount").innerText=snap.size; $("#lapAvgTTR").innerText=cnt?durStr(Math.round(totalTTR/cnt)):"-";
   });
 }
 
-/* ============== Edit ISP (nama + logo upload preview) ============== */
+/* ========= Edit ISP ========= */
 function editISP(){
   const name=$("#newISPName").value.trim(); if(name) $("#ispName").innerText=name;
   const f=$("#ispLogo").files[0];
@@ -566,18 +745,16 @@ function editISP(){
 }
 function clearLogo(){ $("#brandLogo").src=""; $("#brandLogo").style.display="none"; $("#logoPreview").innerHTML="Belum ada logo." }
 
-/* ============== Generic ============== */
-function deleteDoc(col,id,cb){
-  if(!confirm("Yakin hapus data ini?"))return;
-  db.collection(col).doc(id).delete().then(()=>{ if(typeof cb==="function") cb(); updateCards() });
-}
+/* ========= Generic ========= */
+function deleteDoc(col,id,cb){ if(!confirm("Yakin hapus data ini?"))return; db.collection(col).doc(id).delete().then(()=>{ if(typeof cb==="function") cb(); updateCards(); }); }
 
-/* ============== Bootstrap ============== */
+/* ========= Bootstrap ========= */
 document.addEventListener("DOMContentLoaded",()=>{
   showSection("dashboard");
   initChart(); loadChartRealtime();
   updateCards(); loadDashboardGangguan();
-  loadUserTable(); loadODPTable(); loadBillingList(); loadGangguan(); fillLaporanUserSelect();
+  // load semua tabel
+  loadUserTable(); loadODPTable(); loadPaketTable(); loadBillingTable(); initBillingFilters(); loadKasTable(); loadTeknisiTable(); loadGangguan(); loadMaterialTable(); fillLaporanUserSelect();
 });
 </script>
 </body>
