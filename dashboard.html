@@ -5,480 +5,523 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Starnet💫 Admin Panel</title>
 
-<!-- ICONS -->
+<!-- ====== FONT & BASIC RESET ====== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-<!-- CHART -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-
-<!-- FIREBASE (v10 modular) -->
-<script type="module" crossorigin src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"></script>
-<script type="module" crossorigin src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"></script>
-<script type="module" crossorigin src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --sidebar-w: 300px;
-    --sidebar-w-mini: 92px;
-    --grad1:#1677ff;
-    --grad2:#1553ff;
-    --bg:#f4f6fb;
-    --card:#ffffff;
+    --brand:#1862ff;             /* biru sidebar */
+    --brand-grad:#0f57ff;
+    --brand-2:#0f9bff;
+    --text:#0f172a;
     --muted:#6b7280;
-    --ring:#e5e7eb;
-    --primary:#1677ff;
-    --success:#0ea5a6;
+    --bg:#f5f7fb;
+    --card:#ffffff;
+    --ring:#e5ecff;
+    --success:#10b981;
     --danger:#ef4444;
     --warning:#f59e0b;
     --cyan:#06b6d4;
+    --sidebar-w:280px;           /* lebar sidebar saat terbuka */
+    --sidebar-w-collapsed:82px;  /* lebar sidebar saat collapse */
+    --radius:18px;
+    --radius-sm:12px;
+    --shadow:0 8px 24px rgba(15, 23, 42, .08);
+    --shadow-sm:0 6px 16px rgba(15, 23, 42, .06);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-    background:var(--bg); color:#0f172a;
+    margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+    color:var(--text);
+    background:var(--bg);
   }
-  .app{display:flex; min-height:100%}
 
-  /* SIDEBAR */
+  /* ====== LAYOUT ====== */
+  .app{
+    display:flex;
+    min-height:100dvh;
+    overflow:hidden;
+  }
   .sidebar{
+    position:fixed;
+    inset:0 auto 0 0;
     width:var(--sidebar-w);
-    background:linear-gradient(180deg,var(--grad1),var(--grad2));
-    color:#fff; padding:24px 16px; transition:width .2s ease;
-    position:sticky; top:0; height:100dvh;
+    background:linear-gradient(180deg,var(--brand),var(--brand-grad));
+    color:#fff;
+    border-right:1px solid rgba(255,255,255,.08);
+    padding:22px 14px;
+    transition:width .25s ease;
+    z-index:50;
   }
-  .brand{display:flex; align-items:center; gap:10px; padding:8px 12px; margin-bottom:18px;}
-  .brand .logo{font-size:28px; filter:drop-shadow(0 4px 12px rgba(0,0,0,.25))}
-  .brand .name{font-size:26px; font-weight:800; letter-spacing:.2px}
-  .menu{display:flex; flex-direction:column; gap:8px; margin-top:6px}
-  .mitem{
-    display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:14px;
-    font-weight:600; cursor:pointer; user-select:none; transition:.15s;
+  .sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+    margin:4px 8px 20px 8px; font-weight:800; font-size:22px;
+    letter-spacing:.2px;
   }
-  .mitem i{font-size:20px; width:22px; text-align:center}
-  .mitem:hover{background:rgba(255,255,255,.09)}
-  .mitem.active{background:rgba(255,255,255,.18); box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+  .brand .logo{
+    width:40px; height:40px; border-radius:12px;
+    display:grid; place-items:center;
+    background:#fff; color:#ffb800; font-size:22px; font-weight:900;
+    box-shadow:var(--shadow-sm);
+  }
   .collapse-btn{
-    position:absolute; right:-14px; top:16px; width:28px; height:28px; border-radius:8px;
-    background:#fff; color:var(--primary); display:grid; place-items:center; cursor:pointer;
-    box-shadow:0 6px 24px rgba(22, 119, 255,.35);
+    position:absolute; right:-14px; top:58px;
+    width:34px; height:34px; border-radius:50%;
+    background:#fff; color:var(--brand);
+    display:grid; place-items:center; cursor:pointer;
+    box-shadow:0 6px 16px rgba(15,23,42,.25);
+    border:3px solid var(--ring);
+  }
+  .nav{
+    margin-top:8px; display:flex; flex-direction:column; gap:8px;
+  }
+  .nav a{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 14px; text-decoration:none; color:#eaf1ff;
+    border-radius:14px; transition:.2s;
+  }
+  .nav a .ic{ width:22px; height:22px; display:inline-grid; place-items:center; }
+  .nav a.active, .nav a:hover{
+    background:rgba(255,255,255,.12);
+  }
+  .nav span.label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* hide label when collapsed */
+  .sidebar.collapsed .label{ display:none; }
+  .sidebar.collapsed .brand span{ display:none; }
+  .sidebar.collapsed .brand{ justify-content:center; }
+  .sidebar.collapsed .brand .logo{ margin:0 auto; }
+  .sidebar.collapsed .collapse-btn{ right:-14px; }
+
+  .main{
+    flex:1;
+    margin-left:var(--sidebar-w);
+    transition:margin-left .25s ease;
+    padding:22px;
+  }
+  .sidebar.collapsed + .main{
+    margin-left:var(--sidebar-w-collapsed);
   }
 
-  /* MINI SIDEBAR */
-  .sidebar.mini{width:var(--sidebar-w-mini)}
-  .sidebar.mini .name, .sidebar.mini .mtext{display:none}
-  .sidebar.mini .brand{justify-content:center}
-  .sidebar.mini .mitem{justify-content:center}
+  /* ====== TOPBAR ====== */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--card); border-radius:var(--radius);
+    padding:14px 18px; box-shadow:var(--shadow);
+    position:sticky; top:12px; z-index:10;
+  }
+  .topbar h1{ font-size:20px; margin:0; font-weight:800; letter-spacing:.2px;}
+  .userchip{
+    display:flex; align-items:center; gap:10px; color:#1f2937; font-weight:600;
+  }
+  .userchip .avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#06b6d4);
+    display:grid; place-items:center; color:#fff; font-weight:800;
+    box-shadow:var(--shadow-sm);
+  }
 
-  /* MAIN */
-  .main{flex:1; padding:18px 22px 28px 22px;}
-  .topbar{display:flex; align-items:center; gap:14px; margin-bottom:14px}
-  .hamb{font-size:26px; color:#334155; cursor:pointer}
-  .title{font-weight:800; font-size:18px}
-  .userbox{margin-left:auto; display:flex; align-items:center; gap:10px; color:#334155}
-
-  /* GRID CARDS */
-  .cards{display:grid; grid-template-columns:repeat(12,1fr); gap:16px}
+  /* ====== GRID CARDS ====== */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+    gap:18px; margin-top:18px;
+  }
   .card{
-    grid-column:span 4; background:var(--card); border-radius:16px; padding:18px; box-shadow:0 6px 24px rgba(15,23,42,.06);
-    border:1px solid var(--ring); min-height:108px; display:flex; flex-direction:column; justify-content:center;
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:18px;
   }
-  .card .cap{font-weight:700; color:#475569; display:flex; align-items:center; gap:10px}
-  .stat{font-weight:800; font-size:28px; margin-top:6px}
-  .k-green{color:#16a34a} .k-red{color:#ef4444} .k-cyan{color:#06b6d4}
-
-  /* SECTION */
-  .section{background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px; margin-top:16px; box-shadow:0 8px 30px rgba(15,23,42,.05)}
-  .section h3{margin:0 0 10px 0; font-size:18px}
-  .toolbar{display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap}
-  .btn{
-    padding:10px 14px; border-radius:12px; border:1px solid var(--ring); background:#fff; cursor:pointer; font-weight:700;
-    transition:.15s; display:inline-flex; align-items:center; gap:10px;
+  .kpi{
+    display:flex; align-items:center; justify-content:space-between;
+    border:1px solid var(--ring);
   }
-  .btn:hover{transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,.08)}
-  .btn.primary{background:var(--primary); border-color:var(--primary); color:#fff}
-  .btn.success{background:var(--success); border-color:var(--success); color:#fff}
-  .btn.danger{background:var(--danger); border-color:var(--danger); color:#fff}
-  .btn.warning{background:var(--warning); border-color:var(--warning); color:#fff}
-  .btn.cyan{background:var(--cyan); border-color:var(--cyan); color:#fff}
-
-  .table{width:100%; border-collapse:separate; border-spacing:0; border-radius:14px; overflow:hidden; border:1px solid var(--ring)}
-  .table th, .table td{padding:10px 12px; text-align:left; border-bottom:1px solid var(--ring); background:#fff}
-  .table th{background:#f8fafc; font-weight:800; color:#334155}
-  .table tr:last-child td{border-bottom:none}
-  .badge{padding:4px 10px; border-radius:999px; font-weight:700; font-size:12px}
-  .b-on{background:#dcfce7; color:#166534}
-  .b-off{background:#fee2e2; color:#991b1b}
-  .b-warn{background:#fef3c7; color:#92400e}
-
-  /* FORM */
-  .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
-  .f{grid-column:span 12}
-  .f6{grid-column:span 6} .f4{grid-column:span 4} .f3{grid-column:span 3}
-  .input, select, textarea{
-    width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--ring); background:#fff; outline:none;
+  .kpi h3{ margin:2px 0 8px; font-size:15px; color:#4b5563; font-weight:700; }
+  .kpi .num{ font-size:28px; font-weight:800; letter-spacing:.3px;}
+  .kpi .badge{
+    width:44px; height:44px; border-radius:14px;
+    display:grid; place-items:center; color:#fff; font-weight:800;
+    box-shadow:var(--shadow-sm);
   }
-  label{font-size:12px; font-weight:800; color:#475569; display:block; margin-bottom:6px}
+  .kpi .green{ background:linear-gradient(135deg,#22c55e,#16a34a); }
+  .kpi .red{ background:linear-gradient(135deg,#ef4444,#f43f5e); }
+  .kpi .cyan{ background:linear-gradient(135deg,#06b6d4,#0ea5e9); }
+  .kpi .amber{ background:linear-gradient(135deg,#f59e0b,#f97316); }
+  .kpi .purple{ background:linear-gradient(135deg,#8b5cf6,#6366f1); }
+  .kpi .slate{ background:linear-gradient(135deg,#64748b,#475569); }
 
-  /* MODAL */
-  .modal{position:fixed; inset:0; background:rgba(15,23,42,.5); display:none; align-items:center; justify-content:center; padding:16px; z-index:50}
-  .modal.show{display:flex}
-  .mcard{background:#fff; border-radius:16px; width:min(820px,96vw); padding:16px; border:1px solid var(--ring); box-shadow:0 24px 80px rgba(2,6,23,.25)}
-  .mhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
-  .close{cursor:pointer; font-size:22px}
+  /* ====== TABS ====== */
+  .tabs{
+    display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; margin-bottom:10px;
+  }
+  .tab-btn{
+    background:#eef2ff; color:#1d4ed8; border:1px solid #dbe3ff;
+    padding:8px 12px; border-radius:12px; font-weight:700; cursor:pointer;
+  }
+  .tab-btn.active{ background:#1d4ed8; color:#fff; }
 
-  /* RESPONSIVE */
-  @media (max-width: 1100px){
-    .card{grid-column:span 6}
+  /* ====== TABLE ====== */
+  .table-wrap{ overflow:auto; border:1px solid var(--ring); border-radius:14px; }
+  table{ border-collapse:separate; border-spacing:0; width:100%; min-width:720px; }
+  thead th{
+    text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.12em;
+    color:#6b7280; background:#f8fbff; position:sticky; top:0; z-index:1;
+    padding:12px 14px; border-bottom:1px solid var(--ring);
+  }
+  tbody td{ padding:12px 14px; border-bottom:1px solid #f1f5f9; }
+  tbody tr:hover{ background:#fafcff; }
+  .actions button{
+    border:0; padding:6px 10px; border-radius:10px; cursor:pointer; font-weight:700;
+  }
+  .btn{ border:0; background:#1d4ed8; color:#fff; padding:10px 14px; border-radius:12px; font-weight:800; box-shadow:var(--shadow-sm); }
+  .btn.secondary{ background:#0ea5e9; }
+  .btn.warn{ background:#f59e0b; }
+  .btn.ghost{ background:#eef2ff; color:#1d4ed8; }
+  .btn.danger{ background:#ef4444; }
+  .btn.small{ padding:6px 10px; font-size:12px; border-radius:10px; }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+
+  /* ====== FORM ====== */
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:.12em;}
+  input, select, textarea{
+    width:100%; padding:12px 12px; border-radius:12px; border:1px solid #e5e7eb; outline:0;
+    background:#fff; font:inherit;
+  }
+  textarea{ min-height:96px; resize:vertical; }
+  .muted{ color:var(--muted); font-size:12px; }
+  .right{ text-align:right; }
+  .hidden{ display:none !important; }
+
+  /* ====== FOOT ====== */
+  .foot{ color:#64748b; font-size:12px; text-align:center; margin:22px 0 8px; }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 980px){
+    .grid{ grid-template-columns:repeat(6,1fr); }
   }
   @media (max-width: 720px){
-    .card{grid-column:span 12}
-    .sidebar{position:fixed; z-index:60; transform:translateX(-110%);}
-    .sidebar.show{transform:none}
-    .main{padding:16px}
+    .grid{ grid-template-columns:repeat(1,1fr); }
+    .sidebar{ width:var(--sidebar-w-collapsed); }
+    .main{ margin-left:var(--sidebar-w-collapsed); }
+  }
+
+  /* ====== TOAST ====== */
+  .toast{
+    position:fixed; right:18px; bottom:18px; z-index:100;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .toast .t{
+    background:#111827; color:#fff; padding:10px 14px; border-radius:12px; box-shadow:var(--shadow);
+    font-weight:700; opacity:.98;
   }
 </style>
 </head>
 <body>
 <div class="app">
-
-  <!-- SIDEBAR -->
-  <aside id="sidebar" class="sidebar">
-    <div class="collapse-btn" id="collapseBtn" title="Kecilkan Sidebar"><i class="bi bi-chevron-left"></i></div>
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="logo">🌟</div>
-      <div class="name">Starnet💫</div>
+      <div class="logo">⭐</div>
+      <span>Starnet💫</span>
     </div>
-
-    <div class="menu">
-      <div class="mitem active" data-page="dashboard"><i class="bi bi-speedometer2"></i><span class="mtext">Dashboard</span></div>
-      <div class="mitem" data-page="users"><i class="bi bi-people"></i><span class="mtext">User</span></div>
-      <div class="mitem" data-page="plans"><i class="bi bi-wifi"></i><span class="mtext">Paket</span></div>
-      <div class="mitem" data-page="billing"><i class="bi bi-receipt"></i><span class="mtext">Billing</span></div>
-      <div class="mitem" data-page="cash"><i class="bi bi-bank"></i><span class="mtext">Kas Perusahaan</span></div>
-      <div class="mitem" data-page="techs"><i class="bi bi-person-badge"></i><span class="mtext">Teknisi</span></div>
-      <div class="mitem" data-page="incidents"><i class="bi bi-lightning-charge"></i><span class="mtext">Gangguan</span></div>
-      <div class="mitem" data-page="materials"><i class="bi bi-tools"></i><span class="mtext">Material</span></div>
-      <div class="mitem" data-page="settings"><i class="bi bi-gear"></i><span class="mtext">Edit Nama ISP</span></div>
-      <div class="mitem" id="logoutBtn"><i class="bi bi-box-arrow-left"></i><span class="mtext">Logout</span></div>
-    </div>
+    <button class="collapse-btn" id="collapseBtn" aria-label="Toggle sidebar">❮</button>
+    <nav class="nav" id="nav">
+      <a href="#dashboard" data-view="dashboard" class="active"><span class="ic">📊</span><span class="label">Dashboard</span></a>
+      <a href="#users" data-view="users"><span class="ic">👥</span><span class="label">User</span></a>
+      <a href="#packages" data-view="packages"><span class="ic">📶</span><span class="label">Paket</span></a>
+      <a href="#billing" data-view="billing"><span class="ic">🧾</span><span class="label">Billing</span></a>
+      <a href="#cash" data-view="cash"><span class="ic">🏛️</span><span class="label">Kas Perusahaan</span></a>
+      <a href="#techs" data-view="techs"><span class="ic">🧑‍🔧</span><span class="label">Teknisi</span></a>
+      <a href="#issues" data-view="issues"><span class="ic">⚡</span><span class="label">Gangguan</span></a>
+      <a href="#materials" data-view="materials"><span class="ic">🛠️</span><span class="label">Material</span></a>
+      <a href="#settings" data-view="settings"><span class="ic">⚙️</span><span class="label">Pengaturan</span></a>
+      <a href="#" id="btnLogout"><span class="ic">↩️</span><span class="label">Logout</span></a>
+    </nav>
   </aside>
 
-  <!-- MAIN -->
+  <!-- ========== MAIN ========== -->
   <main class="main">
-    <div class="topbar">
-      <i class="bi bi-list hamb" id="hamb"></i>
-      <div class="title"><span id="ispTitle">Starnet💫</span> Admin Panel</div>
-      <div class="userbox"><i class="bi bi-person-circle"></i><span id="whoami">-</span></div>
-    </div>
+    <header class="topbar">
+      <h1>Starnet💫 Admin Panel</h1>
+      <div class="userchip"><div class="avatar" id="avatar">S</div><span id="whoami">-</span></div>
+    </header>
 
-    <!-- SUMMARY CARDS -->
-    <section class="cards" id="cards">
-      <div class="card">
-        <div class="cap"><i class="bi bi-people"></i> Total User</div>
-        <div class="stat" id="cardUsers">0</div>
+    <!-- ====== DASHBOARD ====== -->
+    <section id="view-dashboard" class="view">
+      <div class="grid">
+        <div class="card kpi" style="grid-column:span 6;">
+          <div>
+            <h3>Total User</h3>
+            <div class="num" id="kpiUsers">0</div>
+          </div>
+          <div class="badge purple">👥</div>
+        </div>
+        <div class="card kpi" style="grid-column:span 6;">
+          <div>
+            <h3>Pendapatan</h3>
+            <div class="num" id="kpiRevenue">Rp 0</div>
+          </div>
+          <div class="badge green">💸</div>
+        </div>
+        <div class="card kpi" style="grid-column:span 6;">
+          <div>
+            <h3>Tunggakan</h3>
+            <div class="num" id="kpiArrears">Rp 0</div>
+          </div>
+          <div class="badge red">❗</div>
+        </div>
+        <div class="card kpi" style="grid-column:span 6;">
+          <div>
+            <h3>Saldo Kas</h3>
+            <div class="num" id="kpiCash">Rp 0</div>
+          </div>
+          <div class="badge cyan">🏛️</div>
+        </div>
+        <div class="card kpi" style="grid-column:span 6;">
+          <div>
+            <h3>Teknisi</h3>
+            <div class="num" id="kpiTechs">0</div>
+          </div>
+          <div class="badge slate">🧑‍🔧</div>
+        </div>
+        <div class="card kpi" style="grid-column:span 6;">
+          <div>
+            <h3>Gangguan Aktif</h3>
+            <div class="num" id="kpiIssues">0</div>
+          </div>
+          <div class="badge amber">⚡</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="cap"><i class="bi bi-cash-coin"></i> Pendapatan</div>
-        <div class="stat k-green" id="cardIncome">Rp 0</div>
-      </div>
-      <div class="card">
-        <div class="cap"><i class="bi bi-exclamation-octagon"></i> Tunggakan</div>
-        <div class="stat k-red" id="cardArrears">Rp 0</div>
-      </div>
-      <div class="card">
-        <div class="cap"><i class="bi bi-bank2"></i> Saldo Kas</div>
-        <div class="stat k-cyan" id="cardCash">Rp 0</div>
-      </div>
-      <div class="card">
-        <div class="cap"><i class="bi bi-person-badge"></i> Teknisi</div>
-        <div class="stat" id="cardTechs">0</div>
-      </div>
-      <div class="card">
-        <div class="cap"><i class="bi bi-lightning-charge"></i> Gangguan Aktif</div>
-        <div class="stat" id="cardIncidents">0</div>
-      </div>
-      <div class="card" style="grid-column:span 12;">
-        <div class="cap"><i class="bi bi-graph-up"></i> Grafik ISP</div>
-        <canvas id="ispChart" height="80"></canvas>
+
+      <div class="grid" style="margin-top:10px;">
+        <div class="card" style="grid-column:span 12;">
+          <h3 style="margin:0 0 10px">Grafik ISP (simulasi)</h3>
+          <canvas id="chart" height="120"></canvas>
+          <p class="muted">Grafik sementara dummy. Integrasi Mikrotik bisa disambung kemudian.</p>
+        </div>
       </div>
     </section>
 
-    <!-- USERS -->
-    <section class="section" id="page-users" style="display:none">
-      <h3>User</h3>
-      <div class="toolbar">
-        <button class="btn primary" onclick="openUserModal()"><i class="bi bi-plus-lg"></i>Tambah User</button>
-        <button class="btn" onclick="refreshUsers()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
+    <!-- ====== USERS ====== -->
+    <section id="view-users" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">User</h2>
+        <div class="grid-3">
+          <div class="field"><label>Nama</label><input id="u_name" placeholder="Nama pelanggan"></div>
+          <div class="field"><label>Username</label><input id="u_username" placeholder="username PPPoE / hotspot"></div>
+          <div class="field"><label>Paket</label><select id="u_plan"></select></div>
+          <div class="field"><label>Kontak</label><input id="u_contact" placeholder="WA / email / telp"></div>
+          <div class="field"><label>Tanggal Mulai</label><input id="u_start" type="date"></div>
+          <div class="field"><label>Status Aktif</label>
+            <select id="u_enabled"><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnUserSave">Simpan User</button>
+          <button class="btn ghost" id="btnUserReset">Reset Form</button>
+        </div>
       </div>
-      <div class="grid">
-        <div class="f">
-          <table class="table" id="tblUsers">
-            <thead>
-              <tr>
-                <th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th><th>Last Seen</th><th>Aksi</th>
-              </tr>
-            </thead>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblUsers">
+            <thead><tr>
+              <th>Nama</th><th>Username</th><th>Paket</th><th>Kontak</th><th>Status</th><th>Tunggakan</th><th class="right">Aksi</th>
+            </tr></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- PLANS -->
-    <section class="section" id="page-plans" style="display:none">
-      <h3>Paket</h3>
-      <div class="toolbar">
-        <button class="btn primary" onclick="openPlanModal()"><i class="bi bi-plus-lg"></i>Tambah Paket</button>
-        <button class="btn" onclick="refreshPlans()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
-      </div>
-      <table class="table" id="tblPlans">
-        <thead><tr><th>Nama Paket</th><th>Kecepatan</th><th>Harga/Bulan</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- BILLING -->
-    <section class="section" id="page-billing" style="display:none">
-      <h3>Billing</h3>
-      <div class="toolbar">
-        <button class="btn primary" onclick="openBillModal()"><i class="bi bi-plus-lg"></i>Tambah Tagihan</button>
-        <button class="btn" onclick="refreshBilling()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
-      </div>
-      <table class="table" id="tblBills">
-        <thead><tr><th>User</th><th>Bulan</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- CASH -->
-    <section class="section" id="page-cash" style="display:none">
-      <h3>Kas Perusahaan</h3>
-      <div class="toolbar">
-        <button class="btn success" onclick="openCashModal('in')"><i class="bi bi-plus-circle"></i>Kas Masuk</button>
-        <button class="btn danger" onclick="openCashModal('out')"><i class="bi bi-dash-circle"></i>Kas Keluar</button>
-        <button class="btn" onclick="refreshCash()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
-        <div style="margin-left:auto;font-weight:800">Saldo: <span id="cashBalance">Rp 0</span></div>
-      </div>
-      <table class="table" id="tblCash">
-        <thead><tr><th>Waktu</th><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- TECHS -->
-    <section class="section" id="page-techs" style="display:none">
-      <h3>Teknisi</h3>
-      <div class="toolbar">
-        <button class="btn primary" onclick="openTechModal()"><i class="bi bi-plus-lg"></i>Tambah Teknisi</button>
-        <button class="btn" onclick="refreshTechs()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
-      </div>
-      <table class="table" id="tblTechs">
-        <thead><tr><th>Nama</th><th>Kontak</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- INCIDENTS -->
-    <section class="section" id="page-incidents" style="display:none">
-      <h3>Gangguan</h3>
-      <div class="toolbar">
-        <button class="btn" onclick="refreshIncidents()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
-        <div class="badge b-warn" style="margin-left:auto">Auto: offline ≥ 15 menit → masuk daftar</div>
-      </div>
-      <table class="table" id="tblIncidents">
-        <thead><tr><th>Waktu</th><th>User</th><th>Indikasi</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- MATERIALS -->
-    <section class="section" id="page-materials" style="display:none">
-      <h3>Material</h3>
-      <div class="toolbar">
-        <button class="btn primary" onclick="openMaterialModal()"><i class="bi bi-plus-lg"></i>Tambah Material</button>
-        <button class="btn" onclick="refreshMaterials()"><i class="bi bi-arrow-clockwise"></i>Refresh</button>
-        <div style="margin-left:auto;font-weight:800">Kritis (≤5): <span id="matCritical">0</span></div>
-      </div>
-      <table class="table" id="tblMaterials">
-        <thead><tr><th>Nama</th><th>Stok</th><th>Min</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- SETTINGS -->
-    <section class="section" id="page-settings" style="display:none">
-      <h3>Pengaturan</h3>
-      <div class="grid">
-        <div class="f6">
-          <label>Nama ISP</label>
-          <input id="ispName" class="input" placeholder="Nama ISP" />
+    <!-- ====== PACKAGES ====== -->
+    <section id="view-packages" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Paket</h2>
+        <div class="grid-3">
+          <div class="field"><label>Nama Paket</label><input id="p_name" placeholder="cth: 20Mbps"></div>
+          <div class="field"><label>Harga Bulanan (Rp)</label><input id="p_price" type="number" min="0" step="1000" placeholder="150000"></div>
+          <div class="field"><label>Deskripsi</label><input id="p_desc" placeholder="opsional"></div>
         </div>
-        <div class="f6" style="display:flex;align-items:flex-end">
-          <button class="btn primary" onclick="saveISPName()"><i class="bi bi-save"></i>Simpan</button>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnPkgSave">Simpan Paket</button>
+          <button class="btn ghost" id="btnPkgReset">Reset</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblPkgs">
+            <thead><tr><th>Nama</th><th>Harga</th><th>Deskripsi</th><th class="right">Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
     </section>
 
+    <!-- ====== BILLING ====== -->
+    <section id="view-billing" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Billing</h2>
+        <div class="grid-4">
+          <div class="field"><label>User</label><select id="b_user"></select></div>
+          <div class="field"><label>Bulan</label><input id="b_month" type="month"></div>
+          <div class="field"><label>Nominal (Rp)</label><input id="b_amount" type="number" step="1000"></div>
+          <div class="field"><label>Status</label>
+            <select id="b_status"><option value="unpaid">Unpaid</option><option value="paid">Paid</option></select>
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnBillSave">Simpan Tagihan</button>
+          <button class="btn ghost" id="btnBillReset">Reset</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblBills">
+            <thead><tr><th>User</th><th>Bulan</th><th>Nominal</th><th>Status</th><th class="right">Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== CASH ====== -->
+    <section id="view-cash" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Kas Perusahaan</h2>
+        <div class="grid-4">
+          <div class="field"><label>Jenis</label>
+            <select id="c_type"><option value="in">Kas Masuk</option><option value="out">Kas Keluar</option></select>
+          </div>
+          <div class="field"><label>Nominal (Rp)</label><input id="c_amount" type="number" step="1000"></div>
+          <div class="field"><label>Keterangan</label><input id="c_note" placeholder="misal: pembayaran bulan Agustus"></div>
+          <div class="field"><label>Tanggal</label><input id="c_date" type="date"></div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnCashSave">Simpan Transaksi</button>
+          <button class="btn ghost" id="btnCashReset">Reset</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblCash">
+            <thead><tr><th>Jenis</th><th>Nominal</th><th>Keterangan</th><th>Tanggal</th><th class="right">Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== TECHNICIANS ====== -->
+    <section id="view-techs" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Teknisi</h2>
+        <div class="grid-3">
+          <div class="field"><label>Nama</label><input id="t_name" placeholder="Nama teknisi"></div>
+          <div class="field"><label>Kontak</label><input id="t_contact" placeholder="WA / telepon"></div>
+          <div class="field"><label>Keahlian</label><input id="t_skill" placeholder="Fiber, RF, Core, dll"></div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnTechSave">Simpan Teknisi</button>
+          <button class="btn ghost" id="btnTechReset">Reset</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblTechs">
+            <thead><tr><th>Nama</th><th>Kontak</th><th>Keahlian</th><th class="right">Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== ISSUES ====== -->
+    <section id="view-issues" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Gangguan</h2>
+        <div class="grid-4">
+          <div class="field"><label>Judul</label><input id="i_title" placeholder="cth: ODP-12 terputus"></div>
+          <div class="field"><label>Status</label>
+            <select id="i_status"><option value="open">Aktif</option><option value="progress">Proses</option><option value="closed">Selesai</option></select>
+          </div>
+          <div class="field"><label>ODP / Area</label><input id="i_area" placeholder="kode ODP / wilayah"></div>
+          <div class="field"><label>Teknisi Penanggung</label><select id="i_tech"></select></div>
+          <div class="field" style="grid-column:span 4"><label>Deskripsi</label><textarea id="i_desc" placeholder="Rincian gangguan"></textarea></div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnIssueSave">Simpan Gangguan</button>
+          <button class="btn ghost" id="btnIssueReset">Reset</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblIssues">
+            <thead><tr><th>Judul</th><th>Status</th><th>Area</th><th>Teknisi</th><th>Dibuat</th><th class="right">Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== MATERIALS ====== -->
+    <section id="view-materials" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Material</h2>
+        <div class="grid-4">
+          <div class="field"><label>Nama</label><input id="m_name" placeholder="cth: RJ45, ODP-8, Dropcore"></div>
+          <div class="field"><label>Stok</label><input id="m_qty" type="number" step="1"></div>
+          <div class="field"><label>Satuan</label><input id="m_unit" placeholder="pcs / roll / box"></div>
+          <div class="field"><label>Ambang Kritis</label><input id="m_min" type="number" step="1" value="5"></div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnMatSave">Simpan Material</button>
+          <button class="btn ghost" id="btnMatReset">Reset</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="table-wrap">
+          <table id="tblMaterials">
+            <thead><tr><th>Nama</th><th>Stok</th><th>Satuan</th><th>Kritis ≤</th><th class="right">Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SETTINGS ====== -->
+    <section id="view-settings" class="view hidden">
+      <div class="card">
+        <h2 style="margin:0 0 12px">Pengaturan</h2>
+        <div class="grid-3">
+          <div class="field"><label>Nama ISP</label><input id="s_isp" placeholder="Starnet💫"></div>
+          <div class="field"><label>Durasi Last Seen (menit)</label><input id="s_last" type="number" min="1" value="15"></div>
+          <div class="field"><label>Catatan</label><input id="s_note" placeholder="opsional"></div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="btn" id="btnSetSave">Simpan</button>
+          <button class="btn ghost" id="btnSetReset">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot">Starnet💫 — dashboard sederhana. Semua data tersimpan di Firestore milikmu.</div>
   </main>
 </div>
 
-<!-- ============ MODALS ============ -->
-<div class="modal" id="modalUser">
-  <div class="mcard">
-    <div class="mhead">
-      <h3 id="userFormTitle">Tambah User</h3>
-      <div class="close" onclick="closeModal('modalUser')"><i class="bi bi-x-lg"></i></div>
-    </div>
-    <div class="grid">
-      <input type="hidden" id="userId" />
-      <div class="f6"><label>Nama</label><input id="uName" class="input" /></div>
-      <div class="f6"><label>Username</label><input id="uUsername" class="input" /></div>
-      <div class="f6">
-        <label>Paket</label>
-        <select id="uPlan" class="input"></select>
-      </div>
-      <div class="f6"><label>Kontak (HP/Email)</label><input id="uContact" class="input" /></div>
-      <div class="f6"><label>Tanggal Mulai</label><input id="uStart" type="date" class="input" /></div>
-      <div class="f6">
-        <label>Status</label>
-        <select id="uEnabled" class="input"><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
-      </div>
-      <div class="f6"><label>Last Seen (opsional)</label><input id="uLastSeen" type="datetime-local" class="input" /></div>
-      <div class="f6" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn primary" onclick="submitUser()"><i class="bi bi-save"></i>Simpan</button>
-        <button class="btn" onclick="closeModal('modalUser')"><i class="bi bi-x"></i>Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
+<div class="toast" id="toast"></div>
 
-<div class="modal" id="modalPlan">
-  <div class="mcard">
-    <div class="mhead">
-      <h3 id="planFormTitle">Tambah Paket</h3>
-      <div class="close" onclick="closeModal('modalPlan')"><i class="bi bi-x-lg"></i></div>
-    </div>
-    <div class="grid">
-      <input type="hidden" id="planId" />
-      <div class="f6"><label>Nama Paket</label><input id="pName" class="input" /></div>
-      <div class="f6"><label>Kecepatan</label><input id="pSpeed" class="input" placeholder="contoh: 20Mbps" /></div>
-      <div class="f6"><label>Harga/Bulan</label><input id="pPrice" class="input" type="number" /></div>
-      <div class="f6" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn primary" onclick="submitPlan()"><i class="bi bi-save"></i>Simpan</button>
-        <button class="btn" onclick="closeModal('modalPlan')"><i class="bi bi-x"></i>Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- ====== FIREBASE SDK ====== -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<div class="modal" id="modalBill">
-  <div class="mcard">
-    <div class="mhead">
-      <h3 id="billFormTitle">Tambah Tagihan</h3>
-      <div class="close" onclick="closeModal('modalBill')"><i class="bi bi-x-lg"></i></div>
-    </div>
-    <div class="grid">
-      <input type="hidden" id="billId" />
-      <div class="f6">
-        <label>User</label>
-        <select id="bUser" class="input"></select>
-      </div>
-      <div class="f6"><label>Bulan</label><input id="bMonth" class="input" placeholder="2025-08" /></div>
-      <div class="f6"><label>Nominal</label><input id="bAmount" class="input" type="number" /></div>
-      <div class="f6">
-        <label>Status</label>
-        <select id="bStatus" class="input">
-          <option value="unpaid">Belum Bayar</option>
-          <option value="paid">Lunas</option>
-        </select>
-      </div>
-      <div class="f6" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn primary" onclick="submitBill()"><i class="bi bi-save"></i>Simpan</button>
-        <button class="btn" onclick="closeModal('modalBill')"><i class="bi bi-x"></i>Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="modalCash">
-  <div class="mcard">
-    <div class="mhead">
-      <h3>Transaksi Kas</h3>
-      <div class="close" onclick="closeModal('modalCash')"><i class="bi bi-x-lg"></i></div>
-    </div>
-    <div class="grid">
-      <input type="hidden" id="cashId" />
-      <div class="f6">
-        <label>Jenis</label>
-        <select id="cType" class="input">
-          <option value="in">Masuk</option>
-          <option value="out">Keluar</option>
-        </select>
-      </div>
-      <div class="f6"><label>Nominal</label><input id="cAmount" class="input" type="number" /></div>
-      <div class="f"><label>Keterangan</label><input id="cNote" class="input" /></div>
-      <div class="f6"><label>Waktu</label><input id="cTime" class="input" type="datetime-local" /></div>
-      <div class="f6" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn primary" onclick="submitCash()"><i class="bi bi-save"></i>Simpan</button>
-        <button class="btn" onclick="closeModal('modalCash')"><i class="bi bi-x"></i>Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="modalTech">
-  <div class="mcard">
-    <div class="mhead">
-      <h3>Data Teknisi</h3>
-      <div class="close" onclick="closeModal('modalTech')"><i class="bi bi-x-lg"></i></div>
-    </div>
-    <div class="grid">
-      <input type="hidden" id="techId" />
-      <div class="f6"><label>Nama</label><input id="tName" class="input" /></div>
-      <div class="f6"><label>Kontak</label><input id="tContact" class="input" /></div>
-      <div class="f6">
-        <label>Status</label>
-        <select id="tStatus" class="input"><option value="ready">Siap</option><option value="onsite">Onsite</option></select>
-      </div>
-      <div class="f6" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn primary" onclick="submitTech()"><i class="bi bi-save"></i>Simpan</button>
-        <button class="btn" onclick="closeModal('modalTech')"><i class="bi bi-x"></i>Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="modalMaterial">
-  <div class="mcard">
-    <div class="mhead">
-      <h3>Data Material</h3>
-      <div class="close" onclick="closeModal('modalMaterial')"><i class="bi bi-x-lg"></i></div>
-    </div>
-    <div class="grid">
-      <input type="hidden" id="matId" />
-      <div class="f6"><label>Nama Material</label><input id="mName" class="input" /></div>
-      <div class="f3"><label>Stok</label><input id="mStock" class="input" type="number" /></div>
-      <div class="f3"><label>Min</label><input id="mMin" class="input" type="number" value="5" /></div>
-      <div class="f6" style="display:flex;align-items:flex-end;gap:8px">
-        <button class="btn primary" onclick="submitMaterial()"><i class="bi bi-save"></i>Simpan</button>
-        <button class="btn" onclick="closeModal('modalMaterial')"><i class="bi bi-x"></i>Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script type="module">
-/* ===================== FIREBASE INIT ===================== */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  query, where, orderBy, limit, serverTimestamp, Timestamp
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
+<script>
+/* ======================= INIT FIREBASE ======================= */
 const firebaseConfig = {
   apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
   authDomain: "dnt-network-7.firebaseapp.com",
@@ -488,444 +531,485 @@ const firebaseConfig = {
   appId: "1:761179668371:web:7d1468d0298041d4783266",
   measurementId: "G-CD3EQ350R4"
 };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-/* ===================== UTIL ===================== */
-const fmt = new Intl.NumberFormat('id-ID');
-const ID = s => document.getElementById(s);
-const tbody = el => el.querySelector('tbody');
-const rp = n => 'Rp ' + fmt.format(n||0);
-const nowTS = () => Timestamp.fromDate(new Date());
-const toDateInput = (d) => {
-  const pad = x => String(x).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+/* ======================= HELPERS ======================= */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const money = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+const toast = (msg)=> {
+  const el = document.createElement('div');
+  el.className='t'; el.textContent=msg; $('#toast').appendChild(el);
+  setTimeout(()=>{ el.remove(); }, 2600);
 };
-const toDateTimeInput = (d) => {
-  const pad = x => String(x).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const setActiveNav = (view) => {
+  $$('#nav a').forEach(a => a.classList.toggle('active', a.dataset.view === view));
+  $$('.view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-'+view));
+  location.hash = view;
 };
-const fromMaybeTS = (t)=> t?.toDate ? t.toDate() : (t ? new Date(t) : null);
 
-/* ===================== NAVIGATION ===================== */
-const pages = {
-  dashboard: null, users: ID('page-users'), plans: ID('page-plans'),
-  billing: ID('page-billing'), cash: ID('page-cash'), techs: ID('page-techs'),
-  incidents: ID('page-incidents'), materials: ID('page-materials'), settings: ID('page-settings')
+/* ======================= LAYOUT: SIDEBAR TOGGLE ======================= */
+const sidebar = $('#sidebar');
+$('#collapseBtn').onclick = () => {
+  sidebar.classList.toggle('collapsed');
+  $('#collapseBtn').textContent = sidebar.classList.contains('collapsed') ? '❯' : '❮';
 };
-const menuItems = document.querySelectorAll('.mitem[data-page]');
-menuItems.forEach(mi=>{
-  mi.addEventListener('click', ()=>{
-    menuItems.forEach(m=>m.classList.remove('active'));
-    mi.classList.add('active');
-    const pg = mi.dataset.page;
-    Object.entries(pages).forEach(([k,sec])=>{
-      if(!sec) return; sec.style.display = (k===pg)?'block':'none';
+$('#nav').addEventListener('click', e=>{
+  const a = e.target.closest('a[data-view]');
+  if(!a) return;
+  e.preventDefault();
+  setActiveNav(a.dataset.view);
+});
+
+/* ======================= AUTH ======================= */
+$('#btnLogout').onclick = async (e)=>{
+  e.preventDefault();
+  await auth.signOut();
+  location.href = './index.html';
+};
+auth.onAuthStateChanged(u=>{
+  if(!u){ location.href='./index.html'; return; }
+  $('#whoami').textContent = u.email || 'admin';
+  $('#avatar').textContent = (u.email||'S')[0].toUpperCase();
+});
+
+/* ======================= COLLECTION REFS ======================= */
+const colUsers = db.collection('customers');
+const colPkgs  = db.collection('packages');
+const colBills = db.collection('billing');
+const colCash  = db.collection('cash');
+const colTechs = db.collection('technicians');
+const colIssues= db.collection('issues');
+const colMats  = db.collection('materials');
+const colSets  = db.collection('settings');
+
+/* ======================= SETTINGS ======================= */
+async function loadSettings(){
+  const doc = await colSets.doc('app').get();
+  const data = doc.exists ? doc.data() : { ispName:'Starnet💫', lastSeenMins:15, note:'' };
+  $('#s_isp').value = data.ispName || 'Starnet💫';
+  $('#s_last').value = data.lastSeenMins || 15;
+  $('#s_note').value = data.note || '';
+  // update brand title
+  document.title = (data.ispName||'Starnet💫') + ' Admin Panel';
+}
+$('#btnSetSave').onclick = async ()=>{
+  const payload = {
+    ispName: $('#s_isp').value.trim() || 'Starnet💫',
+    lastSeenMins: Number($('#s_last').value)||15,
+    note: $('#s_note').value.trim()
+  };
+  await colSets.doc('app').set(payload, { merge:true });
+  toast('Pengaturan disimpan');
+  document.title = payload.ispName + ' Admin Panel';
+};
+$('#btnSetReset').onclick = loadSettings;
+
+/* ======================= PACKAGES CRUD ======================= */
+let editPkgId = null;
+function fillPlanOptions(selectId){
+  colPkgs.orderBy('name').get().then(snap=>{
+    const sel = $(selectId); sel.innerHTML='';
+    snap.forEach(d=>{
+      const o = document.createElement('option');
+      o.value=d.id; o.textContent=`${d.data().name} — ${money(d.data().price)}`;
+      sel.appendChild(o);
     });
-    if(pg==='users') refreshUsers();
-    if(pg==='plans') refreshPlans();
-    if(pg==='billing') refreshBilling();
-    if(pg==='cash') refreshCash();
-    if(pg==='techs') refreshTechs();
-    if(pg==='incidents') refreshIncidents();
-    if(pg==='materials') refreshMaterials();
-    if(pg==='settings') loadISPName();
   });
-});
-ID('hamb').onclick = ()=> ID('sidebar').classList.toggle('show');
-ID('collapseBtn').onclick = ()=>{
-  const sb = ID('sidebar');
-  const mini = sb.classList.toggle('mini');
-  ID('collapseBtn').innerHTML = mini ? '<i class="bi bi-chevron-right"></i>' : '<i class="bi bi-chevron-left"></i>';
+}
+function renderPkgs(){
+  colPkgs.orderBy('name').onSnapshot(snap=>{
+    const tb = $('#tblPkgs tbody'); tb.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.name||''}</td>
+        <td>${money(d.price)}</td>
+        <td>${d.desc||''}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+  });
+  // refresh dropdowns yang pakai paket
+  fillPlanOptions('#u_plan');
+}
+$('#btnPkgSave').onclick = async ()=>{
+  const payload = {
+    name: $('#p_name').value.trim(),
+    price: Number($('#p_price').value||0),
+    desc: $('#p_desc').value.trim()
+  };
+  if(!payload.name){ toast('Nama paket wajib'); return; }
+  if(editPkgId){ await colPkgs.doc(editPkgId).set(payload,{merge:true}); toast('Paket diupdate'); }
+  else{ await colPkgs.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Paket ditambah'); }
+  editPkgId=null; $('#p_name').value=''; $('#p_price').value=''; $('#p_desc').value='';
 };
-
-/* ===================== AUTH GUARD (optional) ===================== */
-onAuthStateChanged(auth, (u)=>{
-  // Jika app login terpisah, pakai sessionStorage 'authEmail' juga
-  const ses = sessionStorage.getItem('authEmail');
-  ID('whoami').textContent = u?.email || ses || '-';
+$('#btnPkgReset').onclick = ()=>{ editPkgId=null; $('#p_name').value=''; $('#p_price').value=''; $('#p_desc').value=''; };
+$('#tblPkgs').addEventListener('click', async e=>{
+  const idE = e.target.dataset.e, idX = e.target.dataset.x;
+  if(idE){
+    const d = (await colPkgs.doc(idE).get()).data();
+    editPkgId=idE; $('#p_name').value=d.name||''; $('#p_price').value=d.price||0; $('#p_desc').value=d.desc||'';
+    toast('Edit mode paket');
+  }
+  if(idX){
+    if(confirm('Hapus paket ini?')){ await colPkgs.doc(idX).delete(); toast('Paket dihapus'); }
+  }
 });
 
-/* ===================== ISP NAME ===================== */
-async function loadISPName(){
-  const ref = doc(db,'settings','app');
-  const snap = await getDoc(ref);
-  const isp = snap.exists()? (snap.data().ispName || 'Starnet💫') : 'Starnet💫';
-  ID('ispTitle').textContent = isp;
-  ID('ispName').value = isp;
-  document.querySelector('.brand .name').textContent = isp;
+/* ======================= USERS CRUD ======================= */
+let editUserId = null;
+function userPlanName(planId, cache){
+  const p = cache.get(planId); return p ? p.name : '-';
 }
-async function saveISPName(){
-  const name = ID('ispName').value.trim() || 'Starnet💫';
-  await setDoc(doc(db,'settings','app'), { ispName:name }, { merge:true });
-  await loadISPName();
-  alert('Nama ISP diperbarui.');
+async function loadPlansCache(){
+  const cache = new Map();
+  const snap = await colPkgs.get();
+  snap.forEach(d=>cache.set(d.id,d.data()));
+  return cache;
 }
-
-/* ===================== DASHBOARD SUMMARY + CHART ===================== */
-async function refreshSummary(){
-  // total users
-  const users = await getDocs(collection(db,'customers'));
-  ID('cardUsers').textContent = users.size;
-
-  // billing
-  let income=0, arrears=0;
-  const bills = await getDocs(collection(db,'billing'));
-  bills.forEach(b=>{
-    const d=b.data();
-    if(d.status==='paid') income += Number(d.amount||0);
-    else arrears += Number(d.amount||0);
-  });
-  ID('cardIncome').textContent = rp(income);
-  ID('cardArrears').textContent = rp(arrears);
-
-  // cash
-  let bal=0;
-  const cash = await getDocs(collection(db,'cash'));
-  cash.forEach(x=>{
-    const d=x.data(); const a=Number(d.amount||0);
-    bal += d.type==='in' ? a : -a;
-  });
-  ID('cardCash').textContent = rp(bal);
-
-  // techs
-  const techs = await getDocs(collection(db,'techs')); ID('cardTechs').textContent = techs.size;
-
-  // incidents active
-  let act=0;
-  const incs = await getDocs(collection(db,'incidents'));
-  incs.forEach(i=>{ if((i.data().status||'open')==='open') act++; });
-  ID('cardIncidents').textContent = act;
-
-  // chart (ambil dari koleksi 'ispStats' klo ada, else dummy)
-  const st = await getDocs(query(collection(db,'ispStats'), orderBy('time','asc'), limit(30)));
-  let labels=[], up=[], down=[], lb=[];
-  if(st.size>0){
-    st.forEach(s=>{
-      const d=s.data();
-      labels.push(new Date(d.time?.toDate?.()??d.time).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}));
-      up.push(Number(d.up||0)); down.push(Number(d.down||0)); lb.push(Number(d.lb||0));
-    })
-  }else{
-    // dummy
-    const t = Array.from({length:12},(_,i)=>i);
-    labels = t.map(x=>`${String(x).padStart(2,'0')}:00`);
-    up = t.map(x=> 20 + Math.max(0, 30 - x));
-    down = t.map(x=> 35 + Math.max(0, 25 - x));
-    lb = t.map(x=> 80 - x*2);
-  }
-  renderChart(labels,up,down,lb);
-}
-let chart;
-function renderChart(labels,up,down,lb){
-  const ctx = ID('ispChart');
-  if(chart) chart.destroy();
-  chart = new Chart(ctx,{
-    type:'line',
-    data:{ labels,
-      datasets:[
-        {label:'Upload', data:up, tension:.35, pointRadius:3, borderWidth:3},
-        {label:'Download', data:down, tension:.35, pointRadius:3, borderWidth:3},
-        {label:'Load Balance', data:lb, tension:.35, pointRadius:3, borderWidth:3}
-      ]},
-    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{beginAtZero:true} } }
-  });
-}
-
-/* ===================== USERS CRUD ===================== */
-async function refreshUsers(){
-  const plans = await getDocs(collection(db,'plans'));
-  const planMap = {}; plans.forEach(p=>planMap[p.id]=p.data());
-  // fill select on user form
-  const sel = ID('uPlan'); sel.innerHTML = '';
-  plans.forEach(p=>{
+async function rebuildUserDropdownForBilling(){
+  const sel = $('#b_user'); sel.innerHTML='';
+  const qs = await colUsers.orderBy('name').get();
+  qs.forEach(doc=>{
+    const d=doc.data();
     const o=document.createElement('option');
-    o.value=p.id; o.textContent=`${p.data().name} (${p.data().speed}) - ${rp(p.data().price||0)}`;
+    o.value=doc.id; o.textContent=`${d.name} (${d.username})`;
     sel.appendChild(o);
   });
-
-  const q = await getDocs(collection(db,'customers'));
-  const tb = tbody(ID('tblUsers')); tb.innerHTML = '';
-  for (const docu of q.docs){
-    const d = docu.data();
-    // calc arrears by sum unpaid bills
-    let arrears = 0;
-    const ub = await getDocs(query(collection(db,'billing'), where('userId','==',docu.id)));
-    ub.forEach(b=>{ if((b.data().status||'unpaid')==='unpaid') arrears += Number(b.data().amount||0); });
-
-    const tr = document.createElement('tr');
-    const plan = planMap[d.planId]?.name || '-';
-    const enabled = d.enabled ? '<span class="badge b-on">Aktif</span>' : '<span class="badge b-off">Nonaktif</span>';
-    const ls = d.lastSeen ? fromMaybeTS(d.lastSeen).toLocaleString('id-ID') : '-';
-    tr.innerHTML = `
-      <td>${d.name||'-'}</td>
-      <td>${d.username||'-'}</td>
-      <td>${plan}</td>
-      <td>${d.contact||'-'}</td>
-      <td>${enabled}</td>
-      <td>${rp(arrears)}</td>
-      <td>${ls}</td>
-      <td>
-        <button class="btn" onclick="editUser('${docu.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn danger" onclick="delUser('${docu.id}')"><i class="bi bi-trash"></i></button>
-        <button class="btn warning" title="Update last seen sekarang" onclick="touchLastSeen('${docu.id}')"><i class="bi bi-clock-history"></i></button>
-      </td>
-    `;
-    tb.appendChild(tr);
+}
+async function renderUsers(){
+  const plans = await loadPlansCache();
+  colUsers.orderBy('name').onSnapshot(snap=>{
+    const tb = $('#tblUsers tbody'); tb.innerHTML='';
+    $('#kpiUsers').textContent = snap.size;
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${d.name||''}</td>
+        <td>${d.username||''}</td>
+        <td>${userPlanName(d.planId, plans)}</td>
+        <td>${d.contact||''}</td>
+        <td>${d.enabled ? 'Aktif':'Nonaktif'}</td>
+        <td>${money(d.arrears||0)}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    rebuildUserDropdownForBilling();
+  });
+}
+$('#btnUserSave').onclick = async ()=>{
+  const name = $('#u_name').value.trim();
+  const username = $('#u_username').value.trim();
+  const planId = $('#u_plan').value || null;
+  const contact = $('#u_contact').value.trim();
+  const start = $('#u_start').value || null;
+  const enabled = $('#u_enabled').value === 'true';
+  if(!name || !username || !planId){ toast('Nama, username, paket wajib'); return; }
+  const payload = { name, username, planId, contact, startDate:start, enabled, arrears: 0 };
+  if(editUserId){ await colUsers.doc(editUserId).set(payload,{merge:true}); toast('User diupdate'); }
+  else{ await colUsers.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('User ditambah'); }
+  editUserId=null; $('#u_name').value=''; $('#u_username').value=''; $('#u_contact').value=''; $('#u_start').value='';
+};
+$('#btnUserReset').onclick = ()=>{ editUserId=null; $('#u_name').value=''; $('#u_username').value=''; $('#u_contact').value=''; $('#u_start').value=''; };
+$('#tblUsers').addEventListener('click', async e=>{
+  const idE = e.target.dataset.e, idX = e.target.dataset.x;
+  if(idE){
+    const d=(await colUsers.doc(idE).get()).data();
+    editUserId=idE;
+    $('#u_name').value=d.name||''; $('#u_username').value=d.username||'';
+    $('#u_plan').value=d.planId||''; $('#u_contact').value=d.contact||'';
+    $('#u_start').value=d.startDate||''; $('#u_enabled').value= String(!!d.enabled);
+    toast('Edit mode user');
   }
-}
-window.refreshUsers = refreshUsers;
+  if(idX){
+    if(confirm('Hapus user ini?')){ await colUsers.doc(idX).delete(); toast('User dihapus'); }
+  }
+});
 
-function openUserModal(){ ID('userId').value=''; ID('uName').value=''; ID('uUsername').value=''; ID('uContact').value=''; ID('uStart').value=toDateInput(new Date()); ID('uEnabled').value='true'; ID('uLastSeen').value=''; ID('userFormTitle').textContent='Tambah User'; showModal('modalUser'); }
-async function editUser(id){
-  const s=await getDoc(doc(db,'customers',id)); const d=s.data();
-  ID('userId').value=id;
-  ID('uName').value=d.name||''; ID('uUsername').value=d.username||'';
-  ID('uPlan').value=d.planId||''; ID('uContact').value=d.contact||'';
-  ID('uStart').value=(d.startDate? toDateInput(fromMaybeTS(d.startDate)) : toDateInput(new Date()));
-  ID('uEnabled').value=String(!!d.enabled);
-  ID('uLastSeen').value=d.lastSeen? toDateTimeInput(fromMaybeTS(d.lastSeen)) : '';
-  ID('userFormTitle').textContent='Edit User';
-  showModal('modalUser');
+/* ======================= BILLING CRUD ======================= */
+let editBillId=null;
+function renderBills(){
+  colBills.orderBy('month','desc').onSnapshot(async snap=>{
+    const tb=$('#tblBills tbody'); tb.innerHTML='';
+    let revenue=0, arrears=0;
+    const usersMap = new Map();
+    (await colUsers.get()).forEach(d=>usersMap.set(d.id,d.data()));
+    snap.forEach(doc=>{
+      const d=doc.data();
+      if(d.status==='paid') revenue += Number(d.amount||0); else arrears += Number(d.amount||0);
+      const userName = (usersMap.get(d.userId)||{}).name || '-';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${userName}</td>
+        <td>${d.month||''}</td>
+        <td>${money(d.amount)}</td>
+        <td>${d.status}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    $('#kpiRevenue').textContent = money(revenue);
+    $('#kpiArrears').textContent = money(arrears);
+  });
 }
-async function submitUser(){
-  const id = ID('userId').value;
-  const data = {
-    name: ID('uName').value.trim(),
-    username: ID('uUsername').value.trim(),
-    planId: ID('uPlan').value,
-    contact: ID('uContact').value.trim(),
-    startDate: ID('uStart').value ? Timestamp.fromDate(new Date(ID('uStart').value)) : nowTS(),
-    enabled: ID('uEnabled').value==='true',
+$('#btnBillSave').onclick = async ()=>{
+  const payload = {
+    userId: $('#b_user').value,
+    month: $('#b_month').value,
+    amount: Number($('#b_amount').value||0),
+    status: $('#b_status').value
   };
-  const ls = ID('uLastSeen').value; if(ls) data.lastSeen = Timestamp.fromDate(new Date(ls));
-
-  if(!data.name || !data.username){ alert('Nama & Username wajib.'); return; }
-  if(id){ await updateDoc(doc(db,'customers',id), data); }
-  else { await addDoc(collection(db,'customers'), { ...data, createdAt: nowTS() }); }
-  closeModal('modalUser'); await refreshUsers(); await refreshSummary();
-}
-async function delUser(id){ if(!confirm('Hapus user ini?'))return; await deleteDoc(doc(db,'customers',id)); await refreshUsers(); await refreshSummary(); }
-async function touchLastSeen(id){ await updateDoc(doc(db,'customers',id), { lastSeen: nowTS() }); await refreshUsers(); }
-
-/* ===================== PLANS CRUD ===================== */
-async function refreshPlans(){
-  const q = await getDocs(collection(db,'plans')); const tb=tbody(ID('tblPlans')); tb.innerHTML='';
-  q.forEach(p=>{
-    const d=p.data(); const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${d.name||'-'}</td>
-      <td>${d.speed||'-'}</td>
-      <td>${rp(d.price||0)}</td>
-      <td>
-        <button class="btn" onclick="editPlan('${p.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn danger" onclick="delPlan('${p.id}')"><i class="bi bi-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-window.refreshPlans = refreshPlans;
-
-function openPlanModal(){ ID('planId').value=''; ID('pName').value=''; ID('pSpeed').value=''; ID('pPrice').value=''; ID('planFormTitle').textContent='Tambah Paket'; showModal('modalPlan'); }
-async function editPlan(id){ const s=await getDoc(doc(db,'plans',id)); const d=s.data(); ID('planId').value=id; ID('pName').value=d.name||''; ID('pSpeed').value=d.speed||''; ID('pPrice').value=d.price||0; ID('planFormTitle').textContent='Edit Paket'; showModal('modalPlan'); }
-async function submitPlan(){ const id=ID('planId').value; const data={ name:ID('pName').value.trim(), speed:ID('pSpeed').value.trim(), price:Number(ID('pPrice').value||0) }; if(!data.name){ alert('Nama paket wajib'); return;} if(id) await updateDoc(doc(db,'plans',id),data); else await addDoc(collection(db,'plans'),data); closeModal('modalPlan'); await refreshPlans(); }
-
-/* ===================== BILLING CRUD ===================== */
-async function refreshBilling(){
-  // fill user select
-  const users = await getDocs(collection(db,'customers'));
-  const sel=ID('bUser'); sel.innerHTML=''; users.forEach(u=>{ const o=document.createElement('option'); o.value=u.id; o.textContent=u.data().name||u.data().username||u.id; sel.appendChild(o); });
-  // table
-  const q = await getDocs(collection(db,'billing')); const tb=tbody(ID('tblBills')); tb.innerHTML='';
-  q.forEach(b=>{
-    const d=b.data(); const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td data-id="${d.userId||''}">${d.userName||d.userId||'-'}</td>
-      <td>${d.month||'-'}</td>
-      <td>${rp(d.amount||0)}</td>
-      <td>${(d.status||'unpaid')==='paid' ? '<span class="badge b-on">Lunas</span>':'<span class="badge b-off">Belum</span>'}</td>
-      <td>
-        <button class="btn" onclick="editBill('${b.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn danger" onclick="delBill('${b.id}')"><i class="bi bi-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-window.refreshBilling = refreshBilling;
-
-function openBillModal(){ ID('billId').value=''; ID('bMonth').value=''; ID('bAmount').value=''; ID('bStatus').value='unpaid'; ID('billFormTitle').textContent='Tambah Tagihan'; showModal('modalBill'); }
-async function editBill(id){ const s=await getDoc(doc(db,'billing',id)); const d=s.data(); ID('billId').value=id; ID('bUser').value=d.userId||''; ID('bMonth').value=d.month||''; ID('bAmount').value=d.amount||0; ID('bStatus').value=d.status||'unpaid'; ID('billFormTitle').textContent='Edit Tagihan'; showModal('modalBill'); }
-async function submitBill(){
-  const id=ID('billId').value;
-  const uSel = ID('bUser'); const userId=uSel.value; const userName=uSel.options[uSel.selectedIndex]?.text||'';
-  const data={ userId, userName, month:ID('bMonth').value.trim(), amount:Number(ID('bAmount').value||0), status:ID('bStatus').value };
-  if(!userId || !data.month){ alert('User & Bulan wajib'); return; }
-  if(id) await updateDoc(doc(db,'billing',id),data);
-  else await addDoc(collection(db,'billing'),{...data, createdAt: nowTS()});
-  closeModal('modalBill'); await refreshBilling(); await refreshSummary();
-}
-async function delBill(id){ if(!confirm('Hapus tagihan?'))return; await deleteDoc(doc(db,'billing',id)); await refreshBilling(); await refreshSummary(); }
-
-/* ===================== CASH CRUD ===================== */
-function openCashModal(type='in'){ ID('cashId').value=''; ID('cType').value=type; ID('cAmount').value=''; ID('cNote').value=''; ID('cTime').value=toDateTimeInput(new Date()); showModal('modalCash'); }
-async function refreshCash(){
-  let balance=0;
-  const q = await getDocs(query(collection(db,'cash'), orderBy('time','desc')));
-  const tb=tbody(ID('tblCash')); tb.innerHTML='';
-  q.forEach(c=>{
-    const d=c.data();
-    const dt = fromMaybeTS(d.time)||new Date();
-    if(d.type==='in') balance += Number(d.amount||0); else balance -= Number(d.amount||0);
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${dt.toLocaleString('id-ID')}</td>
-      <td>${d.type==='in'?'Masuk':'Keluar'}</td>
-      <td>${rp(d.amount||0)}</td>
-      <td>${d.note||'-'}</td>
-      <td>
-        <button class="btn" onclick="editCash('${c.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn danger" onclick="delCash('${c.id}')"><i class="bi bi-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-  ID('cashBalance').textContent = rp(balance);
-  ID('cardCash').textContent = rp(balance);
-}
-async function editCash(id){
-  const s=await getDoc(doc(db,'cash',id)); const d=s.data();
-  ID('cashId').value=id; ID('cType').value=d.type||'in';
-  ID('cAmount').value=d.amount||0; ID('cNote').value=d.note||'';
-  ID('cTime').value=d.time? toDateTimeInput(fromMaybeTS(d.time)) : toDateTimeInput(new Date());
-  showModal('modalCash');
-}
-async function submitCash(){
-  const id=ID('cashId').value;
-  const data={ type:ID('cType').value, amount:Number(ID('cAmount').value||0), note:ID('cNote').value.trim(), time: Timestamp.fromDate(new Date(ID('cTime').value)) };
-  if(id) await updateDoc(doc(db,'cash',id),data);
-  else await addDoc(collection(db,'cash'),data);
-  closeModal('modalCash'); await refreshCash(); await refreshSummary();
-}
-async function delCash(id){ if(!confirm('Hapus transaksi?'))return; await deleteDoc(doc(db,'cash',id)); await refreshCash(); await refreshSummary(); }
-
-/* ===================== TECHS CRUD ===================== */
-async function refreshTechs(){
-  const q = await getDocs(collection(db,'techs')); const tb=tbody(ID('tblTechs')); tb.innerHTML='';
-  q.forEach(t=>{
-    const d=t.data(); const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${d.name||'-'}</td>
-      <td>${d.contact||'-'}</td>
-      <td><span class="badge ${d.status==='ready'?'b-on':'b-warn'}">${d.status||'-'}</span></td>
-      <td>
-        <button class="btn" onclick="editTech('${t.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn danger" onclick="delTech('${t.id}')"><i class="bi bi-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-  ID('cardTechs').textContent = q.size;
-}
-function openTechModal(){ ID('techId').value=''; ID('tName').value=''; ID('tContact').value=''; ID('tStatus').value='ready'; showModal('modalTech'); }
-async function editTech(id){ const s=await getDoc(doc(db,'techs',id)); const d=s.data(); ID('techId').value=id; ID('tName').value=d.name||''; ID('tContact').value=d.contact||''; ID('tStatus').value=d.status||'ready'; showModal('modalTech'); }
-async function submitTech(){ const id=ID('techId').value; const data={ name:ID('tName').value.trim(), contact:ID('tContact').value.trim(), status:ID('tStatus').value }; if(!data.name){alert('Nama wajib');return;} if(id) await updateDoc(doc(db,'techs',id),data); else await addDoc(collection(db,'techs'),data); closeModal('modalTech'); await refreshTechs(); }
-async function delTech(id){ if(!confirm('Hapus teknisi?'))return; await deleteDoc(doc(db,'techs',id)); await refreshTechs(); }
-
-/* ===================== MATERIALS CRUD ===================== */
-async function refreshMaterials(){
-  const q=await getDocs(collection(db,'materials')); const tb=tbody(ID('tblMaterials')); tb.innerHTML=''; let crit=0;
-  q.forEach(m=>{
-    const d=m.data(); if(Number(d.stock||0) <= Number(d.min||5)) crit++;
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${d.name||'-'}</td>
-      <td>${Number(d.stock||0)}</td>
-      <td>${Number(d.min||5)}</td>
-      <td>${Number(d.stock||0) <= Number(d.min||5) ? '<span class="badge b-off">Kritis</span>':'<span class="badge b-on">OK</span>'}</td>
-      <td>
-        <button class="btn" onclick="editMaterial('${m.id}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn danger" onclick="delMaterial('${m.id}')"><i class="bi bi-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-  ID('matCritical').textContent = crit;
-}
-function openMaterialModal(){ ID('matId').value=''; ID('mName').value=''; ID('mStock').value=''; ID('mMin').value=5; showModal('modalMaterial'); }
-async function editMaterial(id){ const s=await getDoc(doc(db,'materials',id)); const d=s.data(); ID('matId').value=id; ID('mName').value=d.name||''; ID('mStock').value=d.stock||0; ID('mMin').value=d.min||5; showModal('modalMaterial'); }
-async function submitMaterial(){ const id=ID('matId').value; const data={ name:ID('mName').value.trim(), stock:Number(ID('mStock').value||0), min:Number(ID('mMin').value||5) }; if(!data.name){alert('Nama material wajib');return;} if(id) await updateDoc(doc(db,'materials',id),data); else await addDoc(collection(db,'materials'),data); closeModal('modalMaterial'); await refreshMaterials(); }
-async function delMaterial(id){ if(!confirm('Hapus material?'))return; await deleteDoc(doc(db,'materials',id)); await refreshMaterials(); }
-
-/* ===================== INCIDENTS (AUTO 15 MENIT) ===================== */
-async function refreshIncidents(){
-  const q = await getDocs(collection(db,'incidents')); const tb=tbody(ID('tblIncidents')); tb.innerHTML='';
-  q.forEach(i=>{
-    const d=i.data(); const dt = fromMaybeTS(d.createdAt)||new Date();
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${dt.toLocaleString('id-ID')}</td>
-      <td>${d.userName||d.userId||'-'}</td>
-      <td>${d.reason||'-'}</td>
-      <td>${d.status==='open' ? '<span class="badge b-off">open</span>' : '<span class="badge b-on">closed</span>'}</td>
-      <td>
-        ${d.status==='open' ? `<button class="btn success" onclick="closeIncident('${i.id}')"><i class="bi bi-check2"></i>Tutup</button>`:''}
-        <button class="btn danger" onclick="delIncident('${i.id}')"><i class="bi bi-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-  // card
-  let act=0; q.forEach(i=>{ if((i.data().status||'open')==='open') act++; });
-  ID('cardIncidents').textContent = act;
-}
-
-async function closeIncident(id){ await updateDoc(doc(db,'incidents',id),{status:'closed', closedAt: nowTS()}); await refreshIncidents(); }
-
-/* Auto checker: jika customer.enabled dan lastSeen > 15 menit lalu tidak ada incident open → buat incident */
-async function autoIncidentCheck(){
-  const users = await getDocs(collection(db,'customers'));
-  const threshold = 15 * 60 * 1000; // 15 menit
-  const now = Date.now();
-  for (const u of users.docs){
-    const d=u.data();
-    if(!d.enabled) continue;
-    const ls = fromMaybeTS(d.lastSeen);
-    if(!ls) continue;
-    if(now - ls.getTime() >= threshold){
-      // cek sudah ada incident open utk user ini?
-      const incs = await getDocs(query(collection(db,'incidents'), where('userId','==',u.id), where('status','==','open')));
-      if(incs.empty){
-        await addDoc(collection(db,'incidents'),{
-          userId:u.id, userName: d.name || d.username || u.id,
-          reason:'Offline > 15 menit',
-          status:'open', createdAt: nowTS()
-        });
-      }
-    }
+  if(!payload.userId || !payload.month || !payload.amount){ toast('User, bulan, nominal wajib'); return; }
+  if(editBillId){ await colBills.doc(editBillId).set(payload,{merge:true}); toast('Billing diupdate'); }
+  else{ await colBills.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Billing ditambah'); }
+  editBillId=null; $('#b_amount').value=''; 
+};
+$('#btnBillReset').onclick = ()=>{ editBillId=null; $('#b_amount').value=''; };
+$('#tblBills').addEventListener('click', async e=>{
+  const idE=e.target.dataset.e, idX=e.target.dataset.x;
+  if(idE){
+    const d=(await colBills.doc(idE).get()).data();
+    editBillId=idE; $('#b_user').value=d.userId||''; $('#b_month').value=d.month||''; $('#b_amount').value=d.amount||0; $('#b_status').value=d.status||'unpaid';
+    toast('Edit mode billing');
   }
-  await refreshIncidents();
+  if(idX){ if(confirm('Hapus tagihan?')){ await colBills.doc(idX).delete(); toast('Tagihan dihapus'); } }
+});
+
+/* ======================= CASH CRUD ======================= */
+let editCashId=null;
+function renderCash(){
+  colCash.orderBy('date','desc').onSnapshot(snap=>{
+    const tb=$('#tblCash tbody'); tb.innerHTML='';
+    let saldo=0;
+    snap.forEach(doc=>{
+      const d=doc.data();
+      saldo += (d.type==='in'?1:-1) * Number(d.amount||0);
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${d.type==='in'?'Masuk':'Keluar'}</td>
+        <td>${money(d.amount)}</td>
+        <td>${d.note||''}</td>
+        <td>${d.date||''}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    $('#kpiCash').textContent = money(saldo);
+  });
+}
+$('#btnCashSave').onclick = async ()=>{
+  const payload = {
+    type: $('#c_type').value,
+    amount: Number($('#c_amount').value||0),
+    note: $('#c_note').value.trim(),
+    date: $('#c_date').value || new Date().toISOString().slice(0,10)
+  };
+  if(!payload.amount){ toast('Nominal wajib'); return; }
+  if(editCashId){ await colCash.doc(editCashId).set(payload,{merge:true}); toast('Kas diupdate'); }
+  else{ await colCash.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Kas ditambah'); }
+  editCashId=null; $('#c_amount').value=''; $('#c_note').value='';
+};
+$('#btnCashReset').onclick = ()=>{ editCashId=null; $('#c_amount').value=''; $('#c_note').value=''; };
+$('#tblCash').addEventListener('click', async e=>{
+  const idE=e.target.dataset.e, idX=e.target.dataset.x;
+  if(idE){ const d=(await colCash.doc(idE).get()).data(); editCashId=idE; $('#c_type').value=d.type; $('#c_amount').value=d.amount; $('#c_note').value=d.note; $('#c_date').value=d.date||''; toast('Edit mode kas'); }
+  if(idX){ if(confirm('Hapus transaksi kas?')){ await colCash.doc(idX).delete(); toast('Transaksi dihapus'); } }
+});
+
+/* ======================= TECHS CRUD ======================= */
+let editTechId=null;
+function renderTechs(){
+  colTechs.orderBy('name').onSnapshot(snap=>{
+    const tb=$('#tblTechs tbody'); tb.innerHTML='';
+    $('#kpiTechs').textContent = snap.size;
+    // isi dropdown pada gangguan
+    const sel = $('#i_tech'); sel.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${d.name||''}</td>
+        <td>${d.contact||''}</td>
+        <td>${d.skill||''}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+      // dropdown gangguan
+      const o=document.createElement('option'); o.value=doc.id; o.textContent=d.name; sel.appendChild(o);
+    });
+  });
+}
+$('#btnTechSave').onclick = async ()=>{
+  const payload = { name: $('#t_name').value.trim(), contact: $('#t_contact').value.trim(), skill: $('#t_skill').value.trim() };
+  if(!payload.name){ toast('Nama teknisi wajib'); return; }
+  if(editTechId){ await colTechs.doc(editTechId).set(payload,{merge:true}); toast('Teknisi diupdate'); }
+  else{ await colTechs.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Teknisi ditambah'); }
+  editTechId=null; $('#t_name').value=''; $('#t_contact').value=''; $('#t_skill').value='';
+};
+$('#btnTechReset').onclick = ()=>{ editTechId=null; $('#t_name').value=''; $('#t_contact').value=''; $('#t_skill').value=''; };
+$('#tblTechs').addEventListener('click', async e=>{
+  const idE=e.target.dataset.e, idX=e.target.dataset.x;
+  if(idE){ const d=(await colTechs.doc(idE).get()).data(); editTechId=idE; $('#t_name').value=d.name; $('#t_contact').value=d.contact; $('#t_skill').value=d.skill; toast('Edit mode teknisi'); }
+  if(idX){ if(confirm('Hapus teknisi?')){ await colTechs.doc(idX).delete(); toast('Teknisi dihapus'); } }
+});
+
+/* ======================= ISSUES CRUD ======================= */
+let editIssueId=null;
+function renderIssues(){
+  colIssues.orderBy('createdAt','desc').onSnapshot(async snap=>{
+    const tb=$('#tblIssues tbody'); tb.innerHTML='';
+    let active=0;
+    const techMap=new Map(); (await colTechs.get()).forEach(d=>techMap.set(d.id,d.data()));
+    snap.forEach(doc=>{
+      const d=doc.data(); if(d.status!=='closed') active++;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${d.title||''}</td>
+        <td>${d.status||''}</td>
+        <td>${d.area||''}</td>
+        <td>${(techMap.get(d.techId)||{}).name||'-'}</td>
+        <td>${d.createdAt? d.createdAt.toDate().toLocaleString('id-ID'):''}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    $('#kpiIssues').textContent = active;
+  });
+}
+$('#btnIssueSave').onclick = async ()=>{
+  const payload = {
+    title: $('#i_title').value.trim(),
+    status: $('#i_status').value,
+    area: $('#i_area').value.trim(),
+    techId: $('#i_tech').value || null,
+    desc: $('#i_desc').value.trim()
+  };
+  if(!payload.title){ toast('Judul wajib'); return; }
+  if(editIssueId){ await colIssues.doc(editIssueId).set(payload,{merge:true}); toast('Gangguan diupdate'); }
+  else{ await colIssues.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Gangguan ditambah'); }
+  editIssueId=null; $('#i_title').value=''; $('#i_area').value=''; $('#i_desc').value='';
+};
+$('#btnIssueReset').onclick = ()=>{ editIssueId=null; $('#i_title').value=''; $('#i_area').value=''; $('#i_desc').value=''; };
+$('#tblIssues').addEventListener('click', async e=>{
+  const idE=e.target.dataset.e, idX=e.target.dataset.x;
+  if(idE){ const d=(await colIssues.doc(idE).get()).data(); editIssueId=idE; $('#i_title').value=d.title; $('#i_status').value=d.status; $('#i_area').value=d.area; $('#i_tech').value=d.techId||''; $('#i_desc').value=d.desc||''; toast('Edit mode gangguan'); }
+  if(idX){ if(confirm('Hapus gangguan?')){ await colIssues.doc(idX).delete(); toast('Gangguan dihapus'); } }
+});
+
+/* ======================= MATERIALS CRUD ======================= */
+let editMatId=null;
+function renderMaterials(){
+  colMats.orderBy('name').onSnapshot(snap=>{
+    const tb=$('#tblMaterials tbody'); tb.innerHTML='';
+    let kritis=0;
+    snap.forEach(doc=>{
+      const d=doc.data(); if(Number(d.qty||0)<=Number(d.min||5)) kritis++;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${d.name||''}</td>
+        <td>${d.qty||0}</td>
+        <td>${d.unit||''}</td>
+        <td>${d.min||5}</td>
+        <td class="right actions">
+          <button class="btn small ghost" data-e="${doc.id}">Edit</button>
+          <button class="btn small danger" data-x="${doc.id}">Hapus</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    // tampilkan di dashboard (kita pakai kartu terakhir "Material Kritis")
+    // Kartu sudah ada, kita hanya update angka kecil ini di judul? 
+    // Untuk simpel, tidak perlu — tapi kamu bisa lihat daftar kritis di tabel.
+  });
+}
+$('#btnMatSave').onclick = async ()=>{
+  const payload = {
+    name: $('#m_name').value.trim(),
+    qty: Number($('#m_qty').value||0),
+    unit: $('#m_unit').value.trim(),
+    min: Number($('#m_min').value||5),
+  };
+  if(!payload.name){ toast('Nama material wajib'); return; }
+  if(editMatId){ await colMats.doc(editMatId).set(payload,{merge:true}); toast('Material diupdate'); }
+  else{ await colMats.add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()}); toast('Material ditambah'); }
+  editMatId=null; $('#m_name').value=''; $('#m_qty').value=''; $('#m_unit').value=''; $('#m_min').value='5';
+};
+$('#btnMatReset').onclick = ()=>{ editMatId=null; $('#m_name').value=''; $('#m_qty').value=''; $('#m_unit').value=''; $('#m_min').value='5'; };
+$('#tblMaterials').addEventListener('click', async e=>{
+  const idE=e.target.dataset.e, idX=e.target.dataset.x;
+  if(idE){ const d=(await colMats.doc(idE).get()).data(); editMatId=idE; $('#m_name').value=d.name; $('#m_qty').value=d.qty; $('#m_unit').value=d.unit; $('#m_min').value=d.min||5; toast('Edit mode material'); }
+  if(idX){ if(confirm('Hapus material?')){ await colMats.doc(idX).delete(); toast('Material dihapus'); } }
+});
+
+/* ======================= DASHBOARD CHART (DUMMY) ======================= */
+function drawChart(){
+  const cvs = document.getElementById('chart');
+  const ctx = cvs.getContext('2d');
+  // simple lightweight draw (tanpa library)
+  const W = cvs.width = cvs.clientWidth; const H = cvs.height = 260;
+  ctx.clearRect(0,0,W,H);
+  const pad=40;
+  function line(points){
+    ctx.beginPath();
+    points.forEach((p,i)=>{ i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); });
+    ctx.stroke();
+  }
+  const xs = [0,1,2,3,4,5].map(i=> pad + i*(W-2*pad)/5 );
+  const baseY = y => pad + (1-y)*(H-2*pad);
+  // fake data
+  const up   = [0.32,0.41,0.35,0.48,0.42,0.50];
+  const down = [0.52,0.62,0.58,0.66,0.61,0.70];
+  const lb   = [0.73,0.84,0.78,0.86,0.81,0.90];
+  ctx.lineWidth=3; ctx.strokeStyle='#60a5fa'; line(xs.map((x,i)=>[x,baseY(up[i])]));
+  ctx.strokeStyle='#fb7185'; line(xs.map((x,i)=>[x,baseY(down[i])]));
+  ctx.strokeStyle='#f59e0b'; line(xs.map((x,i)=>[x,baseY(lb[i])]));
 }
 
-/* MANUAL REMOVE INCIDENT */
-async function delIncident(id){ if(!confirm('Hapus laporan gangguan?'))return; await deleteDoc(doc(db,'incidents',id)); await refreshIncidents(); }
+/* ======================= INIT LOAD ======================= */
+window.addEventListener('load', async ()=>{
+  // view dari hash
+  const hv = (location.hash||'#dashboard').slice(1);
+  setActiveNav(hv);
 
-/* ===================== MODAL HELPERS ===================== */
-function showModal(id){ ID(id).classList.add('show'); }
-function closeModal(id){ ID(id).classList.remove('show'); }
+  await loadSettings();
+  renderPkgs();     // akan memanggil fillPlanOptions juga
+  renderUsers();
+  renderBills();
+  renderCash();
+  renderTechs();
+  renderIssues();
+  renderMaterials();
+  drawChart();
+  window.addEventListener('resize', drawChart);
+});
 
-/* ===================== LOGOUT ===================== */
-ID('logoutBtn').onclick = async ()=>{ try{ await signOut(auth); }catch{} sessionStorage.removeItem('authEmail'); location.href='index.html'; };
-
-/* ===================== BOOT ===================== */
-await loadISPName();
-await refreshSummary();
-setInterval(autoIncidentCheck, 60*1000); // cek tiap 1 menit
-
-// expose for buttons in HTML scope
-window.openUserModal=openUserModal; window.editUser=editUser; window.delUser=delUser; window.touchLastSeen=touchLastSeen; window.submitUser=submitUser;
-window.openPlanModal=openPlanModal; window.editPlan=editPlan; window.delPlan=async (id)=>{ if(!confirm('Hapus paket?'))return; await deleteDoc(doc(db,'plans',id)); await refreshPlans(); }; window.submitPlan=submitPlan;
-window.openBillModal=openBillModal; window.editBill=editBill; window.delBill=delBill; window.submitBill=submitBill;
-window.openCashModal=openCashModal; window.editCash=editCash; window.delCash=delCash; window.submitCash=submitCash;
-window.openTechModal=openTechModal; window.editTech=editTech; window.delTech=delTech; window.submitTech=submitTech;
-window.openMaterialModal=openMaterialModal; window.editMaterial=editMaterial; window.delMaterial=delMaterial; window.submitMaterial=submitMaterial;
-window.refreshIncidents=refreshIncidents;
+/* ======================= SMALL SAFETY ======================= */
+/* Firestore rules sebaiknya minimal seperti berikut:
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if request.auth != null; }
+  }
+}
+*/
 </script>
 </body>
 </html>
