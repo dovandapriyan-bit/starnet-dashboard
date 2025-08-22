@@ -10,62 +10,45 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {margin:0; font-family: 'Segoe UI', Tahoma, sans-serif; background:#f8f9fc; color:#333;}
-    .sidebar {
-      width:230px; height:100%; position:fixed; top:0; left:0;
-      background:#1a237e; color:#fff; padding-top:20px;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-    }
-    .sidebar h2 {text-align:center; margin-bottom:30px; font-size:20px;}
-    .sidebar a {
-      display:block; color:white; padding:12px 20px;
-      text-decoration:none; font-size:15px; border-left:3px solid transparent;
-      transition:0.3s;
-    }
-    .sidebar a:hover {background:#3949ab; border-left:3px solid #ffca28;}
-    .main {margin-left:230px; padding:25px;}
-    .card {
-      background:white; padding:20px; border-radius:12px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.08); margin-bottom:20px;
-      transition: transform 0.2s;
-    }
-    .card:hover {transform: translateY(-3px);}
-    .card h3 {margin:0 0 8px; font-size:16px; color:#555;}
-    .card p {font-size:22px; font-weight:bold; margin:0; color:#1a237e;}
-    table {width:100%; border-collapse:collapse; margin-top:10px;}
-    th,td {padding:10px; border-bottom:1px solid #ddd; text-align:left;}
-    th {background:#1a237e; color:white; font-size:14px;}
-    tr:nth-child(even){background:#f4f6ff;}
-    input,select {
-      padding:8px; margin:5px 0; width:100%;
-      border:1px solid #ccc; border-radius:6px;
-    }
-    button {
-      padding:8px 14px; margin:4px 2px; border:none;
-      border-radius:6px; cursor:pointer; font-size:14px; font-weight:500;
-    }
-    button.primary {background:#1a237e; color:white;}
-    button.success {background:#2e7d32; color:white;}
-    button.danger {background:#c62828; color:white;}
-    button.secondary {background:#607d8b; color:white;}
-    button:hover {opacity:0.9;}
-    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px;}
-    .section h2 {margin-top:0; border-bottom:2px solid #1a237e; padding-bottom:5px; color:#1a237e;}
+    body {margin:0; font-family:'Segoe UI',Arial,sans-serif; background:#f4f6fa; color:#333;}
+    .sidebar {width:240px; height:100%; position:fixed; top:0; left:0; background:#1e293b; color:#fff; padding-top:20px;}
+    .sidebar h2 {text-align:center; margin:0 0 30px; font-size:20px; color:#38bdf8;}
+    .sidebar a {display:block; color:#cbd5e1; padding:12px 20px; text-decoration:none; transition:0.2s; font-size:15px;}
+    .sidebar a:hover, .sidebar a.active {background:#334155; color:#fff;}
+    .main {margin-left:240px; padding:25px;}
+    .card {background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:20px; transition:0.2s;}
+    .card:hover {box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+    .stat {display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:22px; font-weight:bold;}
+    .stat small {font-size:14px; font-weight:normal; color:#666;}
+    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px;}
+    table {width:100%; border-collapse:collapse; font-size:14px;}
+    th,td {padding:10px; border-bottom:1px solid #e2e8f0; text-align:left;}
+    th {background:#f1f5f9; font-weight:600;}
+    tr:hover {background:#f9fafb;}
+    input,select {padding:8px; margin:6px 0; width:100%; border:1px solid #ccc; border-radius:6px;}
+    button {padding:8px 14px; margin:4px 2px; border:none; border-radius:6px; cursor:pointer; font-size:14px;}
+    button.primary {background:#3b82f6; color:white;}
+    button.primary:hover {background:#2563eb;}
+    button.danger {background:#ef4444; color:white;}
+    button.danger:hover {background:#dc2626;}
+    button.success {background:#22c55e; color:white;}
+    button.success:hover {background:#16a34a;}
+    h2 {margin-top:0; color:#0f172a;}
   </style>
 </head>
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
-    <h2 id="ispName">🌐 Starnet 💫</h2>
-    <a href="#" onclick="showSection('dashboard')">📊 Dashboard</a>
-    <a href="#" onclick="showSection('user')">👥 User</a>
-    <a href="#" onclick="showSection('paket')">📦 Paket</a>
-    <a href="#" onclick="showSection('billing')">💳 Billing</a>
-    <a href="#" onclick="showSection('kas')">💰 Kas</a>
-    <a href="#" onclick="showSection('teknisi')">🛠 Teknisi</a>
-    <a href="#" onclick="showSection('gangguan')">⚠️ Gangguan</a>
-    <a href="#" onclick="showSection('material')">📦 Material</a>
-    <a href="#" onclick="showSection('editisp')">⚙️ Edit ISP</a>
+    <h2 id="ispName">Starnet 💫</h2>
+    <a href="#" class="active" onclick="showSection('dashboard',this)">📊 Dashboard</a>
+    <a href="#" onclick="showSection('user',this)">👥 User</a>
+    <a href="#" onclick="showSection('paket',this)">📦 Paket</a>
+    <a href="#" onclick="showSection('billing',this)">💳 Billing</a>
+    <a href="#" onclick="showSection('kas',this)">💰 Kas</a>
+    <a href="#" onclick="showSection('teknisi',this)">🛠️ Teknisi</a>
+    <a href="#" onclick="showSection('gangguan',this)">⚠️ Gangguan</a>
+    <a href="#" onclick="showSection('material',this)">📑 Material</a>
+    <a href="#" onclick="showSection('editisp',this)">⚙️ Edit ISP</a>
     <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
 
@@ -75,17 +58,17 @@
     <div id="dashboard" class="section">
       <h2>Dashboard</h2>
       <div class="grid">
-        <div class="card" onclick="showSection('user')" style="cursor:pointer;">
-          <h3>Total User</h3><p id="totalUser">0</p>
+        <div class="card" onclick="showSection('user')" style="cursor:pointer;background:#dbeafe;">
+          <div class="stat"><span id="totalUser">0</span><small>Total User</small></div>
         </div>
-        <div class="card" onclick="showSection('kas')" style="cursor:pointer;">
-          <h3>Saldo Kas</h3><p id="saldoKas">0</p>
+        <div class="card" onclick="showSection('kas')" style="cursor:pointer;background:#dcfce7;">
+          <div class="stat"><span id="saldoKas">0</span><small>Saldo Kas</small></div>
         </div>
-        <div class="card" onclick="showSection('billing')" style="cursor:pointer;">
-          <h3>Tunggakan</h3><p id="totalTunggakan">0</p>
+        <div class="card" onclick="showSection('billing')" style="cursor:pointer;background:#fef9c3;">
+          <div class="stat"><span id="totalTunggakan">0</span><small>Tunggakan</small></div>
         </div>
-        <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;">
-          <h3>Gangguan Aktif</h3><p id="totalGangguan">0</p>
+        <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;background:#fee2e2;">
+          <div class="stat"><span id="totalGangguan">0</span><small>Gangguan Aktif</small></div>
         </div>
       </div>
       <div class="card"><canvas id="ispChart"></canvas></div>
@@ -93,38 +76,38 @@
 
     <!-- User -->
     <div id="user" class="section" style="display:none;">
-      <h2>Data User</h2>
+      <h2>User</h2>
       <form id="userForm">
         <input type="hidden" id="userId">
         <label>Nama</label><input id="userName" required>
         <label>Paket</label><select id="planName" required></select>
         <label>Status Bayar</label>
         <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
-        <button type="submit" class="primary">Simpan User</button>
+        <button class="primary" type="submit">Simpan User</button>
       </form>
       <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Paket -->
     <div id="paket" class="section" style="display:none;">
-      <h2>Data Paket</h2>
+      <h2>Paket</h2>
       <form id="paketForm">
         <input type="hidden" id="paketId">
         <label>Nama Paket</label><input id="namaPaket" required>
         <label>Bandwidth</label><input id="bandwidth" required>
-        <button type="submit" class="primary">Simpan Paket</button>
+        <button class="primary" type="submit">Simpan Paket</button>
       </form>
       <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Billing -->
     <div id="billing" class="section" style="display:none;">
-      <h2>Data Billing</h2>
+      <h2>Billing</h2>
       <form id="billingForm">
         <input type="hidden" id="billingId">
         <label>User</label><input id="billingUser" required>
         <label>Jumlah</label><input id="billingAmount" required>
-        <button type="submit" class="primary">Simpan Billing</button>
+        <button class="primary" type="submit">Simpan Billing</button>
       </form>
       <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
@@ -136,28 +119,28 @@
         <input type="hidden" id="kasId">
         <label>Keterangan</label><input id="kasKet" required>
         <label>Jumlah (+/-)</label><input id="kasJumlah" required>
-        <button type="submit" class="primary">Simpan Transaksi</button>
+        <button class="primary" type="submit">Simpan Transaksi</button>
       </form>
       <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Teknisi -->
     <div id="teknisi" class="section" style="display:none;">
-      <h2>Data Teknisi</h2>
+      <h2>Teknisi</h2>
       <form id="teknisiForm">
         <input type="hidden" id="teknisiId">
         <label>Nama Teknisi</label><input id="namaTeknisi" required>
         <label>Kontak</label><input id="kontakTeknisi" required>
-        <button type="submit" class="primary">Simpan Teknisi</button>
+        <button class="primary" type="submit">Simpan Teknisi</button>
       </form>
       <div class="card"><table id="teknisiTable"><thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Gangguan -->
     <div id="gangguan" class="section" style="display:none;">
-      <h2>Manajemen Gangguan</h2>
-      <button onclick="simulateGangguan()" class="success">➕ Tambah Gangguan Random</button>
-      <button onclick="clearGangguan()" class="secondary">🗑️ Hapus Semua Gangguan</button>
+      <h2>Gangguan</h2>
+      <button class="primary" onclick="simulateGangguan()">➕ Tambah Gangguan Random</button>
+      <button class="danger" onclick="clearGangguan()">🗑️ Hapus Semua Gangguan</button>
       <div class="card">
         <table id="gangguanTable">
           <thead>
@@ -170,12 +153,12 @@
 
     <!-- Material -->
     <div id="material" class="section" style="display:none;">
-      <h2>Data Material</h2>
+      <h2>Material</h2>
       <form id="materialForm">
         <input type="hidden" id="materialId">
         <label>Nama Material</label><input id="namaMaterial" required>
         <label>Stok</label><input id="stokMaterial" required>
-        <button type="submit" class="primary">Simpan Material</button>
+        <button class="primary" type="submit">Simpan Material</button>
       </form>
       <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
@@ -184,51 +167,200 @@
     <div id="editisp" class="section" style="display:none;">
       <h2>Edit Nama ISP</h2>
       <input id="newISPName" placeholder="Nama ISP baru">
-      <button onclick="editISP()" class="primary">Simpan</button>
+      <button class="primary" onclick="editISP()">Simpan</button>
     </div>
   </div>
 
 <script>
-  // === Firebase Config ===
-  const firebaseConfig={apiKey:"AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",authDomain:"dnt-network-7.firebaseapp.com",projectId:"dnt-network-7",storageBucket:"dnt-network-7.firebasestorage.app",messagingSenderId:"761179668371",appId:"1:761179668371:web:7d1468d0298041d4783266",measurementId:"G-CD3EQ350R4"};
-  firebase.initializeApp(firebaseConfig); const db=firebase.firestore();
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+    authDomain: "dnt-network-7.firebaseapp.com",
+    projectId: "dnt-network-7",
+    storageBucket: "dnt-network-7.firebasestorage.app",
+    messagingSenderId: "761179668371",
+    appId: "1:761179668371:web:7d1468d0298041d4783266",
+    measurementId: "G-CD3EQ350R4"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  function showSection(id){document.querySelectorAll('.section').forEach(s=>s.style.display="none");document.getElementById(id).style.display="block";}
+  // UI Helpers
+  function showSection(id,el){
+    document.querySelectorAll('.section').forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
+    document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove("active"));
+    if(el) el.classList.add("active");
+  }
   function logout(){alert("Logout sukses!");}
-  function editISP(){document.getElementById("ispName").innerText=document.getElementById("newISPName").value||"Starnet 💫";}
+  function editISP(){ document.getElementById("ispName").innerText=document.getElementById("newISPName").value || "Starnet 💫"; }
 
-  // Load Paket ke dropdown
-  function loadPaketSelect(){const sel=document.getElementById("planName");sel.innerHTML="<option value=''>--Pilih Paket--</option>";db.collection("paket").get().then(snap=>{snap.forEach(doc=>{let d=doc.data();let o=document.createElement("option");o.value=d.namaPaket;o.textContent=d.namaPaket+" ("+d.bandwidth+")";sel.appendChild(o);})})}
-  document.addEventListener("DOMContentLoaded",loadPaketSelect);
+  // Load Paket ke dropdown User
+  function loadPaketSelect(){
+    const sel=document.getElementById("planName");
+    sel.innerHTML="<option value=''>--Pilih Paket--</option>";
+    db.collection("paket").get().then(snap=>{
+      snap.forEach(doc=>{
+        let d=doc.data(); let o=document.createElement("option");
+        o.value=d.namaPaket; o.textContent=d.namaPaket+" ("+d.bandwidth+")";
+        sel.appendChild(o);
+      })
+    })
+  }
+  document.addEventListener("DOMContentLoaded", loadPaketSelect);
 
   // Chart dummy
   const ctx=document.getElementById("ispChart");
-  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"#1a237e"},{label:"Download",data:[20,25,30,35],borderColor:"#43a047"}]}});
+  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"#3b82f6"},{label:"Download",data:[20,25,30,35],borderColor:"#22c55e"}]}});
 
   // Generic CRUD
-  function renderTable(collection,tableId,fields){db.collection(collection).onSnapshot(snap=>{let tbody=document.querySelector(`#${tableId} tbody`);tbody.innerHTML="";snap.forEach(doc=>{let d=doc.data();let tr=document.createElement("tr");fields.forEach(f=>{let td=document.createElement("td");td.textContent=d[f]||"";tr.appendChild(td);});let td=document.createElement("td");td.innerHTML=`<button class='primary' onclick="editItem('${collection}','${doc.id}')">✏️</button><button class='danger' onclick="deleteItem('${collection}','${doc.id}')">🗑️</button>`;tr.appendChild(td);tbody.appendChild(tr);})})}
-  function saveForm(e,collection,idField,fields){e.preventDefault();const id=document.getElementById(idField).value;let data={};fields.forEach(f=>data[f]=document.getElementById(f).value);if(id){db.collection(collection).doc(id).update(data);}else{db.collection(collection).add(data);}e.target.reset();document.getElementById(idField).value="";}
-  function editItem(collection,id){db.collection(collection).doc(id).get().then(doc=>{if(doc.exists){let d=doc.data();Object.keys(d).forEach(k=>{if(document.getElementById(k))document.getElementById(k).value=d[k];});if(document.getElementById(collection+"Id"))document.getElementById(collection+"Id").value=id;}})}
-  function deleteItem(collection,id){if(confirm("Yakin hapus?"))db.collection(collection).doc(id).delete();}
+  function renderTable(collection, tableId, fields){
+    db.collection(collection).onSnapshot(snap=>{
+      let tbody=document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML="";
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+        fields.forEach(f=>{let td=document.createElement("td"); td.textContent=d[f]||""; tr.appendChild(td);});
+        let td=document.createElement("td");
+        td.innerHTML=`<button class="success" onclick="editItem('${collection}','${doc.id}')">Edit</button><button class="danger" onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>`;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      })
+    })
+  }
+  function saveForm(e, collection, idField, fields){
+    e.preventDefault();
+    const id=document.getElementById(idField).value;
+    let data={};
+    fields.forEach(f=>data[f]=document.getElementById(f).value);
+    if(id){ db.collection(collection).doc(id).update(data); }
+    else{ db.collection(collection).add(data); }
+    e.target.reset();
+    document.getElementById(idField).value="";
+  }
+  function editItem(collection,id){
+    db.collection(collection).doc(id).get().then(doc=>{
+      if(doc.exists){
+        let d=doc.data();
+        Object.keys(d).forEach(k=>{ if(document.getElementById(k)) document.getElementById(k).value=d[k]; });
+        if(document.getElementById(collection+"Id")) document.getElementById(collection+"Id").value=id;
+      }
+    })
+  }
+  function deleteItem(collection,id){ if(confirm("Yakin hapus?")) db.collection(collection).doc(id).delete(); }
 
   // Bind forms
-  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);renderTable("user","userTable",["userName","planName","statusBayar"]);
-  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);renderTable("paket","paketTable",["namaPaket","bandwidth"]);
-  document.getElementById("billingForm").onsubmit=(e)=>saveForm(e,"billing","billingId",["billingUser","billingAmount"]);renderTable("billing","billingTable",["billingUser","billingAmount"]);
-  document.getElementById("kasForm").onsubmit=(e)=>saveForm(e,"kas","kasId",["kasKet","kasJumlah"]);renderTable("kas","kasTable",["kasKet","kasJumlah"]);
-  document.getElementById("teknisiForm").onsubmit=(e)=>saveForm(e,"teknisi","teknisiId",["namaTeknisi","kontakTeknisi"]);renderTable("teknisi","teknisiTable",["namaTeknisi","kontakTeknisi"]);
-  document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
+  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);
+  renderTable("user","userTable",["userName","planName","statusBayar"]);
 
-  // Dashboard auto count
-  db.collection("user").onSnapshot(snap=>{document.getElementById("totalUser").textContent=snap.size;let tunggakan=0;snap.forEach(doc=>{if(doc.data().statusBayar==="Belum")tunggakan++;});document.getElementById("totalTunggakan").textContent=tunggakan;});
-  db.collection("kas").onSnapshot(snap=>{let saldo=0;snap.forEach(doc=>{saldo+=parseFloat(doc.data().kasJumlah||0);});document.getElementById("saldoKas").textContent=saldo;});
+  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);
+  renderTable("paket","paketTable",["namaPaket","bandwidth"]);
 
-  // Gangguan
-  function loadGangguan(){db.collection("gangguan").orderBy("waktu","desc").limit(20).get().then(snap=>{let tbody=document.querySelector("#gangguanTable tbody");tbody.innerHTML="";let activeCount=0;snap.forEach(doc=>{let d=doc.data();let tr=document.createElement("tr");let ttr="00:00:00";if(d.status==="Aktif"){let startTime=new Date(d.waktu);let now=new Date();let diff=now-startTime;let hrs=Math.floor(diff/1000/60/60);let mins=Math.floor((diff/1000/60)%60);let secs=Math.floor((diff/1000)%60);ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;activeCount++;}else if(d.ttr){ttr=d.ttr;}tr.innerHTML=`<td>${d.user||""}</td><td>${d.indikasi||""}</td><td>${d.waktu||""}</td><td>${ttr}</td><td>${d.status||"Aktif"}</td><td>${d.status==="Aktif"? `<button class='danger' onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>`;tbody.appendChild(tr);});document.getElementById("totalGangguan").textContent=activeCount;})}
-  loadGangguan();setInterval(loadGangguan,60*1000);
-  function simulateGangguan(){db.collection("user").get().then(snap=>{if(!snap.empty){let users=[];snap.forEach(doc=>users.push(doc.data().userName));let randomUser=users[Math.floor(Math.random()*users.length)];db.collection("gangguan").add({user:randomUser,indikasi:"Koneksi putus",waktu:new Date().toISOString(),status:"Aktif"}).then(()=>loadGangguan());}else{alert("Belum ada user untuk simulasi!");}})}
-  function closeGangguan(id){db.collection("gangguan").doc(id).get().then(doc=>{if(doc.exists){let d=doc.data();let startTime=new Date(d.waktu);let now=new Date();let diff=now-startTime;let hrs=Math.floor(diff/1000/60/60);let mins=Math.floor((diff/1000/60)%60);let secs=Math.floor((diff/1000)%60);let ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;db.collection("gangguan").doc(id).update({status:"Selesai",ttr:ttr}).then(()=>loadGangguan());}})}
-  function clearGangguan(){if(confirm("Yakin hapus semua gangguan?")){db.collection("gangguan").get().then(snap=>{snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete());loadGangguan();})}}
+  document.getElementById("billingForm").onsubmit=(e)=>saveForm(e,"billing","billingId",["billingUser","billingAmount"]);
+  renderTable("billing","billingTable",["billingUser","billingAmount"]);
+
+  document.getElementById("kasForm").onsubmit=(e)=>saveForm(e,"kas","kasId",["kasKet","kasJumlah"]);
+  renderTable("kas","kasTable",["kasKet","kasJumlah"]);
+
+  document.getElementById("teknisiForm").onsubmit=(e)=>saveForm(e,"teknisi","teknisiId",["namaTeknisi","kontakTeknisi"]);
+  renderTable("teknisi","teknisiTable",["namaTeknisi","kontakTeknisi"]);
+
+  document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);
+  renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
+
+  // Dashboard Auto Count
+  db.collection("user").onSnapshot(snap=>{
+    document.getElementById("totalUser").textContent=snap.size;
+    let tunggakan=0;
+    snap.forEach(doc=>{ if(doc.data().statusBayar==="Belum") tunggakan++; });
+    document.getElementById("totalTunggakan").textContent=tunggakan;
+  });
+  db.collection("kas").onSnapshot(snap=>{
+    let saldo=0;
+    snap.forEach(doc=>{ saldo+=parseFloat(doc.data().kasJumlah||0); });
+    document.getElementById("saldoKas").textContent=saldo;
+  });
+
+  // ================== Gangguan ==================
+  function loadGangguan(){
+    db.collection("gangguan").orderBy("waktu","desc").limit(10).get().then(snap=>{
+      let tbody=document.querySelector("#gangguanTable tbody");
+      tbody.innerHTML="";
+      let activeCount=0;
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+
+        // Hitung TTR
+        let ttr="00:00:00";
+        if(d.status==="Aktif"){
+          let startTime=new Date(d.waktu);
+          let now=new Date();
+          let diff=now-startTime;
+          let hrs=Math.floor(diff/1000/60/60);
+          let mins=Math.floor((diff/1000/60)%60);
+          let secs=Math.floor((diff/1000)%60);
+          ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+          activeCount++;
+        } else if(d.ttr){ ttr=d.ttr; }
+
+        tr.innerHTML=`
+          <td>${d.user||""}</td>
+          <td>${d.indikasi||""}</td>
+          <td>${new Date(d.waktu).toLocaleString()}</td>
+          <td>${ttr}</td>
+          <td>${d.status||"Aktif"}</td>
+          <td>${d.status==="Aktif"? `<button class="success" onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById("totalGangguan").textContent=activeCount;
+    })
+  }
+  loadGangguan();
+  setInterval(loadGangguan, 60000);
+
+  function simulateGangguan(){
+    db.collection("user").get().then(snap=>{
+      if(!snap.empty){
+        let users=[];
+        snap.forEach(doc=>users.push(doc.data().userName));
+        let randomUser=users[Math.floor(Math.random()*users.length)];
+        db.collection("gangguan").add({
+          user: randomUser,
+          indikasi: "Koneksi putus",
+          waktu: new Date().toISOString(),
+          status: "Aktif"
+        }).then(()=>loadGangguan());
+      } else { alert("Belum ada user untuk disimulasikan!"); }
+    })
+  }
+
+  function closeGangguan(id){
+    db.collection("gangguan").doc(id).get().then(doc=>{
+      if(doc.exists){
+        let d=doc.data();
+        let startTime=new Date(d.waktu);
+        let now=new Date();
+        let diff=now-startTime;
+        let hrs=Math.floor(diff/1000/60/60);
+        let mins=Math.floor((diff/1000/60)%60);
+        let secs=Math.floor((diff/1000)%60);
+        let ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        db.collection("gangguan").doc(id).update({status:"Selesai", ttr:ttr}).then(()=>loadGangguan());
+      }
+    })
+  }
+
+  function clearGangguan(){
+    if(confirm("Yakin hapus semua gangguan?")){
+      db.collection("gangguan").get().then(snap=>{
+        snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete());
+        loadGangguan();
+      })
+    }
+  }
 </script>
 </body>
 </html>
