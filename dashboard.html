@@ -10,40 +10,95 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {margin:0; font-family:Arial, sans-serif; background:#f9fafb; color:#333;}
-    .sidebar {width:220px; height:100%; position:fixed; top:0; left:0; background:#4f46e5; color:#fff; padding-top:20px;}
-    .sidebar h2 {text-align:center; margin:0 0 30px; font-size:18px; color:#fff;}
-    .sidebar a {display:block; color:#e0e7ff; padding:10px 20px; text-decoration:none;}
-    .sidebar a:hover, .sidebar a.active {background:#4338ca; color:#fff;}
-    .main {margin-left:220px; padding:20px;}
-    .card {background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;}
+    body {margin:0; font-family:'Segoe UI',Arial,sans-serif; background:#f4f6fa; color:#333;}
+    .sidebar {width:240px; height:100%; position:fixed; top:0; left:0; background:#1e293b; color:#fff; padding-top:20px;}
+    .sidebar h2 {text-align:center; margin:0 0 30px; font-size:20px; color:#38bdf8;}
+    .sidebar a {display:block; color:#cbd5e1; padding:12px 20px; text-decoration:none; transition:0.2s; font-size:15px;}
+    .sidebar a:hover, .sidebar a.active {background:#334155; color:#fff;}
+    .main {margin-left:240px; padding:25px;}
+    .card {background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:20px; transition:0.2s;}
+    .card:hover {box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+    .stat {display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:22px; font-weight:bold;}
+    .stat small {font-size:14px; font-weight:normal; color:#666;}
+    .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px;}
     table {width:100%; border-collapse:collapse; font-size:14px;}
     th,td {padding:10px; border-bottom:1px solid #e2e8f0; text-align:left;}
-    th {background:#eef2ff;}
-    input,select {padding:6px; margin:6px 0; width:100%; border:1px solid #ccc; border-radius:6px;}
-    button {padding:8px 12px; margin:4px 2px; border:none; border-radius:6px; cursor:pointer;}
-    button.primary {background:#4f46e5; color:white;}
+    th {background:#f1f5f9; font-weight:600;}
+    tr:hover {background:#f9fafb;}
+    input,select {padding:8px; margin:6px 0; width:100%; border:1px solid #ccc; border-radius:6px;}
+    button {padding:8px 14px; margin:4px 2px; border:none; border-radius:6px; cursor:pointer; font-size:14px;}
+    button.primary {background:#3b82f6; color:white;}
+    button.primary:hover {background:#2563eb;}
     button.danger {background:#ef4444; color:white;}
+    button.danger:hover {background:#dc2626;}
     button.success {background:#22c55e; color:white;}
+    button.success:hover {background:#16a34a;}
+    h2 {margin-top:0; color:#0f172a;}
   </style>
 </head>
 <body>
+  <!-- Sidebar -->
   <div class="sidebar">
-    <h2>Starnet 💫</h2>
+    <h2 id="ispName">Starnet 💫</h2>
     <a href="#" class="active" onclick="showSection('dashboard',this)">📊 Dashboard</a>
+    <a href="#" onclick="showSection('user',this)">👥 User</a>
+    <a href="#" onclick="showSection('paket',this)">📦 Paket</a>
     <a href="#" onclick="showSection('billing',this)">💳 Billing</a>
+    <a href="#" onclick="showSection('kas',this)">💰 Kas</a>
+    <a href="#" onclick="showSection('teknisi',this)">🛠️ Teknisi</a>
+    <a href="#" onclick="showSection('gangguan',this)">⚠️ Gangguan</a>
+    <a href="#" onclick="showSection('material',this)">📑 Material</a>
+    <a href="#" onclick="showSection('odp',this)">🛰️ ODP</a> <!-- ✅ Tambahan -->
+    <a href="#" onclick="showSection('editisp',this)">⚙️ Edit ISP</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
 
+  <!-- Main Content -->
   <div class="main">
     <!-- Dashboard -->
     <div id="dashboard" class="section">
       <h2>Dashboard</h2>
-      <div class="card">
-        <p>Total Tunggakan: <span id="totalTunggakan">0</span></p>
+      <div class="grid">
+        <div class="card" onclick="showSection('user')" style="cursor:pointer;background:#dbeafe;">
+          <div class="stat"><span id="totalUser">0</span><small>Total User</small></div>
+        </div>
+        <div class="card" onclick="showSection('kas')" style="cursor:pointer;background:#dcfce7;">
+          <div class="stat"><span id="saldoKas">0</span><small>Saldo Kas</small></div>
+        </div>
+        <div class="card" onclick="showSection('billing')" style="cursor:pointer;background:#fef9c3;">
+          <div class="stat"><span id="totalTunggakan">0</span><small>Tunggakan</small></div>
+        </div>
+        <div class="card" onclick="showSection('gangguan')" style="cursor:pointer;background:#fee2e2;">
+          <div class="stat"><span id="totalGangguan">0</span><small>Gangguan Aktif</small></div>
+        </div>
       </div>
-      <div class="card">
-        <canvas id="billingChart"></canvas>
-      </div>
+      <div class="card"><canvas id="ispChart"></canvas></div>
+    </div>
+
+    <!-- User -->
+    <div id="user" class="section" style="display:none;">
+      <h2>User</h2>
+      <form id="userForm">
+        <input type="hidden" id="userId">
+        <label>Nama</label><input id="userName" required>
+        <label>Paket</label><select id="planName" required></select>
+        <label>Status Bayar</label>
+        <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
+        <button class="primary" type="submit">Simpan User</button>
+      </form>
+      <div class="card"><table id="userTable"><thead><tr><th>Nama</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Paket -->
+    <div id="paket" class="section" style="display:none;">
+      <h2>Paket</h2>
+      <form id="paketForm">
+        <input type="hidden" id="paketId">
+        <label>Nama Paket</label><input id="namaPaket" required>
+        <label>Bandwidth</label><input id="bandwidth" required>
+        <button class="primary" type="submit">Simpan Paket</button>
+      </form>
+      <div class="card"><table id="paketTable"><thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <!-- Billing -->
@@ -53,17 +108,89 @@
         <input type="hidden" id="billingId">
         <label>User</label><input id="billingUser" required>
         <label>Jumlah</label><input id="billingAmount" required>
-        <label>Periode</label><input id="billingPeriod" placeholder="2025-08" required>
         <button class="primary" type="submit">Simpan Billing</button>
       </form>
+      <div class="card"><table id="billingTable"><thead><tr><th>User</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Kas -->
+    <div id="kas" class="section" style="display:none;">
+      <h2>Kas Perusahaan</h2>
+      <form id="kasForm">
+        <input type="hidden" id="kasId">
+        <label>Keterangan</label><input id="kasKet" required>
+        <label>Jumlah (+/-)</label><input id="kasJumlah" required>
+        <button class="primary" type="submit">Simpan Transaksi</button>
+      </form>
+      <div class="card"><table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Teknisi -->
+    <div id="teknisi" class="section" style="display:none;">
+      <h2>Teknisi</h2>
+      <form id="teknisiForm">
+        <input type="hidden" id="teknisiId">
+        <label>Nama Teknisi</label><input id="namaTeknisi" required>
+        <label>Kontak</label><input id="kontakTeknisi" required>
+        <button class="primary" type="submit">Simpan Teknisi</button>
+      </form>
+      <div class="card"><table id="teknisiTable"><thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- Gangguan -->
+    <div id="gangguan" class="section" style="display:none;">
+      <h2>Gangguan</h2>
+      <button class="primary" onclick="simulateGangguan()">➕ Tambah Gangguan Random</button>
+      <button class="danger" onclick="clearGangguan()">🗑️ Hapus Semua Gangguan</button>
       <div class="card">
-        <table id="billingTable">
+        <table id="gangguanTable">
           <thead>
-            <tr><th>User</th><th>Jumlah</th><th>Periode</th><th>Status</th><th>Aksi</th></tr>
+            <tr><th>User</th><th>Indikasi</th><th>Waktu</th><th>TTR</th><th>Status</th><th>Aksi</th></tr>
           </thead>
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Material -->
+    <div id="material" class="section" style="display:none;">
+      <h2>Material</h2>
+      <form id="materialForm">
+        <input type="hidden" id="materialId">
+        <label>Nama Material</label><input id="namaMaterial" required>
+        <label>Stok</label><input id="stokMaterial" required>
+        <button class="primary" type="submit">Simpan Material</button>
+      </form>
+      <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- ODP -->
+    <div id="odp" class="section" style="display:none;">
+      <h2>ODP</h2>
+      <form id="odpForm">
+        <input type="hidden" id="odpId">
+        <label>Nama ODP</label><input id="namaODP" required>
+        <button class="primary" type="submit">Simpan ODP</button>
+      </form>
+
+      <!-- ✅ Search -->
+      <input type="text" id="searchODP" placeholder="Cari ODP..." onkeyup="filterODP()">
+
+      <div class="card">
+        <table id="odpTable">
+          <thead>
+            <tr><th>Nama ODP</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Edit ISP -->
+    <div id="editisp" class="section" style="display:none;">
+      <h2>Edit Nama ISP</h2>
+      <input id="newISPName" placeholder="Nama ISP baru">
+      <button class="primary" onclick="editISP()">Simpan</button>
     </div>
   </div>
 
@@ -73,100 +200,120 @@
     apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
     authDomain: "dnt-network-7.firebaseapp.com",
     projectId: "dnt-network-7",
+    storageBucket: "dnt-network-7.firebasestorage.app",
+    messagingSenderId: "761179668371",
+    appId: "1:761179668371:web:7d1468d0298041d4783266",
+    measurementId: "G-CD3EQ350R4"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // UI Helpers
   function showSection(id,el){
     document.querySelectorAll('.section').forEach(s=>s.style.display="none");
     document.getElementById(id).style.display="block";
     document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove("active"));
     if(el) el.classList.add("active");
   }
+  function logout(){alert("Logout sukses!");}
+  function editISP(){ document.getElementById("ispName").innerText=document.getElementById("newISPName").value || "Starnet 💫"; }
 
-  // Save Billing dengan cek tunggakan
-  document.getElementById("billingForm").onsubmit=(e)=>{
+  // Load Paket ke dropdown User
+  function loadPaketSelect(){
+    const sel=document.getElementById("planName");
+    sel.innerHTML="<option value=''>--Pilih Paket--</option>";
+    db.collection("paket").get().then(snap=>{
+      snap.forEach(doc=>{
+        let d=doc.data(); let o=document.createElement("option");
+        o.value=d.namaPaket; o.textContent=d.namaPaket+" ("+d.bandwidth+")";
+        sel.appendChild(o);
+      })
+    })
+  }
+  document.addEventListener("DOMContentLoaded", loadPaketSelect);
+
+  // Chart dummy
+  const ctx=document.getElementById("ispChart");
+  new Chart(ctx,{type:'line',data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Upload",data:[10,20,15,30],borderColor:"#3b82f6"},{label:"Download",data:[20,25,30,35],borderColor:"#22c55e"}]}});
+
+  // Generic CRUD
+  function renderTable(collection, tableId, fields){
+    db.collection(collection).onSnapshot(snap=>{
+      let tbody=document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML="";
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+        fields.forEach(f=>{let td=document.createElement("td"); td.textContent=d[f]||""; tr.appendChild(td);});
+        let td=document.createElement("td");
+        td.innerHTML=`<button class="success" onclick="editItem('${collection}','${doc.id}')">Edit</button><button class="danger" onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>`;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      })
+    })
+  }
+  function saveForm(e, collection, idField, fields){
     e.preventDefault();
-    const id=document.getElementById("billingId").value;
-    const user=document.getElementById("billingUser").value;
-    const jumlah=parseFloat(document.getElementById("billingAmount").value);
-    const periode=document.getElementById("billingPeriod").value;
-
-    db.collection("billing").where("billingUser","==",user).where("status","==","Belum")
-    .get().then(snap=>{
-      let total=jumlah;
-      let status="Lunas";
-      if(!snap.empty){
-        snap.forEach(doc=>{ total+=parseFloat(doc.data().billingAmount); });
-        status="Belum";
+    const id=document.getElementById(idField).value;
+    let data={};
+    fields.forEach(f=>data[f]=document.getElementById(f).value);
+    if(id){ db.collection(collection).doc(id).update(data); }
+    else{ db.collection(collection).add(data); }
+    e.target.reset();
+    document.getElementById(idField).value="";
+  }
+  function editItem(collection,id){
+    db.collection(collection).doc(id).get().then(doc=>{
+      if(doc.exists){
+        let d=doc.data();
+        Object.keys(d).forEach(k=>{ if(document.getElementById(k)) document.getElementById(k).value=d[k]; });
+        if(document.getElementById(collection+"Id")) document.getElementById(collection+"Id").value=id;
       }
-      let data={billingUser:user,billingAmount:total,billingPeriod:periode,status:status};
-      if(id){ db.collection("billing").doc(id).update(data); }
-      else{ db.collection("billing").add(data); }
-      e.target.reset();
-      document.getElementById("billingId").value="";
+    })
+  }
+  function deleteItem(collection,id){ if(confirm("Yakin hapus?")) db.collection(collection).doc(id).delete(); }
+
+  // Bind forms
+  document.getElementById("userForm").onsubmit=(e)=>saveForm(e,"user","userId",["userName","planName","statusBayar"]);
+  renderTable("user","userTable",["userName","planName","statusBayar"]);
+
+  document.getElementById("paketForm").onsubmit=(e)=>saveForm(e,"paket","paketId",["namaPaket","bandwidth"]);
+  renderTable("paket","paketTable",["namaPaket","bandwidth"]);
+
+  document.getElementById("billingForm").onsubmit=(e)=>saveForm(e,"billing","billingId",["billingUser","billingAmount"]);
+  renderTable("billing","billingTable",["billingUser","billingAmount"]);
+
+  document.getElementById("kasForm").onsubmit=(e)=>saveForm(e,"kas","kasId",["kasKet","kasJumlah"]);
+  renderTable("kas","kasTable",["kasKet","kasJumlah"]);
+
+  document.getElementById("teknisiForm").onsubmit=(e)=>saveForm(e,"teknisi","teknisiId",["namaTeknisi","kontakTeknisi"]);
+  renderTable("teknisi","teknisiTable",["namaTeknisi","kontakTeknisi"]);
+
+  document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);
+  renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
+
+  // ✅ ODP
+  document.getElementById("odpForm").onsubmit=(e)=>saveForm(e,"odp","odpId",["namaODP"]);
+  renderTable("odp","odpTable",["namaODP"]);
+  function filterODP(){
+    let input=document.getElementById("searchODP").value.toLowerCase();
+    let rows=document.querySelectorAll("#odpTable tbody tr");
+    rows.forEach(r=>{
+      let nama=r.cells[0].textContent.toLowerCase();
+      r.style.display=nama.includes(input)?"":"none";
     });
   }
 
-  // Render billing
-  function renderBilling(){
-    db.collection("billing").orderBy("billingPeriod","desc").onSnapshot(snap=>{
-      let tbody=document.querySelector("#billingTable tbody");
-      tbody.innerHTML="";
-      let tunggakan=0;
-      snap.forEach(doc=>{
-        let d=doc.data();
-        if(d.status==="Belum") tunggakan++;
-        let tr=document.createElement("tr");
-        tr.innerHTML=`
-          <td>${d.billingUser}</td>
-          <td>${d.billingAmount}</td>
-          <td>${d.billingPeriod}</td>
-          <td style="color:${d.status==='Belum'?'red':'green'}">${d.status}</td>
-          <td>
-            <button class="success" onclick="editBilling('${doc.id}')">Edit</button>
-            <button class="danger" onclick="deleteBilling('${doc.id}')">Hapus</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-      document.getElementById("totalTunggakan").textContent=tunggakan;
-    })
-  }
-  renderBilling();
+  // Dashboard Auto Count
+  db.collection("user").onSnapshot(s=>{document.getElementById("totalUser").textContent=s.size});
+  db.collection("kas").onSnapshot(s=>{let saldo=0;s.forEach(doc=>{saldo+=parseFloat(doc.data().kasJumlah)||0});document.getElementById("saldoKas").textContent=saldo});
+  db.collection("billing").onSnapshot(s=>{let t=0;s.forEach(doc=>{t+=parseFloat(doc.data().billingAmount)||0});document.getElementById("totalTunggakan").textContent=t});
+  db.collection("gangguan").onSnapshot(s=>{document.getElementById("totalGangguan").textContent=s.size});
 
-  function editBilling(id){
-    db.collection("billing").doc(id).get().then(doc=>{
-      if(doc.exists){
-        let d=doc.data();
-        document.getElementById("billingUser").value=d.billingUser;
-        document.getElementById("billingAmount").value=d.billingAmount;
-        document.getElementById("billingPeriod").value=d.billingPeriod;
-        document.getElementById("billingId").value=id;
-      }
-    })
-  }
-  function deleteBilling(id){ if(confirm("Yakin hapus?")) db.collection("billing").doc(id).delete(); }
-
-  // Grafik Billing
-  let chartCtx=document.getElementById("billingChart").getContext("2d");
-  let billingChart=new Chart(chartCtx,{type:'bar',data:{labels:[],datasets:[{label:"Tagihan",data:[],backgroundColor:"#4f46e5"}]},options:{scales:{y:{beginAtZero:true}}}});
-
-  function loadChart(){
-    db.collection("billing").get().then(snap=>{
-      let data={};
-      snap.forEach(doc=>{
-        let d=doc.data();
-        if(!data[d.billingPeriod]) data[d.billingPeriod]=0;
-        data[d.billingPeriod]+=parseFloat(d.billingAmount);
-      });
-      billingChart.data.labels=Object.keys(data).sort();
-      billingChart.data.datasets[0].data=Object.keys(data).sort().map(k=>data[k]);
-      billingChart.update();
-    })
-  }
-  loadChart();
-  setInterval(loadChart,5*60*1000); // refresh tiap 5 menit
+  // Gangguan
+  function simulateGangguan(){let u="User"+Math.floor(Math.random()*100); db.collection("gangguan").add({user:u, indikasi:"Internet Putus", waktu:new Date().toLocaleString(), ttr:"-", status:"Open"});}
+  function clearGangguan(){if(confirm("Hapus semua gangguan?")){db.collection("gangguan").get().then(s=>s.forEach(d=>db.collection("gangguan").doc(d.id).delete()));}}
+  renderTable("gangguan","gangguanTable",["user","indikasi","waktu","ttr","status"]);
 </script>
 </body>
 </html>
