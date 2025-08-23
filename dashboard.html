@@ -4,22 +4,25 @@
   <meta charset="UTF-8">
   <title>Starnet 💫 Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {margin:0; font-family:Arial, sans-serif; background:#f4f6fa;}
-    .sidebar {width:220px; height:100%; position:fixed; top:0; left:0; background:#1e293b; color:#fff; padding-top:20px;}
-    .sidebar h2 {text-align:center; margin:0 0 30px; font-size:18px; color:#38bdf8;}
-    .sidebar a {display:block; color:#cbd5e1; padding:10px 20px; text-decoration:none;}
-    .sidebar a:hover, .sidebar a.active {background:#334155; color:#fff;}
+    body {margin:0; font-family:Arial, sans-serif; background:#f9fafb; color:#333;}
+    .sidebar {width:220px; height:100%; position:fixed; top:0; left:0; background:#4f46e5; color:#fff; padding-top:20px;}
+    .sidebar h2 {text-align:center; margin:0 0 30px; font-size:18px; color:#fff;}
+    .sidebar a {display:block; color:#e0e7ff; padding:10px 20px; text-decoration:none;}
+    .sidebar a:hover, .sidebar a.active {background:#4338ca; color:#fff;}
     .main {margin-left:220px; padding:20px;}
     .card {background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;}
     table {width:100%; border-collapse:collapse; font-size:14px;}
     th,td {padding:10px; border-bottom:1px solid #e2e8f0; text-align:left;}
-    th {background:#f1f5f9;}
+    th {background:#eef2ff;}
     input,select {padding:6px; margin:6px 0; width:100%; border:1px solid #ccc; border-radius:6px;}
     button {padding:8px 12px; margin:4px 2px; border:none; border-radius:6px; cursor:pointer;}
-    button.primary {background:#3b82f6; color:white;}
+    button.primary {background:#4f46e5; color:white;}
     button.danger {background:#ef4444; color:white;}
     button.success {background:#22c55e; color:white;}
   </style>
@@ -37,6 +40,9 @@
       <h2>Dashboard</h2>
       <div class="card">
         <p>Total Tunggakan: <span id="totalTunggakan">0</span></p>
+      </div>
+      <div class="card">
+        <canvas id="billingChart"></canvas>
       </div>
     </div>
 
@@ -62,7 +68,7 @@
   </div>
 
 <script>
-  // Firebase
+  // Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
     authDomain: "dnt-network-7.firebaseapp.com",
@@ -86,16 +92,15 @@
     const jumlah=parseFloat(document.getElementById("billingAmount").value);
     const periode=document.getElementById("billingPeriod").value;
 
-    // cek tunggakan user sebelumnya
     db.collection("billing").where("billingUser","==",user).where("status","==","Belum")
     .get().then(snap=>{
       let total=jumlah;
-      let keterangan="Lunas";
+      let status="Lunas";
       if(!snap.empty){
         snap.forEach(doc=>{ total+=parseFloat(doc.data().billingAmount); });
-        keterangan="Belum"; // masih punya tunggakan
+        status="Belum";
       }
-      let data={billingUser:user,billingAmount:total,billingPeriod:periode,status:keterangan};
+      let data={billingUser:user,billingAmount:total,billingPeriod:periode,status:status};
       if(id){ db.collection("billing").doc(id).update(data); }
       else{ db.collection("billing").add(data); }
       e.target.reset();
@@ -142,6 +147,26 @@
     })
   }
   function deleteBilling(id){ if(confirm("Yakin hapus?")) db.collection("billing").doc(id).delete(); }
+
+  // Grafik Billing
+  let chartCtx=document.getElementById("billingChart").getContext("2d");
+  let billingChart=new Chart(chartCtx,{type:'bar',data:{labels:[],datasets:[{label:"Tagihan",data:[],backgroundColor:"#4f46e5"}]},options:{scales:{y:{beginAtZero:true}}}});
+
+  function loadChart(){
+    db.collection("billing").get().then(snap=>{
+      let data={};
+      snap.forEach(doc=>{
+        let d=doc.data();
+        if(!data[d.billingPeriod]) data[d.billingPeriod]=0;
+        data[d.billingPeriod]+=parseFloat(d.billingAmount);
+      });
+      billingChart.data.labels=Object.keys(data).sort();
+      billingChart.data.datasets[0].data=Object.keys(data).sort().map(k=>data[k]);
+      billingChart.update();
+    })
+  }
+  loadChart();
+  setInterval(loadChart,5*60*1000); // refresh tiap 5 menit
 </script>
 </body>
 </html>
