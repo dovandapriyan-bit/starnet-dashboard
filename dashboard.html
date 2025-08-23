@@ -48,7 +48,6 @@
     <a href="#" onclick="showSection('teknisi',this)">🛠️ Teknisi</a>
     <a href="#" onclick="showSection('gangguan',this)">⚠️ Gangguan</a>
     <a href="#" onclick="showSection('material',this)">📑 Material</a>
-    <a href="#" onclick="showSection('odp',this)">🛰️ ODP</a> <!-- ✅ Tambahan -->
     <a href="#" onclick="showSection('editisp',this)">⚙️ Edit ISP</a>
     <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
@@ -164,28 +163,6 @@
       <div class="card"><table id="materialTable"><thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead><tbody></tbody></table></div>
     </div>
 
-    <!-- ODP -->
-    <div id="odp" class="section" style="display:none;">
-      <h2>ODP</h2>
-      <form id="odpForm">
-        <input type="hidden" id="odpId">
-        <label>Nama ODP</label><input id="namaODP" required>
-        <button class="primary" type="submit">Simpan ODP</button>
-      </form>
-
-      <!-- ✅ Search -->
-      <input type="text" id="searchODP" placeholder="Cari ODP..." onkeyup="filterODP()">
-
-      <div class="card">
-        <table id="odpTable">
-          <thead>
-            <tr><th>Nama ODP</th><th>Aksi</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- Edit ISP -->
     <div id="editisp" class="section" style="display:none;">
       <h2>Edit Nama ISP</h2>
@@ -292,28 +269,98 @@
   document.getElementById("materialForm").onsubmit=(e)=>saveForm(e,"material","materialId",["namaMaterial","stokMaterial"]);
   renderTable("material","materialTable",["namaMaterial","stokMaterial"]);
 
-  // ✅ ODP
-  document.getElementById("odpForm").onsubmit=(e)=>saveForm(e,"odp","odpId",["namaODP"]);
-  renderTable("odp","odpTable",["namaODP"]);
-  function filterODP(){
-    let input=document.getElementById("searchODP").value.toLowerCase();
-    let rows=document.querySelectorAll("#odpTable tbody tr");
-    rows.forEach(r=>{
-      let nama=r.cells[0].textContent.toLowerCase();
-      r.style.display=nama.includes(input)?"":"none";
-    });
+  // Dashboard Auto Count
+  db.collection("user").onSnapshot(snap=>{
+    document.getElementById("totalUser").textContent=snap.size;
+    let tunggakan=0;
+    snap.forEach(doc=>{ if(doc.data().statusBayar==="Belum") tunggakan++; });
+    document.getElementById("totalTunggakan").textContent=tunggakan;
+  });
+  db.collection("kas").onSnapshot(snap=>{
+    let saldo=0;
+    snap.forEach(doc=>{ saldo+=parseFloat(doc.data().kasJumlah||0); });
+    document.getElementById("saldoKas").textContent=saldo;
+  });
+
+  // ================== Gangguan ==================
+  function loadGangguan(){
+    db.collection("gangguan").orderBy("waktu","desc").limit(10).get().then(snap=>{
+      let tbody=document.querySelector("#gangguanTable tbody");
+      tbody.innerHTML="";
+      let activeCount=0;
+      snap.forEach(doc=>{
+        let d=doc.data();
+        let tr=document.createElement("tr");
+
+        // Hitung TTR
+        let ttr="00:00:00";
+        if(d.status==="Aktif"){
+          let startTime=new Date(d.waktu);
+          let now=new Date();
+          let diff=now-startTime;
+          let hrs=Math.floor(diff/1000/60/60);
+          let mins=Math.floor((diff/1000/60)%60);
+          let secs=Math.floor((diff/1000)%60);
+          ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+          activeCount++;
+        } else if(d.ttr){ ttr=d.ttr; }
+
+        tr.innerHTML=`
+          <td>${d.user||""}</td>
+          <td>${d.indikasi||""}</td>
+          <td>${new Date(d.waktu).toLocaleString()}</td>
+          <td>${ttr}</td>
+          <td>${d.status||"Aktif"}</td>
+          <td>${d.status==="Aktif"? `<button class="success" onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById("totalGangguan").textContent=activeCount;
+    })
+  }
+  loadGangguan();
+  setInterval(loadGangguan, 60000);
+
+  function simulateGangguan(){
+    db.collection("user").get().then(snap=>{
+      if(!snap.empty){
+        let users=[];
+        snap.forEach(doc=>users.push(doc.data().userName));
+        let randomUser=users[Math.floor(Math.random()*users.length)];
+        db.collection("gangguan").add({
+          user: randomUser,
+          indikasi: "Koneksi putus",
+          waktu: new Date().toISOString(),
+          status: "Aktif"
+        }).then(()=>loadGangguan());
+      } else { alert("Belum ada user untuk disimulasikan!"); }
+    })
   }
 
-  // Dashboard Auto Count
-  db.collection("user").onSnapshot(s=>{document.getElementById("totalUser").textContent=s.size});
-  db.collection("kas").onSnapshot(s=>{let saldo=0;s.forEach(doc=>{saldo+=parseFloat(doc.data().kasJumlah)||0});document.getElementById("saldoKas").textContent=saldo});
-  db.collection("billing").onSnapshot(s=>{let t=0;s.forEach(doc=>{t+=parseFloat(doc.data().billingAmount)||0});document.getElementById("totalTunggakan").textContent=t});
-  db.collection("gangguan").onSnapshot(s=>{document.getElementById("totalGangguan").textContent=s.size});
+  function closeGangguan(id){
+    db.collection("gangguan").doc(id).get().then(doc=>{
+      if(doc.exists){
+        let d=doc.data();
+        let startTime=new Date(d.waktu);
+        let now=new Date();
+        let diff=now-startTime;
+        let hrs=Math.floor(diff/1000/60/60);
+        let mins=Math.floor((diff/1000/60)%60);
+        let secs=Math.floor((diff/1000)%60);
+        let ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        db.collection("gangguan").doc(id).update({status:"Selesai", ttr:ttr}).then(()=>loadGangguan());
+      }
+    })
+  }
 
-  // Gangguan
-  function simulateGangguan(){let u="User"+Math.floor(Math.random()*100); db.collection("gangguan").add({user:u, indikasi:"Internet Putus", waktu:new Date().toLocaleString(), ttr:"-", status:"Open"});}
-  function clearGangguan(){if(confirm("Hapus semua gangguan?")){db.collection("gangguan").get().then(s=>s.forEach(d=>db.collection("gangguan").doc(d.id).delete()));}}
-  renderTable("gangguan","gangguanTable",["user","indikasi","waktu","ttr","status"]);
+  function clearGangguan(){
+    if(confirm("Yakin hapus semua gangguan?")){
+      db.collection("gangguan").get().then(snap=>{
+        snap.forEach(doc=>db.collection("gangguan").doc(doc.id).delete());
+        loadGangguan();
+      })
+    }
+  }
 </script>
 </body>
 </html>
