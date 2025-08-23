@@ -1,3 +1,6 @@
+
+
+Anda bilang:
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -216,14 +219,14 @@
   // Generic CRUD
   function renderTable(collection, tableId, fields){
     db.collection(collection).onSnapshot(snap=>{
-      let tbody=document.querySelector(`#${tableId} tbody`);
+      let tbody=document.querySelector(#${tableId} tbody);
       tbody.innerHTML="";
       snap.forEach(doc=>{
         let d=doc.data();
         let tr=document.createElement("tr");
         fields.forEach(f=>{let td=document.createElement("td"); td.textContent=d[f]||""; tr.appendChild(td);});
         let td=document.createElement("td");
-        td.innerHTML=`<button class="success" onclick="editItem('${collection}','${doc.id}')">Edit</button><button class="danger" onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>`;
+        td.innerHTML=<button class="success" onclick="editItem('${collection}','${doc.id}')">Edit</button><button class="danger" onclick="deleteItem('${collection}','${doc.id}')">Hapus</button>;
         tr.appendChild(td);
         tbody.appendChild(tr);
       })
@@ -301,18 +304,18 @@
           let hrs=Math.floor(diff/1000/60/60);
           let mins=Math.floor((diff/1000/60)%60);
           let secs=Math.floor((diff/1000)%60);
-          ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+          ttr=${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')};
           activeCount++;
         } else if(d.ttr){ ttr=d.ttr; }
 
-        tr.innerHTML=`
+        tr.innerHTML=
           <td>${d.user||""}</td>
           <td>${d.indikasi||""}</td>
           <td>${new Date(d.waktu).toLocaleString()}</td>
           <td>${ttr}</td>
           <td>${d.status||"Aktif"}</td>
-          <td>${d.status==="Aktif"? `<button class="success" onclick="closeGangguan('${doc.id}')">Close</button>`:"-"}</td>
-        `;
+          <td>${d.status==="Aktif"? <button class="success" onclick="closeGangguan('${doc.id}')">Close</button>:"-"}</td>
+        ;
         tbody.appendChild(tr);
       });
       document.getElementById("totalGangguan").textContent=activeCount;
@@ -347,7 +350,7 @@
         let hrs=Math.floor(diff/1000/60/60);
         let mins=Math.floor((diff/1000/60)%60);
         let secs=Math.floor((diff/1000)%60);
-        let ttr=`${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        let ttr=${hrs.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')};
         db.collection("gangguan").doc(id).update({status:"Selesai", ttr:ttr}).then(()=>loadGangguan());
       }
     })
@@ -364,3 +367,5 @@
 </script>
 </body>
 </html>
+
+
