@@ -1,260 +1,331 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<title>Starnet 💫 Manager — Final</title>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<!-- Firebase (compat) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-  :root{
-    --primary:#007bff;
-    --primary-dark:#0056b3;
-    --bg:#f4f6f9;
-    --card-bg:#ffffff;
-    --rounded:14px;
-    --soft-shadow: 0 8px 24px rgba(11,32,84,0.06);
-    --muted:#6b7280;
-  }
-
-  /* Global */
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
-  body{background:var(--bg);color:#0b1016;font-size:14px;-webkit-font-smoothing:antialiased;}
-  a { color:inherit; text-decoration:none; }
-
-  /* Sidebar */
-  .sidebar{
-    position:fixed; left:0; top:0; bottom:0;
-    width:250px; background:linear-gradient(180deg,var(--primary),var(--primary-dark));
-    color:white; padding:18px 12px; box-sizing:border-box; overflow:hidden;
-    transition:width .28s ease;
-    display:flex; flex-direction:column; gap:8px;
-  }
-  .sidebar.min { width:72px; }
-  /* ISP header inside sidebar */
-  .isp-header{display:flex;align-items:center;gap:10px;padding:6px;border-radius:10px;}
-  .isp-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);font-weight:700;}
-  .isp-title{font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .isp-title .text{display:inline-block}
-  .sidebar.min .isp-title .text{display:none}
-
-  /* menu */
-  .menu{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
-  .menu a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:white;transition:background .15s;}
-  .menu a:hover{background:rgba(255,255,255,0.08);}
-  .menu .icon{width:30px;text-align:center;font-size:16px;}
-  .menu .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .sidebar.min .menu .label{display:none}
-
-  /* hamburger floating button (to toggle) */
-  .hamburger{
-    position:fixed; left:262px; top:18px; width:36px;height:36px;border-radius:8px;
-    background:var(--primary-dark); color:white; display:flex;align-items:center;justify-content:center;
-    cursor:pointer; box-shadow: var(--soft-shadow); transition:left .28s;
-    z-index:50;
-  }
-  .sidebar.min + .hamburger{ left:86px; } /* shift when min */
-
-  /* Main content */
-  .main{margin-left:250px;padding:22px;transition:margin-left .28s;}
-  .main.min{ margin-left:72px; }
-
-  /* Cards */
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:18px;}
-  .card{background:var(--card-bg);border-radius:var(--rounded);padding:18px;box-shadow:var(--soft-shadow);transition:transform .15s ease,box-shadow .15s;}
-  .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(11,32,84,0.08);}
-
-  .kpi{font-size:28px;font-weight:700;margin:6px 0;color:#0b1220;}
-  .kpi-sub{color:var(--muted);font-size:12px;margin-top:6px;}
-
-  /* Section titles */
-  h2.section-title{margin:0 0 12px 0;font-size:20px}
-
-  /* Tables - renderer "professional" */
-  .table-pro-wrapper{overflow:auto;border-radius:10px}
-  table.table-pro{width:100%;border-collapse:collapse;font-size:13px;background:white}
-  table.table-pro thead th{
-    position:sticky; top:0; background:linear-gradient(90deg,var(--primary),var(--primary-dark)); color:white; padding:12px 14px; text-align:left; font-weight:700; font-size:13px;
-  }
-  table.table-pro th, table.table-pro td{padding:12px 14px;border-bottom:1px solid #eef2f7;}
-  table.table-pro tbody tr:nth-child(even){background:#fbfdff;}
-  table.table-pro tbody tr:hover{background:#e9f2ff;}
-  table.table-pro td:first-child{border-left:6px solid rgba(0,123,255,0.08);}
-
-  /* Buttons & inputs */
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:var(--primary);color:white;border:none;cursor:pointer}
-  .btn.ghost{background:transparent;color:var(--primary);border:1px solid rgba(0,0,0,0.06)}
-  input,select,textarea{padding:8px 10px;border-radius:8px;border:1px solid #e6edf3;width:100%;box-sizing:border-box}
-
-  /* small helper row under tables */
-  .table-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
-
-  /* responsiveness */
-  @media (max-width:900px){
-    .sidebar{left:0;top:0;transform:translateX(0);position:fixed;z-index:60}
-    .hamburger{left:86px}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Starnet 💫 Manager - Pro (Purple)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --primary:#6D28D9; /* ungu utama */
+      --primary-600:#5B21B6;
+      --primary-100:#EEE7FF;
+      --bg:#F5F7FB;
+      --text:#23272F;
+      --muted:#6b7280;
+      --card:#FFFFFF;
+      --border:#e5e7eb;
+      --success:#16a34a;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --info:#0ea5e9;
+    }
+    *{ box-sizing: border-box; }
+    body{ margin:0; font-family: 'Segoe UI', Roboto, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    .app{ display:flex; min-height:100vh; }
+    .sidebar{
+      width:260px; background:#1f1536; color:#fff; padding:18px 12px; position:sticky; top:0; height:100vh;
+      box-shadow: 6px 0 20px rgba(0,0,0,.08);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; padding:10px 12px; }
+    .brand .logo{
+      width:38px; height:38px; border-radius:8px; background:linear-gradient(135deg,var(--primary),#9333ea);
+      display:grid; place-items:center; font-weight:800;
+      box-shadow:0 8px 18px rgba(109,40,217,.3);
+    }
+    .brand .name{ font-weight:700; letter-spacing:.2px; }
+    .menu{ margin-top:14px; }
+    .menu a{
+      display:flex; align-items:center; gap:10px; color:#cbd5e1; text-decoration:none;
+      padding:10px 12px; border-radius:10px; margin:4px 6px; transition:.2s;
+      font-size:14px;
+    }
+    .menu a:hover{ background:#2b204b; color:#fff; }
+    .menu a.active{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(109,40,217,.35); }
+    .main{ flex:1; padding:20px 24px; }
+    h1{ margin:0 0 16px; font-size:22px; }
+    .grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:16px; }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px;
+      box-shadow:0 4px 18px rgba(0,0,0,.05); transition:.2s;
+    }
+    .card:hover{ box-shadow:0 8px 28px rgba(0,0,0,.08); }
+    .kpi{ display:flex; align-items:center; justify-content:space-between; }
+    .kpi .val{ font-size:26px; font-weight:800; }
+    .kpi .lbl{ color:var(--muted); font-size:13px; }
+    .section{ display:none; }
+    .section.active{ display:block; }
+    .clickable{ cursor:pointer; }
+    .btn{ border:0; border-radius:10px; padding:8px 12px; cursor:pointer; font-weight:600; font-size:13px; }
+    .btn.primary{ background:var(--primary); color:#fff; }
+    .btn.primary:hover{ background:var(--primary-600); }
+    .btn.ghost{ background:#f3e8ff; color:#4c1d95; }
+    .btn.warn{ background:#FEF3C7; color:#B45309; }
+    .btn.success{ background:#DCFCE7; color:#166534; }
+    .btn.danger{ background:#FEE2E2; color:#991B1B; }
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 12px; }
+    label{ font-size:12px; color:var(--muted); }
+    input, select, textarea{
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:#fff;
+      font-size:14px;
+    }
+    .row{ display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
+    .col-6{ grid-column: span 6; } .col-4{ grid-column: span 4; } .col-3{ grid-column: span 3; } .col-12{ grid-column: span 12; }
+    table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+    th, td{ padding:10px; border-bottom:1px solid var(--border); text-align:left; }
+    th{ background:#faf5ff; color:#4c1d95; position:sticky; top:0; }
+    tr:hover{ background:#fcfbff; }
+    .badge{ padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700; display:inline-block; }
+    .b-open{ background:#FEE2E2; color:#991B1B; }
+    .b-prog{ background:#FEF3C7; color:#92400E; }
+    .b-close{ background:#DCFCE7; color:#166534; }
+    .muted{ color:var(--muted); font-size:12px; }
+    .hint{ font-size:12px; color:#6b7280; }
+    .pill{ background:var(--primary-100); color:#4c1d95; padding:6px 10px; border-radius:999px; font-weight:700; }
+    .right{ text-align:right; }
+    .center{ text-align:center; }
+    .split{ display:flex; gap:16px; align-items:stretch; }
+    .split > .card{ flex:1; }
+    .avatar{ width:36px; height:36px; border-radius:10px; background:#ede9fe; display:grid; place-items:center; font-weight:800; color:#4c1d95; }
+    .sub{ color:#4c1d95; font-weight:800; letter-spacing:.2px; }
+    .small{ font-size:12px; }
+    .sticky-actions{ position:sticky; bottom:0; background:#fff; padding:8px 0; }
+    .nowrap{ white-space:nowrap; }
+    .hl{ color:#4c1d95; font-weight:700; }
+    .link{ color:var(--primary); text-decoration:underline; cursor:pointer; }
+    .empty{ color:var(--muted); font-style:italic; }
+    .cards12{ display:grid; grid-template-columns: repeat(6, minmax(160px,1fr)); gap:12px; }
+    @media(max-width:1200px){ .cards12{ grid-template-columns: repeat(3, minmax(160px,1fr)); } }
+    @media(max-width:700px){ .cards12{ grid-template-columns: repeat(2, minmax(160px,1fr)); } .sidebar{ position:fixed; z-index:20; } .main{ margin-left:260px; } }
+    @media(max-width:520px){ .cards12{ grid-template-columns: repeat(1, minmax(160px,1fr)); } .main{ margin-left:0; } .sidebar{ position:static; height:auto; } }
+  </style>
 </head>
 <body>
+<div class="app">
   <!-- SIDEBAR -->
-  <div class="sidebar" id="sidebar">
-    <div class="isp-header">
-      <div class="isp-icon">💫</div>
-      <div class="isp-title"><span class="text">Starnet</span></div>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" id="ispLogoBox">S</div>
+      <div>
+        <div class="name" id="ispName">Starnet 💫</div>
+        <div class="small" id="ispSub">ISP Panel</div>
+      </div>
     </div>
-
-    <nav class="menu" aria-label="Main menu">
-      <a href="#" data-section="dashboard"><span class="icon">🏠</span><span class="label">Dashboard</span></a>
-      <a href="#" data-section="user"><span class="icon">👤</span><span class="label">User</span></a>
-      <a href="#" data-section="paket"><span class="icon">📦</span><span class="label">Paket</span></a>
-      <a href="#" data-section="billing"><span class="icon">💵</span><span class="label">Billing</span></a>
-      <a href="#" data-section="kas"><span class="icon">🏦</span><span class="label">Kas</span></a>
-      <a href="#" data-section="teknisi"><span class="icon">🛠️</span><span class="label">Teknisi</span></a>
-      <a href="#" data-section="gangguan"><span class="icon">⚠️</span><span class="label">Gangguan</span></a>
-      <a href="#" data-section="odp"><span class="icon">🛰️</span><span class="label">ODP</span></a>
-      <a href="#" data-section="material"><span class="icon">📋</span><span class="label">Material</span></a>
-      <a href="#" data-section="editisp"><span class="icon">✏️</span><span class="label">Edit ISP</span></a>
-      <a href="#" id="logoutBtn"><span class="icon">🔓</span><span class="label">Logout</span></a>
+    <nav class="menu" id="menu">
+      <a href="#" data-sec="dashboard" class="active">📊 Dashboard</a>
+      <a href="#" data-sec="pasang">🧩 Pasang Baru</a>
+      <a href="#" data-sec="pelanggan">👥 Pelanggan</a>
+      <a href="#" data-sec="paket">📦 Paket</a>
+      <a href="#" data-sec="paketPromo">🎟️ Paket Promo</a>
+      <a href="#" data-sec="billing">💳 Billing</a>
+      <a href="#" data-sec="kas">💰 Kas</a>
+      <a href="#" data-sec="teknisi">🛠️ Teknisi</a>
+      <a href="#" data-sec="gangguan">⚠️ Gangguan</a>
+      <a href="#" data-sec="material">📑 Material</a>
+      <a href="#" data-sec="odp">🗺️ ODP</a>
+      <a href="#" data-sec="editisp">⚙️ Edit ISP</a>
+      <a href="#" onclick="alert('Logout sukses');">🚪 Logout</a>
     </nav>
-  </div>
-
-  <!-- Hamburger toggle -->
-  <div class="hamburger" id="hamburger" title="Toggle sidebar">☰</div>
+  </aside>
 
   <!-- MAIN -->
-  <main class="main" id="main">
+  <main class="main">
     <!-- DASHBOARD -->
-    <section id="dashboard" class="section">
-      <h2 class="section-title">Dashboard</h2>
+    <section id="dashboard" class="section active">
+      <h1>Dashboard</h1>
       <div class="grid">
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card clickable" onclick="showSection('pelanggan')">
+          <div class="kpi">
             <div>
-              <div style="color:var(--muted);font-size:12px">Total User</div>
-              <div class="kpi" id="totalUser">0</div>
-              <div class="kpi-sub">Pengguna terdaftar</div>
+              <div class="lbl">Total Pelanggan</div>
+              <div class="val" id="kpiPelanggan">0</div>
             </div>
-            <div style="font-size:26px;opacity:.9">👥</div>
+            <div class="avatar">P</div>
           </div>
         </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card clickable" onclick="showSection('kas')">
+          <div class="kpi">
             <div>
-              <div style="color:var(--muted);font-size:12px">Saldo Kas</div>
-              <div class="kpi" id="saldoKas">0</div>
-              <div class="kpi-sub">Saldo perusahaan</div>
+              <div class="lbl">Saldo Kas</div>
+              <div class="val" id="kpiKas">Rp 0</div>
             </div>
-            <div style="font-size:26px;opacity:.9">🏦</div>
+            <div class="avatar">K</div>
           </div>
         </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card clickable" onclick="showSection('billing')">
+          <div class="kpi">
             <div>
-              <div style="color:var(--muted);font-size:12px">Tunggakan</div>
-              <div class="kpi" id="totalTunggakan">0</div>
-              <div class="kpi-sub">Tagihan belum dibayar</div>
+              <div class="lbl">Tunggakan Aktif</div>
+              <div class="val" id="kpiTunggakan">0</div>
             </div>
-            <div style="font-size:26px;opacity:.9">💸</div>
+            <div class="avatar">B</div>
           </div>
         </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card clickable" onclick="showSection('gangguan')">
+          <div class="kpi">
             <div>
-              <div style="color:var(--muted);font-size:12px">Gangguan Aktif</div>
-              <div class="kpi" id="totalGangguan">0</div>
-              <div class="kpi-sub">Insiden jaringan sekarang</div>
+              <div class="lbl">Gangguan Open</div>
+              <div class="val" id="kpiOpenGangguan">0</div>
             </div>
-            <div style="font-size:26px;opacity:.9">⚠️</div>
+            <div class="avatar">G</div>
           </div>
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:18px">
-        <canvas id="ispChart" height="90"></canvas>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-top:0">Gangguan Terbaru</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="dashboardGangguan">
-            <thead><tr><th>User</th><th>Indikasi</th><th>Waktu</th><th>TTR</th><th>Status</th></tr></thead>
-            <tbody></tbody>
+      <div class="split" style="margin-top:16px;">
+        <div class="card">
+          <div class="sub">TTR Gangguan (Open) — Realtime</div>
+          <div class="muted">Menampilkan 5 tiket open dengan TTR berjalan.</div>
+          <table id="tblDashTTR" style="margin-top:8px;">
+            <thead>
+              <tr><th>Tiket</th><th>No. Internet</th><th>Nama</th><th>Jenis</th><th>Mulai</th><th>TTR</th><th>Status</th></tr>
+            </thead>
+            <tbody><tr><td colspan="7" class="empty">Tidak ada gangguan open.</td></tr></tbody>
           </table>
+        </div>
+        <div class="card">
+          <div class="sub">Grafik ISP — Up / Down / Loadbalance</div>
+          <div class="muted">Update tiap 5 menit dari koleksi <span class="pill">isp_metrics</span>.</div>
+          <canvas id="chartISP" height="220"></canvas>
         </div>
       </div>
     </section>
 
-    <!-- USER -->
-    <section id="user" class="section" style="display:none;">
-      <h2 class="section-title">User</h2>
-
-      <div class="card" style="margin-bottom:12px">
-        <form id="userForm">
-          <input type="hidden" id="userId" />
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <div style="flex:1;min-width:200px">
-              <label>Nama</label><input id="userName" placeholder="Nama lengkap" required />
-            </div>
-            <div style="flex:1;min-width:200px">
-              <label>Paket</label>
-              <select id="planSelect"></select>
-            </div>
-            <div style="flex:1;min-width:160px">
-              <label>Status Bayar</label>
-              <select id="statusBayar"><option>Lunas</option><option>Belum</option></select>
-            </div>
-            <div style="display:flex;align-items:flex-end">
-              <button class="btn" type="submit">Simpan User</button>
-            </div>
+    <!-- PASANG BARU -->
+    <section id="pasang" class="section">
+      <h1>Pasang Baru</h1>
+      <div class="card">
+        <form id="formPasang" class="row">
+          <div class="col-4">
+            <label>Nomor Internet</label>
+            <input id="pb_noInet" required />
+          </div>
+          <div class="col-4">
+            <label>Nama</label>
+            <input id="pb_nama" required />
+          </div>
+          <div class="col-4">
+            <label>No. HP</label>
+            <input id="pb_hp" required />
+          </div>
+          <div class="col-6">
+            <label>Alamat</label>
+            <input id="pb_alamat" required />
+          </div>
+          <div class="col-3">
+            <label>SN ONT</label>
+            <input id="pb_sn" required />
+          </div>
+          <div class="col-3">
+            <label>ODP</label>
+            <input id="pb_odp" placeholder="Nama ODP" required />
+          </div>
+          <div class="col-3">
+            <label>Jenis Paket</label>
+            <select id="pb_paket" required></select>
+          </div>
+          <div class="col-3">
+            <label>Harga Paket (Auto)</label>
+            <input id="pb_harga" disabled />
+          </div>
+          <div class="col-3">
+            <label>Tag Lokasi (Lat)</label>
+            <input id="pb_lat" placeholder="-6.2" />
+          </div>
+          <div class="col-3">
+            <label>Tag Lokasi (Lng)</label>
+            <input id="pb_lng" placeholder="106.8" />
+          </div>
+          <div class="col-6" style="display:flex; align-items:end; gap:8px;">
+            <button class="btn ghost" type="button" onclick="getGeolocation()">Gunakan Lokasi Saya</button>
+            <span class="hint">Opsional. Bisa diisi manual.</span>
+          </div>
+          <div class="col-12 sticky-actions">
+            <button class="btn primary" type="submit">Simpan Pasang Baru</button>
           </div>
         </form>
       </div>
+    </section>
 
+    <!-- PELANGGAN -->
+    <section id="pelanggan" class="section">
+      <h1>Pelanggan</h1>
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 style="margin:0">Daftar User</h3>
-          <div class="table-actions">
-            <input id="userSearch" placeholder="Cari user..." style="padding:8px;border-radius:8px;border:1px solid #e6edf3" />
-          </div>
+        <div class="toolbar">
+          <input id="pel_q" placeholder="Cari nama / ODP / SN ONT / No. Internet" oninput="filterPelanggan()" style="max-width:360px;" />
+          <span class="hint">Ketik untuk filter cepat.</span>
         </div>
-
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="userTable">
-            <thead><tr><th>Nama</th><th>Paket</th><th>Status Bayar</th><th>Aksi</th></tr></thead>
-            <tbody></tbody>
+        <div class="muted">Menarik redaman ONT otomatis dari <span class="pill">olt_readings</span> (jika tersedia).</div>
+        <div style="max-height:60vh; overflow:auto; margin-top:8px;">
+          <table id="tblPelanggan">
+            <thead>
+              <tr>
+                <th>No. Internet</th><th>Nama</th><th>Alamat</th><th>No. HP</th>
+                <th>Jenis Paket</th><th>SN ONT</th><th>ODP</th><th>Redaman (dB)</th><th>Lokasi</th><th class="right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="10" class="empty">Memuat...</td></tr></tbody>
           </table>
         </div>
       </div>
     </section>
 
     <!-- PAKET -->
-    <section id="paket" class="section" style="display:none;">
-      <h2 class="section-title">Paket</h2>
-
-      <div class="card">
-        <form id="paketForm">
-          <input type="hidden" id="paketId" />
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <div style="flex:1;min-width:200px"><label>Nama Paket</label><input id="namaPaket" required/></div>
-            <div style="flex:1;min-width:150px"><label>Bandwidth</label><input id="bandwidth" required/></div>
-            <div style="flex:1;min-width:120px;display:flex;align-items:flex-end"><button class="btn" type="submit">Simpan Paket</button></div>
-          </div>
-        </form>
+    <section id="paket" class="section">
+      <h1>Paket</h1>
+      <div class="split">
+        <div class="card">
+          <div class="sub">Tambah / Edit Paket</div>
+          <form id="formPaket" class="row" onsubmit="return false;">
+            <input type="hidden" id="paket_id" />
+            <div class="col-4"><label>Nama Paket</label><input id="paket_nama" required /></div>
+            <div class="col-4"><label>Jenis</label><select id="paket_jenis"><option>Home</option><option>Biz</option><option>Dedicated</option></select></div>
+            <div class="col-2"><label>Bandwidth</label><input id="paket_bw" placeholder="20 Mbps" required /></div>
+            <div class="col-2"><label>Harga</label><input id="paket_harga" placeholder="200000" required /></div>
+            <div class="col-12">
+              <button class="btn primary" onclick="savePaket()">Simpan Paket</button>
+              <button class="btn danger" type="button" onclick="resetPaket()">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="sub">Daftar Paket</div>
+          <table id="tblPaket" style="margin-top:8px;">
+            <thead>
+              <tr><th>Nama</th><th>Jenis</th><th>Bandwidth</th><th>Harga</th><th class="right">Aksi</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
+    </section>
 
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Daftar Paket</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="paketTable">
-            <thead><tr><th>Paket</th><th>Bandwidth</th><th>Aksi</th></tr></thead>
+    <!-- PAKET PROMO -->
+    <section id="paketPromo" class="section">
+      <h1>Paket Promo</h1>
+      <div class="split">
+        <div class="card">
+          <div class="sub">Tambah / Edit Paket Promo</div>
+          <form id="formPaketPromo" class="row" onsubmit="return false;">
+            <input type="hidden" id="promo_id" />
+            <div class="col-4"><label>Nama Paket</label><input id="promo_nama" required /></div>
+            <div class="col-3"><label>Jenis</label><select id="promo_jenis"><option>Home</option><option>Biz</option><option>Dedicated</option></select></div>
+            <div class="col-3"><label>Bandwidth</label><input id="promo_bw" placeholder="50 Mbps" required /></div>
+            <div class="col-2"><label>Harga Promo</label><input id="promo_harga" placeholder="150000" required /></div>
+            <div class="col-12">
+              <button class="btn primary" onclick="savePaketPromo()">Simpan Promo</button>
+              <button class="btn danger" type="button" onclick="resetPromo()">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="sub">Daftar Paket Promo</div>
+          <table id="tblPaketPromo" style="margin-top:8px;">
+            <thead><tr><th>Nama</th><th>Jenis</th><th>Bandwidth</th><th>Harga</th><th class="right">Aksi</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -262,53 +333,76 @@
     </section>
 
     <!-- BILLING -->
-    <section id="billing" class="section" style="display:none;">
-      <h2 class="section-title">Billing</h2>
-
-      <div class="card" style="margin-bottom:12px">
-        <form id="billingForm">
-          <input type="hidden" id="billingId" />
-          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
-            <div style="flex:1;min-width:200px"><label>User</label><select id="billingUser" required></select></div>
-            <div style="width:160px"><label>Jumlah</label><input id="billingAmount" type="number" required/></div>
-            <div><button class="btn" type="submit">Simpan Billing</button></div>
-            <div><button type="button" class="btn ghost" onclick="generateAllBilling()">Generate Tagihan Semua</button></div>
-            <div><button type="button" class="btn ghost" onclick="exportBillingCSV()">Export CSV</button></div>
-          </div>
-        </form>
-      </div>
-
+    <section id="billing" class="section">
+      <h1>Billing</h1>
       <div class="card">
-        <h3 style="margin:0 0 8px 0">Daftar Billing</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="billingTable">
-            <thead><tr><th>User</th><th>Jumlah</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
-            <tbody></tbody>
+        <div class="row">
+          <div class="col-3">
+            <label>Periode (YYYY-MM)</label>
+            <input id="bil_periode" placeholder="2025-08" />
+          </div>
+          <div class="col-3" style="display:flex; align-items:end; gap:8px;">
+            <button class="btn primary" onclick="generateBilling()">Generate Billing</button>
+            <span class="hint">Akan gabungkan tunggakan ke periode ini.</span>
+          </div>
+          <div class="col-3">
+            <label>Cari Nama / No. Internet</label>
+            <input id="bil_q" oninput="filterBilling()" placeholder="mis. ALDI / 10001" />
+          </div>
+          <div class="col-3" style="display:flex; align-items:end; gap:8px;">
+            <button class="btn ghost" onclick="exportBillingCSV()">Export CSV</button>
+          </div>
+        </div>
+        <div style="max-height:60vh; overflow:auto; margin-top:8px;">
+          <table id="tblBilling">
+            <thead>
+              <tr>
+                <th>Periode</th><th>No. Internet</th><th>Nama</th><th>Tagihan</th><th>Tunggakan Dari</th><th>Status</th><th class="right">Bayar</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="7" class="empty">Belum ada billing.</td></tr></tbody>
           </table>
         </div>
       </div>
     </section>
 
     <!-- KAS -->
-    <section id="kas" class="section" style="display:none;">
-      <h2 class="section-title">Kas</h2>
-
-      <div class="card">
-        <form id="kasForm">
-          <input type="hidden" id="kasId" />
-          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
-            <div style="flex:1;min-width:200px"><label>Keterangan</label><input id="kasKet" required/></div>
-            <div style="width:160px"><label>Jumlah (+/-)</label><input id="kasJumlah" type="number" required/></div>
-            <div><button class="btn" type="submit">Simpan Transaksi</button></div>
+    <section id="kas" class="section">
+      <h1>Kas</h1>
+      <div class="split">
+        <div class="card">
+          <div class="sub">Transaksi Kas</div>
+          <form id="formKas" class="row" onsubmit="return false;">
+            <input type="hidden" id="kas_id" />
+            <div class="col-3"><label>Tanggal</label><input id="kas_tgl" type="date" /></div>
+            <div class="col-3"><label>Kategori</label><input id="kas_kat" placeholder="Bayar, Gaji, Material, dll" /></div>
+            <div class="col-6"><label>Keterangan</label><input id="kas_ket" /></div>
+            <div class="col-3"><label>Masuk (+)</label><input id="kas_masuk" type="number" step="1" value="0" /></div>
+            <div class="col-3"><label>Keluar (-)</label><input id="kas_keluar" type="number" step="1" value="0" /></div>
+            <div class="col-12">
+              <button class="btn primary" onclick="saveKas()">Simpan</button>
+              <button class="btn danger" type="button" onclick="resetKas()">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="sub">Grafik Kas per Bulan / Periode</div>
+          <div class="row">
+            <div class="col-3"><label>Tahun</label><input id="kas_tahun" placeholder="2025" /></div>
+            <div class="col-3" style="display:flex; align-items:end;"><button class="btn ghost" onclick="renderKasGrafik()">Terapkan</button></div>
           </div>
-        </form>
+          <canvas id="chartKas" height="220" style="margin-top:8px;"></canvas>
+        </div>
       </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Riwayat Kas</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="kasTable">
-            <thead><tr><th>Keterangan</th><th>Jumlah</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+      <div class="card" style="margin-top:16px;">
+        <div class="sub">Rincian Bulanan (12 Bulan)</div>
+        <div id="kasCards" class="cards12" style="margin-top:8px;"></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="sub">Daftar Transaksi</div>
+        <div style="max-height:50vh; overflow:auto; margin-top:8px;">
+          <table id="tblKas">
+            <thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th class="right">Masuk</th><th class="right">Keluar</th><th class="right">Aksi</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -316,24 +410,28 @@
     </section>
 
     <!-- TEKNISI -->
-    <section id="teknisi" class="section" style="display:none;">
-      <h2 class="section-title">Teknisi</h2>
-      <div class="card">
-        <form id="teknisiForm">
-          <input type="hidden" id="teknisiId" />
-          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
-            <div style="flex:1;min-width:200px"><label>Nama Teknisi</label><input id="namaTeknisi" required/></div>
-            <div style="width:200px"><label>Kontak</label><input id="kontakTeknisi" required/></div>
-            <div><button class="btn" type="submit">Simpan Teknisi</button></div>
-          </div>
-        </form>
-      </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Daftar Teknisi</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="teknisiTable">
-            <thead><tr><th>Nama</th><th>Kontak</th><th>Aksi</th></tr></thead>
+    <section id="teknisi" class="section">
+      <h1>Teknisi</h1>
+      <div class="split">
+        <div class="card">
+          <div class="sub">Tambah / Edit Teknisi</div>
+          <form id="formTeknisi" class="row" onsubmit="return false;">
+            <input type="hidden" id="tek_id" />
+            <div class="col-4"><label>Nama</label><input id="tek_nama" /></div>
+            <div class="col-4"><label>No. HP</label><input id="tek_hp" /></div>
+            <div class="col-4"><label>Status Kerja</label>
+              <select id="tek_status"><option>Aktif</option><option>Cuti</option><option>Off</option></select>
+            </div>
+            <div class="col-12">
+              <button class="btn primary" onclick="saveTeknisi()">Simpan</button>
+              <button class="btn danger" type="button" onclick="resetTeknisi()">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="sub">Daftar Teknisi</div>
+          <table id="tblTeknisi" style="margin-top:8px;">
+            <thead><tr><th>Nama</th><th>No. HP</th><th>Status</th><th class="right">Aksi</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -341,18 +439,71 @@
     </section>
 
     <!-- GANGGUAN -->
-    <section id="gangguan" class="section" style="display:none;">
-      <h2 class="section-title">Gangguan</h2>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="btn" onclick="simulateGangguan()">➕ Tambah Gangguan Random</button>
-        <button class="btn ghost" onclick="clearGangguan()">🗑️ Hapus Semua</button>
-      </div>
-
+    <section id="gangguan" class="section">
+      <h1>Gangguan</h1>
       <div class="card">
-        <h3 style="margin:0 0 8px 0">Daftar Gangguan</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="gangguanTable">
-            <thead><tr><th>User</th><th>Indikasi</th><th>Waktu</th><th>TTR</th><th>Status</th><th>Teknisi</th><th>Aksi</th></tr></thead>
+        <div class="row">
+          <div class="col-3"><label>Cari Tiket</label><input id="gg_q" oninput="filterGangguan()" placeholder="mis. TC0123" /></div>
+          <div class="col-3" style="display:flex; align-items:end; gap:8px;">
+            <button class="btn primary" onclick="openDialogOpenTicket()">Open Tiket</button>
+            <span class="hint">Open manual atau otomatis (LOS ≥15 menit mulai 08:00).</span>
+          </div>
+        </div>
+        <div style="max-height:55vh; overflow:auto; margin-top:8px;">
+          <table id="tblGangguan">
+            <thead>
+              <tr>
+                <th>Tiket</th><th>No. Internet</th><th>Nama</th><th>Jenis</th><th>Mulai</th><th>TTR</th><th>Status</th><th>Material</th><th class="right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody><tr><td colspan="9" class="empty">Belum ada tiket.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="split" style="margin-top:16px;">
+        <div class="card">
+          <div class="sub">Grafik Gangguan (30 hari)</div>
+          <canvas id="chartGG" height="220"></canvas>
+        </div>
+        <div class="card">
+          <div class="sub">Gangguan Berulang (3 bulan)</div>
+          <canvas id="chartGGRepeat" height="220"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="sub">Material Sering Keluar (Perbaikan Gangguan)</div>
+        <table id="tblMatAgg" style="margin-top:8px;">
+          <thead><tr><th>Material</th><th>Merk</th><th>Total Penggunaan</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MATERIAL -->
+    <section id="material" class="section">
+      <h1>Material</h1>
+      <div class="split">
+        <div class="card">
+          <div class="sub">Input / Edit Material</div>
+          <form id="formMaterial" class="row" onsubmit="return false;">
+            <input type="hidden" id="mat_id" />
+            <div class="col-3"><label>Nama Material</label><input id="mat_nama" /></div>
+            <div class="col-3"><label>Jenis</label><input id="mat_jenis" /></div>
+            <div class="col-3"><label>Merk</label><input id="mat_merk" /></div>
+            <div class="col-3"><label>SN (ONT)</label><input id="mat_sn" /></div>
+            <div class="col-3"><label>Stok Awal</label><input id="mat_stokAwal" type="number" value="0" /></div>
+            <div class="col-3"><label>Usage (Auto)</label><input id="mat_usage" type="number" value="0" disabled /></div>
+            <div class="col-3"><label>Stok Akhir (Auto)</label><input id="mat_stokAkhir" type="number" value="0" disabled /></div>
+            <div class="col-12">
+              <button class="btn primary" onclick="saveMaterial()">Simpan</button>
+              <button class="btn danger" type="button" onclick="resetMaterial()">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="sub">Daftar Material</div>
+          <table id="tblMaterial" style="margin-top:8px;">
+            <thead><tr><th>Nama</th><th>Jenis</th><th>Merk</th><th>SN</th><th>Stok Awal</th><th>Usage</th><th>Stok Akhir</th><th class="right">Aksi</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -360,72 +511,78 @@
     </section>
 
     <!-- ODP -->
-    <section id="odp" class="section" style="display:none;">
-      <h2 class="section-title">ODP</h2>
+    <section id="odp" class="section">
+      <h1>ODP</h1>
       <div class="card">
-        <form id="odpForm">
-          <input type="hidden" id="odpId" />
-          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
-            <div style="flex:1;min-width:160px"><label>Kode ODP</label><input id="odpKode" required/></div>
-            <div style="flex:1;min-width:200px"><label>Lokasi</label><input id="odpLokasi" required/></div>
-            <div style="width:120px"><label>Kapasitas</label><input id="odpKapasitas" type="number" required/></div>
-            <div><button class="btn" type="submit">Simpan ODP</button></div>
+        <form id="formODP" class="row" onsubmit="return false;">
+          <input type="hidden" id="odp_id" />
+          <div class="col-3"><label>Nama ODP</label><input id="odp_nama" /></div>
+          <div class="col-3"><label>Kapasitas Spliter</label><input id="odp_kapasitas" type="number" /></div>
+          <div class="col-3"><label>Feeder</label><input id="odp_feeder" /></div>
+          <div class="col-3"><label>Distribusi</label><input id="odp_distribusi" /></div>
+          <div class="col-3"><label>Core</label><input id="odp_core" /></div>
+          <div class="col-3"><label>Lokasi (Lat)</label><input id="odp_lat" /></div>
+          <div class="col-3"><label>Lokasi (Lng)</label><input id="odp_lng" /></div>
+          <div class="col-12">
+            <button class="btn primary" onclick="saveODP()">Simpan ODP</button>
+            <button class="btn danger" type="button" onclick="resetODP()">Reset</button>
           </div>
         </form>
       </div>
-
       <div class="card">
-        <h3 style="margin:0 0 8px 0">Daftar ODP</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="odpTable">
-            <thead><tr><th>Kode</th><th>Lokasi</th><th>Kapasitas</th><th>Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
+        <div class="toolbar">
+          <input id="odp_q" placeholder="Cari ODP" oninput="filterODP()" style="max-width:320px;" />
+          <span class="hint">Menampilkan jumlah pelanggan & indikator kapasitas.</span>
         </div>
+        <table id="tblODP">
+          <thead><tr><th>ODP</th><th>Kapasitas</th><th>Feeder</th><th>Distribusi</th><th>Core</th><th>Lokasi</th><th>Pelanggan</th><th>Status</th><th class="right">Aksi</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </section>
 
-    <!-- MATERIAL -->
-    <section id="material" class="section" style="display:none;">
-      <h2 class="section-title">Material</h2>
+    <!-- EDIT ISP -->
+    <section id="editisp" class="section">
+      <h1>Edit ISP</h1>
       <div class="card">
-        <form id="materialForm">
-          <input type="hidden" id="materialId" />
-          <div style="display:flex;gap:12px;align-items:end">
-            <div style="flex:1"><label>Nama Material</label><input id="namaMaterial" required/></div>
-            <div style="width:140px"><label>Stok</label><input id="stokMaterial" type="number" required/></div>
-            <div><button class="btn" type="submit">Simpan Material</button></div>
+        <form id="formISP" class="row" onsubmit="return false;">
+          <div class="col-3"><label>Nama ISP</label><input id="isp_nama" placeholder="Starnet 💫" /></div>
+          <div class="col-3"><label>Logo (URL)</label><input id="isp_logo" placeholder="https://..." /></div>
+          <div class="col-6"><label>Alamat</label><input id="isp_alamat" /></div>
+          <div class="col-3"><label>Email</label><input id="isp_email" /></div>
+          <div class="col-3"><label>Website</label><input id="isp_web" /></div>
+          <div class="col-3"><label>CS / No. HP</label><input id="isp_cs" /></div>
+          <div class="col-12">
+            <button class="btn primary" onclick="saveISP()">Simpan Profil</button>
           </div>
         </form>
-      </div>
-
-      <div class="card">
-        <h3 style="margin:0 0 8px 0">Daftar Material</h3>
-        <div class="table-pro-wrapper">
-          <table class="table-pro" id="materialTable">
-            <thead><tr><th>Material</th><th>Stok</th><th>Aksi</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Edit ISP -->
-    <section id="editisp" class="section" style="display:none;">
-      <h2 class="section-title">Edit ISP</h2>
-      <div class="card">
-        <div style="display:flex;gap:12px;align-items:center">
-          <input id="newISPName" placeholder="Nama ISP baru" style="flex:1" />
-          <button class="btn" onclick="applyISPName()">Simpan</button>
-        </div>
       </div>
     </section>
   </main>
+</div>
+
+<!-- DIALOG OPEN TIKET -->
+<div id="dlgOpen" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:50; align-items:center; justify-content:center;">
+  <div class="card" style="width:880px; max-width:95vw;">
+    <div class="sub">Open Tiket Gangguan</div>
+    <div class="row" style="margin-top:8px;">
+      <div class="col-3"><label>No. Internet</label><input id="ot_noInet" onblur="prefillByNoInet()" /></div>
+      <div class="col-3"><label>Jenis Gangguan</label><select id="ot_jenis"><option>LOS</option><option>Lambat</option><option>Putus</option><option>Lainnya</option></select></div>
+      <div class="col-3"><label>Nama</label><input id="ot_nama" disabled /></div>
+      <div class="col-3"><label>HP</label><input id="ot_hp" disabled /></div>
+      <div class="col-6"><label>Alamat</label><input id="ot_alamat" disabled /></div>
+      <div class="col-3"><label>SN ONT</label><input id="ot_sn" disabled /></div>
+      <div class="col-3"><label>ODP</label><input id="ot_odp" disabled /></div>
+      <div class="col-12">
+        <button class="btn primary" onclick="submitOpenTicket()">Open Tiket</button>
+        <button class="btn danger" onclick="closeDialogOpen()">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-/* =========================
-   Firebase initialization
-   ========================= */
+/* ===================== FIREBASE ===================== */
 const firebaseConfig = {
   apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
   authDomain: "dnt-network-7.firebaseapp.com",
@@ -438,550 +595,881 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* =========================
-   UI: sidebar toggle + nav
-   ========================= */
-const sidebar = document.getElementById('sidebar');
-const hamburger = document.getElementById('hamburger');
-const main = document.getElementById('main');
-
-function toggleSidebar(){
-  sidebar.classList.toggle('min');
-  main.classList.toggle('min');
-}
-hamburger.addEventListener('click', toggleSidebar);
-
-// nav links
-document.querySelectorAll('.menu a, .menu a').forEach(a=>{
-  a.addEventListener('click', (e)=>{
-    e.preventDefault();
-    const section = a.getAttribute('data-section');
-    if(section) showSection(section);
-  })
-});
-document.getElementById('logoutBtn').addEventListener('click', (e)=>{ e.preventDefault(); alert('Logout sukses!'); });
-
+/* ===================== UTILS ===================== */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => [...document.querySelectorAll(sel)];
 function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  const el = document.getElementById(id);
-  if(el) el.style.display='block';
-  // scroll top
-  window.scrollTo({top:0,behavior:'smooth'});
+  $$('.section').forEach(s=>s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+  $$('#menu a').forEach(a=>a.classList.remove('active'));
+  $$('#menu a').find?.(a=>a.dataset.sec===id)?.classList.add('active');
+}
+$$('#menu a').forEach(a=>a.addEventListener('click', e => {
+  e.preventDefault();
+  showSection(a.dataset.sec);
+}));
+function fmtRp(n){
+  n = Number(n||0);
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+function tglStr(d){ try{ return new Date(d).toLocaleString('id-ID'); }catch(e){ return '-'; } }
+function ym(dt){ const d=new Date(dt); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function nowISO(){ return new Date().toISOString(); }
+function ttrStr(ms){
+  if(ms<0) ms=0;
+  const s=Math.floor(ms/1000);
+  const h=String(Math.floor(s/3600)).padStart(2,'0');
+  const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sec=String(s%60).padStart(2,'0');
+  return `${h}:${m}:${sec}`;
+}
+function genTicket(){ return 'TC' + Math.floor(1000+Math.random()*9000); }
+function download(filename, text){
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 
-/* =========================
-   Helpers & table renderer
-   ========================= */
+/* ===================== ISP PROFILE ===================== */
+async function loadISPProfile(){
+  const docRef = db.collection('isp_profile').doc('default');
+  const snap = await docRef.get();
+  if(snap.exists){
+    const d=snap.data();
+    $('#ispName').textContent = d.nama || 'Starnet 💫';
+    $('#ispSub').textContent = d.web || 'ISP Panel';
+    if(d.logo){ $('#ispLogoBox').textContent=''; $('#ispLogoBox').style.background=`url(${d.logo}) center/cover`; }
+    $('#isp_nama').value = d.nama||''; $('#isp_logo').value=d.logo||''; $('#isp_alamat').value=d.alamat||'';
+    $('#isp_email').value=d.email||''; $('#isp_web').value=d.web||''; $('#isp_cs').value=d.cs||'';
+  }
+}
+async function saveISP(){
+  const data={
+    nama: $('#isp_nama').value.trim(),
+    logo: $('#isp_logo').value.trim(),
+    alamat: $('#isp_alamat').value.trim(),
+    email: $('#isp_email').value.trim(),
+    web: $('#isp_web').value.trim(),
+    cs: $('#isp_cs').value.trim(),
+    updatedAt: nowISO()
+  };
+  await db.collection('isp_profile').doc('default').set(data, {merge:true});
+  loadISPProfile();
+  alert('Profil ISP disimpan.');
+}
 
-function createCell(text){ const td = document.createElement('td'); td.textContent = text ?? ''; return td; }
-
-/* Table renderer function - professional rendering for main tables.
-   Accepts: tableId (string), rows: array of objects, columns: [{key,label,render?}]
-*/
-function renderProfessionalTable(tableId, rows, columns){
-  const tbody = document.querySelector(`#${tableId} tbody`);
-  if(!tbody) return;
-  // clear
-  tbody.innerHTML = '';
-  // render rows
-  rows.forEach((row)=>{
-    const tr = document.createElement('tr');
-    columns.forEach(col=>{
-      const td = document.createElement('td');
-      if(typeof col.render === 'function'){
-        // custom render returns DOM node or string
-        const out = col.render(row);
-        if(out instanceof Node) td.appendChild(out);
-        else td.innerHTML = out ?? '';
-      } else {
-        td.textContent = row[col.key] ?? '';
-      }
-      tr.appendChild(td);
+/* ===================== DASHBOARD ===================== */
+let dashTTRTimer=null;
+function startDashTTRRealtime(){
+  if(dashTTRTimer) clearInterval(dashTTRTimer);
+  const tbody = $('#tblDashTTR tbody');
+  function paint(rows){
+    tbody.innerHTML='';
+    if(!rows.length){ tbody.innerHTML='<tr><td colspan="7" class="empty">Tidak ada gangguan open.</td></tr>'; return; }
+    for(const r of rows){
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td class="nowrap">${r.tiket}</td>
+        <td>${r.noInet||''}</td>
+        <td>${r.nama||''}</td>
+        <td>${r.jenis||''}</td>
+        <td>${tglStr(r.startAt)}</td>
+        <td class="hl ttr" data-start="${r.startAt}">${ttrStr(Date.now()-new Date(r.startAt).getTime())}</td>
+        <td><span class="badge b-open">open</span></td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+  let currentRows=[];
+  function tick(){
+    $$('#tblDashTTR .ttr').forEach(el=>{
+      const st=new Date(el.dataset.start).getTime();
+      el.textContent = ttrStr(Date.now()-st);
     });
-    tbody.appendChild(tr);
+  }
+  db.collection('gangguan').where('status','in',['open']).orderBy('startAt','desc').limit(5)
+    .onSnapshot(snap=>{
+      currentRows = snap.docs.map(d=>d.data());
+      paint(currentRows);
+    });
+  dashTTRTimer = setInterval(tick, 1000);
+}
+let ispChart=null;
+function initISPChart(){
+  const ctx = document.getElementById('chartISP').getContext('2d');
+  ispChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:[], datasets:[
+      {label:'Up (Mbps)', data:[], borderColor:'#8b5cf6', fill:false, tension:.35},
+      {label:'Down (Mbps)', data:[], borderColor:'#10b981', fill:false, tension=.35},
+      {label:'Loadbalance', data:[], borderColor:'#f59e0b', fill:false, tension=.35},
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom'}}, scales:{ x:{ticks:{maxRotation:0}} } }
+  });
+  function refresh(){
+    db.collection('isp_metrics').orderBy('ts','desc').limit(36).get().then(snap=>{
+      const rows = snap.docs.map(d=>d.data()).sort((a,b)=>a.ts.localeCompare(b.ts));
+      const labels = rows.map(r=> new Date(r.ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}));
+      ispChart.data.labels = labels;
+      ispChart.data.datasets[0].data = rows.map(r=>r.upMbps||0);
+      ispChart.data.datasets[1].data = rows.map(r=>r.downMbps||0);
+      ispChart.data.datasets[2].data = rows.map(r=>r.lb||0);
+      ispChart.update();
+    });
+  }
+  refresh();
+  // update tiap 5 menit
+  setInterval(refresh, 5*60*1000);
+}
+function refreshKPIs(){
+  db.collection('pelanggan').onSnapshot(snap=> $('#kpiPelanggan').textContent=snap.size );
+  db.collection('kas').onSnapshot(snap=>{
+    let saldo=0; snap.forEach(d=>{ const x=d.data(); saldo+=(+x.masuk||0)-(+x.keluar||0); });
+    $('#kpiKas').textContent = fmtRp(saldo);
+  });
+  db.collection('billing').where('status','==','Belum').onSnapshot(snap=>{
+    $('#kpiTunggakan').textContent = snap.size;
+  });
+  db.collection('gangguan').where('status','==','open').onSnapshot(snap=>{
+    $('#kpiOpenGangguan').textContent = snap.size;
   });
 }
 
-/* Small utility for date formatting */
-function formatISO(d){
-  if(!d) return '';
-  const dt = (typeof d === 'string') ? new Date(d) : d;
-  return dt.toLocaleString();
+/* ===================== PASANG BARU ===================== */
+function getGeolocation(){
+  if(!navigator.geolocation){ alert('Geolocation tidak didukung'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $('#pb_lat').value = pos.coords.latitude.toFixed(6);
+    $('#pb_lng').value = pos.coords.longitude.toFixed(6);
+  }, err=> alert('Gagal ambil lokasi'));
 }
-
-/* =========================
-   Dashboard chart (Chart.js)
-   ========================= */
-const ctx = document.getElementById('ispChart').getContext('2d');
-const ispChart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-    datasets: [
-      { label:'Upload (Mbps)', data: Array(12).fill(0), borderColor:'#1f77b4', tension:0.3, fill:false },
-      { label:'Download (Mbps)', data: Array(12).fill(0), borderColor:'#2ca02c', tension:0.3, fill:false }
-    ]
-  },
-  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
-});
-
-/* =========================
-   Real-time listeners & CRUD binding
-   ========================= */
-
-/* ---------- PACKET: Paket ---------- */
-const paketForm = document.getElementById('paketForm');
-paketForm && paketForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const id = document.getElementById('paketId').value;
-  const nama = document.getElementById('namaPaket').value.trim();
-  const bw = document.getElementById('bandwidth').value.trim();
-  if(!nama) return alert('Isi nama paket');
-  const payload = { namaPaket: nama, bandwidth: bw };
-  if(id) await db.collection('paket').doc(id).update(payload);
-  else await db.collection('paket').add(payload);
-  paketForm.reset();
-});
-
-/* render paket table & populate planSelect */
-db.collection('paket').onSnapshot(snapshot=>{
-  const rows = [];
-  snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  // render paket table
-  renderProfessionalTable('paketTable', rows, [
-    { key:'namaPaket', label:'Paket' },
-    { key:'bandwidth', label:'Bandwidth' },
-    { key:'id', label:'Aksi', render:(r)=>{
-        return `<div style="display:flex;gap:6px">
-          <button class="btn ghost" onclick="editPaket('${r.id}')">✏️</button>
-          <button class="btn ghost" onclick="deleteDoc('paket','${r.id}')">🗑️</button>
-        </div>`;
-      }}
-  ]);
-  // populate planSelect and planSelect in user form
-  const sel = document.getElementById('planSelect');
-  if(sel){
-    sel.innerHTML = '<option value="">--Pilih Paket--</option>';
-    rows.forEach(r=>{
-      const o = document.createElement('option'); o.value = r.namaPaket; o.textContent = `${r.namaPaket} (${r.bandwidth})`;
-      sel.appendChild(o);
+function loadPaketToSelect(){
+  const sel = $('#pb_paket'); sel.innerHTML = '<option value="">--Pilih Paket--</option>';
+  db.collection('paket').orderBy('nama').get().then(snap=>{
+    snap.forEach(doc=>{
+      const d=doc.data(); const opt=document.createElement('option');
+      opt.value = d.nama; opt.textContent = `${d.nama} | ${d.jenis} | ${d.bandwidth} | ${fmtRp(d.harga||0)}`;
+      opt.dataset.harga = d.harga||0;
+      sel.appendChild(opt);
     });
-  }
-});
-
-window.editPaket = async function(id){
-  const doc = await db.collection('paket').doc(id).get();
-  if(!doc.exists) return alert('Data tidak ditemukan');
-  const d = doc.data();
-  document.getElementById('paketId').value = id;
-  document.getElementById('namaPaket').value = d.namaPaket || '';
-  document.getElementById('bandwidth').value = d.bandwidth || '';
-};
-
-window.deleteDoc = function(collection, id){
-  if(confirm('Yakin hapus?')) db.collection(collection).doc(id).delete();
-};
-
-/* ---------- USER ---------- */
-const userForm = document.getElementById('userForm');
-userForm && userForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const id = document.getElementById('userId').value;
-  const userName = document.getElementById('userName').value.trim();
-  const planName = document.getElementById('planSelect').value;
-  const statusBayar = document.getElementById('statusBayar').value;
-  if(!userName) return alert('Isi nama user');
-  const payload = { userName, planName, statusBayar, createdAt:new Date().toISOString() };
-  if(id) await db.collection('user').doc(id).update(payload);
-  else {
-    await db.collection('user').add(payload);
-    // Auto-generate billing for new user (monthly first invoice)
-    await generateBillingForUser(userName);
-  }
-  userForm.reset();
-});
-
-/* render users */
-db.collection('user').onSnapshot(snapshot=>{
-  const rows = [];
-  snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  renderProfessionalTable('userTable', rows, [
-    { key:'userName', label:'Nama' },
-    { key:'planName', label:'Paket' },
-    { key:'statusBayar', label:'Status Bayar' },
-    { key:'id', label:'Aksi', render:(r)=>`<div style="display:flex;gap:6px"><button class="btn ghost" onclick="editUser('${r.id}')">✏️</button><button class="btn ghost" onclick="deleteDoc('user','${r.id}')">🗑️</button></div>` }
-  ]);
-  document.getElementById('totalUser').textContent = rows.length;
-
-  // populate billing user select
-  const bsel = document.getElementById('billingUser');
-  if(bsel){
-    bsel.innerHTML = '<option value="">--Pilih User--</option>';
-    rows.forEach(r=>{
-      const o = document.createElement('option'); o.value=r.userName; o.textContent = r.userName; bsel.appendChild(o);
-    });
-  }
-});
-
-window.editUser = async function(id){
-  const doc = await db.collection('user').doc(id).get();
-  if(!doc.exists) return alert('User tidak ditemukan');
-  const d = doc.data();
-  document.getElementById('userId').value = id;
-  document.getElementById('userName').value = d.userName || '';
-  document.getElementById('planSelect').value = d.planName || '';
-  document.getElementById('statusBayar').value = d.statusBayar || 'Lunas';
-};
-
-/* ---------- BILLING ---------- */
-const billingForm = document.getElementById('billingForm');
-billingForm && billingForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const id = document.getElementById('billingId').value;
-  const billingUser = document.getElementById('billingUser').value;
-  const billingAmount = parseFloat(document.getElementById('billingAmount').value);
-  if(!billingUser||!billingAmount) return alert('Isi user & jumlah');
-  const payload = { billingUser, billingAmount, status:'Belum', createdAt:new Date().toISOString() };
-  if(id) await db.collection('billing').doc(id).update(payload);
-  else await db.collection('billing').add(payload);
-  billingForm.reset();
-});
-
-/* render billing */
-db.collection('billing').orderBy('createdAt','desc').onSnapshot(snapshot=>{
-  const rows = [];
-  snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  renderProfessionalTable('billingTable', rows, [
-    { key:'billingUser', label:'User' },
-    { key:'billingAmount', label:'Jumlah', render:(r)=>`Rp ${Number(r.billingAmount).toLocaleString('id-ID')}` },
-    { key:'status', label:'Status' },
-    { key:'createdAt', label:'Tanggal', render:(r)=> formatISO(r.createdAt) },
-    { key:'id', label:'Aksi', render:(r)=>`<div style="display:flex;gap:6px"><button class="btn ghost" onclick="markPaid('${r.id}')">Lunas</button><button class="btn ghost" onclick="deleteDoc('billing','${r.id}')">🗑️</button></div>` }
-  ]);
-
-  // count tunggakan
-  const tunggakan = rows.filter(x=>x.status === 'Belum').length;
-  document.getElementById('totalTunggakan').textContent = tunggakan;
-});
-
-window.markPaid = (id) => db.collection('billing').doc(id).update({ status: 'Lunas', paidAt: new Date().toISOString() });
-
-/* Generate billing for one user (used when creating user) */
-async function generateBillingForUser(userName){
-  // Attempt to fetch paket price if available (optional)
-  // Default amount fallback
-  const defaultAmount = 100000;
-  // create billing doc
-  await db.collection('billing').add({ billingUser: userName, billingAmount: defaultAmount, status:'Belum', createdAt: new Date().toISOString() });
-}
-
-/* Generate billing for all users (manual trigger) */
-async function generateAllBilling(){
-  const snap = await db.collection('user').get();
-  const batchPromises = [];
-  snap.forEach(doc=>{
-    const u = doc.data();
-    const amount = 100000; // default or derive from paket
-    batchPromises.push(db.collection('billing').add({ billingUser: u.userName, billingAmount: amount, status:'Belum', createdAt: new Date().toISOString() }));
   });
-  await Promise.all(batchPromises);
-  alert('Tagihan semua user berhasil dibuat.');
 }
-
-/* Export Billing to CSV */
-async function exportBillingCSV(){
-  const snap = await db.collection('billing').orderBy('createdAt','desc').get();
-  let csv = 'User,Amount,Status,Date\n';
-  snap.forEach(doc=>{
-    const d = doc.data();
-    csv += `${d.billingUser || ''},${d.billingAmount || ''},${d.status || ''},${d.createdAt || ''}\n`;
-  });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'billing.csv'; a.click();
-}
-
-/* ---------- KAS ---------- */
-const kasForm = document.getElementById('kasForm');
-kasForm && kasForm.addEventListener('submit', async (e)=>{
+$('#pb_paket')?.addEventListener('change', e=>{
+  const harga = e.target.selectedOptions[0]?.dataset?.harga || 0;
+  $('#pb_harga').value = fmtRp(harga);
+});
+$('#formPasang').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const id = document.getElementById('kasId').value;
-  const kasKet = document.getElementById('kasKet').value.trim();
-  const kasJumlah = parseFloat(document.getElementById('kasJumlah').value);
-  if(!kasKet || isNaN(kasJumlah)) return alert('Isi data kas');
-  const payload = { kasKet, kasJumlah, createdAt:new Date().toISOString() };
-  if(id) await db.collection('kas').doc(id).update(payload);
-  else await db.collection('kas').add(payload);
-  kasForm.reset();
+  const data = {
+    noInet: $('#pb_noInet').value.trim(),
+    nama: $('#pb_nama').value.trim(),
+    alamat: $('#pb_alamat').value.trim(),
+    noHP: $('#pb_hp').value.trim(),
+    paket: $('#pb_paket').value,
+    hargaPaket: Number($('#pb_paket').selectedOptions[0]?.dataset?.harga||0),
+    snONT: $('#pb_sn').value.trim(),
+    odp: $('#pb_odp').value.trim(),
+    lokasi: { lat: parseFloat($('#pb_lat').value||0)||null, lng: parseFloat($('#pb_lng').value||0)||null },
+    createdAt: nowISO()
+  };
+  if(!data.noInet || !data.nama) return alert('Nomor Internet & Nama wajib.');
+  await db.collection('pelanggan').doc(data.noInet).set(data);
+  // update statistik ODP (jumlah pelanggan dihitung live di bagian ODP)
+  alert('Pelanggan tersimpan.');
+  e.target.reset(); $('#pb_harga').value='';
 });
 
-/* render kas table */
-db.collection('kas').orderBy('createdAt','desc').onSnapshot(snapshot=>{
-  const rows = [];
-  snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  renderProfessionalTable('kasTable', rows, [
-    { key:'kasKet', label:'Keterangan' },
-    { key:'kasJumlah', label:'Jumlah', render:(r)=> `Rp ${Number(r.kasJumlah).toLocaleString('id-ID')}` },
-    { key:'createdAt', label:'Tanggal', render:(r)=> formatISO(r.createdAt) },
-    { key:'id', label:'Aksi', render:(r)=>`<div style="display:flex;gap:6px"><button class="btn ghost" onclick="editKas('${r.id}')">✏️</button><button class="btn ghost" onclick="deleteDoc('kas','${r.id}')">🗑️</button></div>` }
-  ]);
-  // compute saldo
-  const saldo = rows.reduce((s,x)=> s + (parseFloat(x.kasJumlah || 0)), 0);
-  document.getElementById('saldoKas').textContent = `Rp ${saldo.toLocaleString('id-ID')}`;
-});
-
-window.editKas = async (id) => {
-  const doc = await db.collection('kas').doc(id).get();
-  if(!doc.exists) return alert('Data kas tidak ditemukan');
-  const d = doc.data();
-  document.getElementById('kasId').value = id;
-  document.getElementById('kasKet').value = d.kasKet || '';
-  document.getElementById('kasJumlah').value = d.kasJumlah || '';
-};
-
-/* ---------- TEKNISI ---------- */
-const teknisiForm = document.getElementById('teknisiForm');
-teknisiForm && teknisiForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const id = document.getElementById('teknisiId').value;
-  const namaTeknisi = document.getElementById('namaTeknisi').value.trim();
-  const kontakTeknisi = document.getElementById('kontakTeknisi').value.trim();
-  if(!namaTeknisi) return alert('Isi nama teknisi');
-  const payload = { namaTeknisi, kontakTeknisi };
-  if(id) await db.collection('teknisi').doc(id).update(payload);
-  else await db.collection('teknisi').add(payload);
-  teknisiForm.reset();
-});
-
-/* render teknisi */
-db.collection('teknisi').onSnapshot(snapshot=>{
-  const rows = []; snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  renderProfessionalTable('teknisiTable', rows, [
-    { key:'namaTeknisi', label:'Nama' },
-    { key:'kontakTeknisi', label:'Kontak' },
-    { key:'id', label:'Aksi', render:(r)=>`<div style="display:flex;gap:6px"><button class="btn ghost" onclick="editTeknisi('${r.id}')">✏️</button><button class="btn ghost" onclick="deleteDoc('teknisi','${r.id}')">🗑️</button></div>` }
-  ]);
-});
-
-window.editTeknisi = async (id) => {
-  const doc = await db.collection('teknisi').doc(id).get();
-  if(!doc.exists) return alert('Teknisi tidak ditemukan');
-  const d = doc.data();
-  document.getElementById('teknisiId').value = id;
-  document.getElementById('namaTeknisi').value = d.namaTeknisi || '';
-  document.getElementById('kontakTeknisi').value = d.kontakTeknisi || '';
-};
-
-/* ---------- GANGGUAN (TTR realtime + assign teknisi) ---------- */
-async function loadGangguanList(){
-  const snap = await db.collection('gangguan').orderBy('waktu','desc').limit(200).get();
-  const rows = [];
-  snap.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  // render gangguan table with action: close, assign teknisi
-  renderProfessionalTable('gangguanTable', rows, [
-    { key:'user', label:'User' },
-    { key:'indikasi', label:'Indikasi' },
-    { key:'waktu', label:'Waktu', render:(r)=> formatISO(r.waktu) },
-    { key:'ttr', label:'TTR', render:(r)=> computeTTRDisplay(r) },
-    { key:'status', label:'Status' },
-    { key:'teknisi', label:'Teknisi', render:(r)=> r.teknisi || '-' },
-    { key:'id', label:'Aksi', render:(r)=> {
-        const btnClose = r.status === 'Aktif' ? `<button class="btn ghost" onclick="closeGangguan('${r.id}')">Close</button>` : '-';
-        const assignBtn = `<button class="btn ghost" onclick="showAssignTeknisi('${r.id}')">Assign</button>`;
-        return `<div style="display:flex;gap:6px">${btnClose}${assignBtn}</div>`;
-    }}
-  ]);
-  // also for dashboard (latest 10)
-  const dashRows = rows.slice(0,10);
-  renderProfessionalTable('dashboardGangguan', dashRows, [
-    { key:'user' }, { key:'indikasi' }, { key:'waktu', render:(r)=>formatISO(r.waktu) }, { key:'ttr', render:(r)=> computeTTRDisplay(r) }, { key:'status' }
-  ]);
-  const activeCount = rows.filter(r=> r.status === 'Aktif').length;
-  document.getElementById('totalGangguan').textContent = activeCount;
-}
-
-function computeTTRDisplay(r){
-  if(r.status !== 'Aktif' && r.ttr) return r.ttr;
-  if(r.status === 'Aktif' && r.waktu){
-    const diff = Date.now() - new Date(r.waktu).getTime();
-    const hrs = Math.floor(diff/1000/3600);
-    const mins = Math.floor((diff/1000/60)%60);
-    const secs = Math.floor((diff/1000)%60);
-    return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-  }
-  return '00:00:00';
-}
-
-async function simulateGangguan(){
-  const usersSnap = await db.collection('user').get();
-  if(usersSnap.empty) return alert('Belum ada user tersimpan untuk simulasi');
-  const users = []; usersSnap.forEach(d=> users.push(d.data().userName));
-  const randomUser = users[Math.floor(Math.random()*users.length)];
-  const doc = { user: randomUser, indikasi:'Koneksi putus', waktu: new Date().toISOString(), status:'Aktif' };
-  await db.collection('gangguan').add(doc);
-}
-
-window.clearGangguan = async function(){
-  if(!confirm('Yakin hapus semua gangguan?')) return;
-  const snap = await db.collection('gangguan').get();
-  const batch = db.batch();
-  snap.forEach(doc => batch.delete(doc.ref));
-  await batch.commit();
-  await loadGangguanList();
-}
-
-window.closeGangguan = async function(id){
-  const doc = await db.collection('gangguan').doc(id).get();
-  if(!doc.exists) return;
-  const d = doc.data();
-  const diff = Date.now() - new Date(d.waktu).getTime();
-  const hrs = Math.floor(diff/1000/3600);
-  const mins = Math.floor((diff/1000/60)%60);
-  const secs = Math.floor((diff/1000)%60);
-  const ttr = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-  await db.collection('gangguan').doc(id).update({ status:'Selesai', ttr, resolvedAt:new Date().toISOString() });
-  await loadGangguanList();
-}
-
-window.showAssignTeknisi = async function(gangguanId){
-  // render small prompt to choose teknisi (simple prompt)
-  const snap = await db.collection('teknisi').get();
-  const teknisi = [];
-  snap.forEach(d=> teknisi.push(d.data().namaTeknisi));
-  const choice = prompt(`Masukkan nama teknisi untuk ditugaskan:\n${teknisi.join(', ')}`);
-  if(choice){
-    await db.collection('gangguan').doc(gangguanId).update({ teknisi: choice, status:'Sedang Ditangani' });
-    await loadGangguanList();
-  }
-}
-
-/* Setup listener for new gangguan to show browser alert (realtime) */
-db.collection('gangguan').orderBy('waktu','desc').limit(1).onSnapshot(sn=>{
-  sn.docChanges().forEach(change=>{
-    if(change.type === 'added'){
-      const d = change.doc.data();
-      if(d && d.status === 'Aktif'){
-        // browser alert (simple)
-        console.info('New incident:', d);
-        try { if(window.Notification && Notification.permission === "granted"){ new Notification("Gangguan baru", { body: `${d.user} — ${d.indikasi}` }); } } catch(e){}
-        // also a simple alert fallback
-        // alert('⚠️ Gangguan baru: ' + d.user + ' — ' + d.indikasi);
+/* ===================== PELANGGAN ===================== */
+let pelangganCache = [];
+function loadPelanggan(){
+  db.collection('pelanggan').orderBy('nama').onSnapshot(async snap=>{
+    pelangganCache = snap.docs.map(d=> ({id:d.id, ...d.data()}));
+    // inject redaman dari olt_readings
+    for(const p of pelangganCache){
+      if(p.snONT){
+        const r = await db.collection('olt_readings').where('snOnt','==',p.snONT).orderBy('ts','desc').limit(1).get();
+        if(!r.empty){ p.redaman = r.docs[0].data().redamanDb; }
       }
     }
+    paintPelanggan(pelangganCache);
   });
-});
-
-/* Polling ttr update - refresh displayed TTRs every second for active incidents */
-setInterval(async ()=>{ await loadGangguanList(); }, 1000);
-
-/* ---------- ODP ---------- */
-const odpForm = document.getElementById('odpForm');
-odpForm && odpForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const id = document.getElementById('odpId').value;
-  const kode = document.getElementById('odpKode').value.trim();
-  const lokasi = document.getElementById('odpLokasi').value.trim();
-  const kapasitas = parseInt(document.getElementById('odpKapasitas').value) || 0;
-  if(!kode) return alert('Isi kode ODP');
-  const payload = { kode, lokasi, kapasitas, createdAt:new Date().toISOString() };
-  if(id) await db.collection('odp').doc(id).update(payload);
-  else await db.collection('odp').add(payload);
-  odpForm.reset();
-});
-db.collection('odp').onSnapshot(snapshot=>{
-  const rows = []; snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  renderProfessionalTable('odpTable', rows, [
-    { key:'kode', label:'Kode' },
-    { key:'lokasi', label:'Lokasi' },
-    { key:'kapasitas', label:'Kapasitas' },
-    { key:'id', label:'Aksi', render:(r)=>`<div style="display:flex;gap:6px"><button class="btn ghost" onclick="editODP('${r.id}')">✏️</button><button class="btn ghost" onclick="deleteDoc('odp','${r.id}')">🗑️</button></div>` }
-  ]);
-});
-window.editODP = async (id) => {
-  const doc = await db.collection('odp').doc(id).get();
-  if(!doc.exists) return alert('ODP tidak ditemukan');
-  const d = doc.data();
-  document.getElementById('odpId').value = id;
-  document.getElementById('odpKode').value = d.kode || '';
-  document.getElementById('odpLokasi').value = d.lokasi || '';
-  document.getElementById('odpKapasitas').value = d.kapasitas || '';
-};
-
-/* ---------- MATERIAL ---------- */
-const materialForm = document.getElementById('materialForm');
-materialForm && materialForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const id = document.getElementById('materialId').value;
-  const namaMaterial = document.getElementById('namaMaterial').value.trim();
-  const stokMaterial = parseInt(document.getElementById('stokMaterial').value) || 0;
-  if(!namaMaterial) return alert('Isi nama material');
-  const payload = { namaMaterial, stokMaterial, updatedAt:new Date().toISOString() };
-  if(id) await db.collection('material').doc(id).update(payload);
-  else await db.collection('material').add(payload);
-  materialForm.reset();
-});
-db.collection('material').onSnapshot(snapshot=>{
-  const rows = []; snapshot.forEach(doc=> rows.push({ id:doc.id, ...doc.data() }));
-  renderProfessionalTable('materialTable', rows, [
-    { key:'namaMaterial', label:'Material' },
-    { key:'stokMaterial', label:'Stok' },
-    { key:'id', label:'Aksi', render:(r)=>`<div style="display:flex;gap:6px"><button class="btn ghost" onclick="editMaterial('${r.id}')">✏️</button><button class="btn ghost" onclick="deleteDoc('material','${r.id}')">🗑️</button></div>` }
-  ]);
-});
-window.editMaterial = async (id) => {
-  const doc = await db.collection('material').doc(id).get();
-  if(!doc.exists) return alert('Material tidak ditemukan');
-  const d = doc.data();
-  document.getElementById('materialId').value = id;
-  document.getElementById('namaMaterial').value = d.namaMaterial || '';
-  document.getElementById('stokMaterial').value = d.stokMaterial || '';
-};
-
-/* ---------- UTIL: edit ISP name ---------- */
-function applyISPName(){
-  const v = document.getElementById('newISPName').value.trim();
-  if(!v) return alert('Isi nama ISP');
-  // update the sidebar header text only (do not persist unless desired)
-  const el = document.querySelector('.isp-title .text');
-  if(el) el.textContent = v;
-  alert('Nama ISP diperbarui');
+}
+function paintPelanggan(rows){
+  const tb = $('#tblPelanggan tbody'); tb.innerHTML='';
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="10" class="empty">Belum ada data.</td></tr>'; return; }
+  for(const r of rows){
+    const tr=document.createElement('tr');
+    const loc = (r.lokasi?.lat && r.lokasi?.lng) ? `${r.lokasi.lat.toFixed(5)}, ${r.lokasi.lng.toFixed(5)}` : '-';
+    tr.innerHTML = `
+      <td class="nowrap">${r.noInet||r.id}</td>
+      <td>${r.nama||''}</td>
+      <td>${r.alamat||''}</td>
+      <td>${r.noHP||''}</td>
+      <td>${r.paket||''}</td>
+      <td>${r.snONT||''}</td>
+      <td>${r.odp||''}</td>
+      <td>${(r.redaman!=null)? (r.redaman+' dB'):'-'}</td>
+      <td>${loc}</td>
+      <td class="right"><span class="link" onclick="gotoBilling('${r.noInet||r.id}','${r.nama||''}')">Billing</span></td>
+    `;
+    tb.appendChild(tr);
+  }
+}
+function filterPelanggan(){
+  const q = $('#pel_q').value.trim().toLowerCase();
+  const f = pelangganCache.filter(p=>
+    (p.nama||'').toLowerCase().includes(q) ||
+    (p.odp||'').toLowerCase().includes(q) ||
+    (p.snONT||'').toLowerCase().includes(q) ||
+    (p.noInet||'').toLowerCase().includes(q)
+  );
+  paintPelanggan(f);
+}
+function gotoBilling(noInet,nama){
+  showSection('billing');
+  $('#bil_q').value = (noInet||'') + ' ' + (nama||'');
+  filterBilling();
 }
 
-/* ---------- Small UI helpers (search) ---------- */
-document.getElementById('userSearch')?.addEventListener('input', function(e){
-  const q = e.target.value.toLowerCase();
-  document.querySelectorAll('#userTable tbody tr').forEach(tr=>{
-    tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+/* ===================== PAKET & PROMO ===================== */
+function resetPaket(){ $('#paket_id').value=''; $('#paket_nama').value=''; $('#paket_bw').value=''; $('#paket_harga').value=''; }
+async function savePaket(){
+  const id = $('#paket_id').value;
+  const data = {
+    nama: $('#paket_nama').value.trim(),
+    jenis: $('#paket_jenis').value,
+    bandwidth: $('#paket_bw').value.trim(),
+    harga: Number($('#paket_harga').value||0),
+    updatedAt: nowISO()
+  };
+  if(!data.nama) return alert('Nama paket wajib.');
+  if(id) await db.collection('paket').doc(id).set(data,{merge:true});
+  else await db.collection('paket').add(data);
+  resetPaket(); loadPaket(); loadPaketToSelect();
+}
+function loadPaket(){
+  db.collection('paket').orderBy('nama').onSnapshot(snap=>{
+    const tb = $('#tblPaket tbody'); tb.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.nama}</td><td>${d.jenis}</td><td>${d.bandwidth}</td><td>${fmtRp(d.harga||0)}</td>
+        <td class="right">
+          <span class="link" onclick="editPaket('${doc.id}')">Edit</span> &nbsp;
+          <span class="link" onclick="delDoc('paket','${doc.id}')">Hapus</span>
+        </td>`;
+      tb.appendChild(tr);
+    });
   });
-});
-
-/* ---------- INITIAL LOAD ---------- */
-/* Show dashboard by default */
-showSection('dashboard');
-
-/* initial data load calls */
-loadGangguanList();
-
-/* ---------- Utility functions ---------- */
-function formatISO(d){ if(!d) return ''; const dt = (typeof d === 'string') ? new Date(d) : d; return dt.toLocaleString(); }
-
-/* convenience delete wrapper already defined earlier as deleteDoc */
-
-/* Expose some functions globally for inline onclicks */
-window.generateAllBilling = generateAllBilling;
-window.exportBillingCSV = exportBillingCSV;
-window.simulateGangguan = simulateGangguan;
-window.clearGangguan = window.clearGangguan;
-window.deleteDoc = deleteDoc;
-window.loadGangguanList = loadGangguanList;
-window.applyISPName = applyISPName;
-
-/* Request Notification permission for nicer alerts (optional) */
-if("Notification" in window && Notification.permission !== "granted"){
-  Notification.requestPermission().catch(()=>{});
+}
+async function editPaket(id){
+  const d = await db.collection('paket').doc(id).get();
+  if(d.exists){
+    $('#paket_id').value=id;
+    $('#paket_nama').value=d.data().nama||'';
+    $('#paket_jenis').value=d.data().jenis||'Home';
+    $('#paket_bw').value=d.data().bandwidth||'';
+    $('#paket_harga').value=d.data().harga||0;
+  }
+}
+function resetPromo(){ $('#promo_id').value=''; $('#promo_nama').value=''; $('#promo_bw').value=''; $('#promo_harga').value=''; }
+async function savePaketPromo(){
+  const id = $('#promo_id').value;
+  const data = {
+    nama: $('#promo_nama').value.trim(),
+    jenis: $('#promo_jenis').value,
+    bandwidth: $('#promo_bw').value.trim(),
+    harga: Number($('#promo_harga').value||0),
+    updatedAt: nowISO()
+  };
+  if(!data.nama) return alert('Nama paket promo wajib.');
+  if(id) await db.collection('paket_promo').doc(id).set(data,{merge:true});
+  else await db.collection('paket_promo').add(data);
+  resetPromo(); loadPaketPromo(); loadPaketToSelect();
+}
+function loadPaketPromo(){
+  db.collection('paket_promo').orderBy('nama').onSnapshot(snap=>{
+    const tb = $('#tblPaketPromo tbody'); tb.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.nama}</td><td>${d.jenis}</td><td>${d.bandwidth}</td><td>${fmtRp(d.harga||0)}</td>
+        <td class="right">
+          <span class="link" onclick="editPromo('${doc.id}')">Edit</span> &nbsp;
+          <span class="link" onclick="delDoc('paket_promo','${doc.id}')">Hapus</span>
+        </td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+async function editPromo(id){
+  const d = await db.collection('paket_promo').doc(id).get();
+  if(d.exists){
+    $('#promo_id').value=id;
+    $('#promo_nama').value=d.data().nama||'';
+    $('#promo_jenis').value=d.data().jenis||'Home';
+    $('#promo_bw').value=d.data().bandwidth||'';
+    $('#promo_harga').value=d.data().harga||0;
+  }
 }
 
-/* End of script */
+/* ===================== BILLING ===================== */
+let billingCache = [];
+function combineArrears(prevBills){
+  // return {sumArrears, periods[]}
+  let sum=0, periods=[];
+  prevBills.forEach(b=>{ sum += (b.status!=='Lunas') ? (b.tagihan||0) - (b.paidAmount||0) : 0; if(b.status!=='Lunas') periods.push(b.periode); });
+  return {sumArrears:sum, periods};
+}
+async function generateBilling(){
+  const periode = $('#bil_periode').value.trim();
+  if(!/^\d{4}\-\d{2}$/.test(periode)) return alert('Format periode YYYY-MM.');
+  const pelSnap = await db.collection('pelanggan').get();
+  const batch = db.batch();
+  for(const doc of pelSnap.docs){
+    const p = doc.data();
+    const billsSnap = await db.collection('billing').where('noInet','==',p.noInet).orderBy('periode','asc').get();
+    const prev = billsSnap.docs.map(d=>d.data()).filter(b=>b.periode < periode);
+    const {sumArrears, periods} = combineArrears(prev);
+    const tagihan = (p.hargaPaket||0) + sumArrears;
+    const ref = db.collection('billing').doc(`${p.noInet}_${periode}`);
+    batch.set(ref, {
+      id: `${p.noInet}_${periode}`,
+      periode, noInet:p.noInet, nama:p.nama,
+      tagihan, hargaPaket: p.hargaPaket||0, arrearsFrom: periods,
+      paidAmount: 0, status: 'Belum',
+      createdAt: nowISO()
+    }, {merge:true});
+  }
+  await batch.commit();
+  alert('Billing periode dibuat & tunggakan digabungkan.');
+}
+function loadBilling(){
+  db.collection('billing').orderBy('periode','desc').onSnapshot(snap=>{
+    billingCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    paintBilling(billingCache);
+  });
+}
+function paintBilling(rows){
+  const tb = $('#tblBilling tbody'); tb.innerHTML='';
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="7" class="empty">Belum ada billing.</td></tr>'; return; }
+  for(const b of rows){
+    const arrears = (b.arrearsFrom&&b.arrearsFrom.length)? b.arrearsFrom.join(', ') : '-';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${b.periode}</td>
+      <td>${b.noInet}</td>
+      <td>${b.nama}</td>
+      <td>${fmtRp(b.tagihan||0)}</td>
+      <td>${arrears}</td>
+      <td>${b.status}</td>
+      <td class="right">
+        <select id="bayar_${b.id}">
+          <option value="full">Full</option>
+          <option value="tunggakan">Tunggakan dulu</option>
+        </select>
+        <button class="btn success" onclick="payBilling('${b.id}')">Bayar</button>
+        <button class="btn ghost" onclick="printReceipt('${b.id}')">Cetak</button>
+        <button class="btn warn" onclick="sendWA('${b.id}')">WA</button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  }
+}
+function filterBilling(){
+  const q = $('#bil_q').value.trim().toLowerCase();
+  const f = billingCache.filter(b=> (b.noInet||'').toLowerCase().includes(q) || (b.nama||'').toLowerCase().includes(q) );
+  paintBilling(f);
+}
+async function payBilling(id){
+  const mode = document.getElementById('bayar_'+id)?.value || 'full';
+  const ref = db.collection('billing').doc(id); const snap = await ref.get(); if(!snap.exists) return;
+  const b = snap.data();
+  if(mode==='full'){
+    await ref.set({status:'Lunas', paidAmount: b.tagihan, paidAt: nowISO()},{merge:true});
+    await db.collection('kas').add({ tanggal: new Date().toISOString().slice(0,10), kategori:'Pembayaran', keterangan:`Bayar ${b.noInet} ${b.periode}`, masuk:b.tagihan, keluar:0, createdAt: nowISO() });
+  } else {
+    // bayar tunggakan dulu: alokasikan ke arrearsFrom
+    const arrearsPeriods = b.arrearsFrom||[];
+    if(!arrearsPeriods.length){ alert('Tidak ada tunggakan.'); return; }
+    // tandai "dibayar tunggakan" dengan mengurangi tagihan pada periode sekarang sebesar tunggakan total
+    let tunggakanTotal = 0;
+    for(const a of arrearsPeriods){
+      const rid = `${b.noInet}_${a}`;
+      const prevRef = db.collection('billing').doc(rid);
+      const prevSnap = await prevRef.get();
+      if(prevSnap.exists){
+        const pb = prevSnap.data();
+        const remaining = (pb.tagihan||0)-(pb.paidAmount||0);
+        if(remaining>0){
+          await prevRef.set({status:'Lunas', paidAmount: (pb.tagihan||0), paidAt: nowISO()}, {merge:true});
+          tunggakanTotal += remaining;
+        }
+      }
+    }
+    const newTagihan = Math.max((b.tagihan||0) - tunggakanTotal, b.hargaPaket||0);
+    await ref.set({ tagihan:newTagihan, arrearsFrom:[], updatedAt: nowISO() }, {merge:true});
+    await db.collection('kas').add({ tanggal: new Date().toISOString().slice(0,10), kategori:'Pembayaran (Tunggakan)', keterangan:`Bayar tunggakan ${b.noInet}`, masuk:tunggakanTotal, keluar:0, createdAt: nowISO() });
+    alert('Tunggakan dibayar. Sisa tagihan periode ini adalah harga paket.');
+  }
+}
+async function printReceipt(id){
+  const snap = await db.collection('billing').doc(id).get(); if(!snap.exists) return;
+  const b = snap.data();
+  const isp = (await db.collection('isp_profile').doc('default').get()).data()||{};
+  const html = `
+  <html><head><title>Struk ${b.noInet}</title>
+  <style>
+    body{font-family:Segoe UI,Arial; padding:20px;}
+    .title{font-size:18px; font-weight:800; color:#4c1d95;}
+    .row{margin:6px 0;}
+    .muted{color:#6b7280;}
+  </style></head><body>
+    <div class="title">${isp.nama||'Starnet 💫'}</div>
+    <div class="muted">${isp.alamat||''} | ${isp.cs||''} | ${isp.web||''}</div><hr/>
+    <div class="row">Periode: <b>${b.periode}</b></div>
+    <div class="row">No. Internet: <b>${b.noInet}</b> | Nama: <b>${b.nama}</b></div>
+    <div class="row">Tagihan: <b>${fmtRp(b.tagihan||0)}</b></div>
+    <div class="row">Status: <b>${b.status}</b></div>
+    <hr/><small>Generated at ${tglStr(new Date())}</small>
+    <script>window.print();<\/script>
+  </body></html>`;
+  const w = window.open('', '_blank'); w.document.write(html); w.document.close();
+}
+async function sendWA(id){
+  const snap = await db.collection('billing').doc(id).get(); if(!snap.exists) return;
+  const b = snap.data();
+  const pel = await db.collection('pelanggan').doc(b.noInet).get();
+  const hp = pel.exists ? (pel.data().noHP||'') : '';
+  const isp = (await db.collection('isp_profile').doc('default').get()).data()||{};
+  const msg = `Halo ${b.nama}, Tagihan Internet ${b.periode} sebesar ${fmtRp(b.tagihan||0)}. ${isp.nama||'ISP'} - CS: ${isp.cs||''}`;
+  const url = `https://wa.me/${hp.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+}
+function exportBillingCSV(){
+  let csv='Periode,NoInet,Nama,Tagihan,TunggakanDari,Status\n';
+  for(const b of billingCache){
+    csv += `${b.periode},${b.noInet},${b.nama},${b.tagihan},${(b.arrearsFrom||[]).join('|')},${b.status}\n`;
+  }
+  download('billing.csv', csv);
+}
+
+/* ===================== KAS ===================== */
+function resetKas(){ $('#kas_id').value=''; $('#kas_tgl').value=''; $('#kas_kat').value=''; $('#kas_ket').value=''; $('#kas_masuk').value='0'; $('#kas_keluar').value='0'; }
+async function saveKas(){
+  const id=$('#kas_id').value;
+  const data={
+    tanggal: $('#kas_tgl').value || new Date().toISOString().slice(0,10),
+    kategori: $('#kas_kat').value.trim(),
+    keterangan: $('#kas_ket').value.trim(),
+    masuk: Number($('#kas_masuk').value||0),
+    keluar: Number($('#kas_keluar').value||0),
+    updatedAt: nowISO()
+  };
+  if(id) await db.collection('kas').doc(id).set(data,{merge:true});
+  else await db.collection('kas').add(data);
+  resetKas();
+}
+let kasCache=[];
+function loadKas(){
+  db.collection('kas').orderBy('tanggal','desc').onSnapshot(snap=>{
+    kasCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    paintKasTable(kasCache);
+    renderKasGrafik();
+    renderKasCards();
+  });
+}
+function paintKasTable(rows){
+  const tb=$('#tblKas tbody'); tb.innerHTML='';
+  for(const r of rows){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.tanggal}</td><td>${r.kategori||''}</td><td>${r.keterangan||''}</td>
+      <td class="right">${fmtRp(r.masuk||0)}</td><td class="right">${fmtRp(r.keluar||0)}</td>
+      <td class="right"><span class="link" onclick="editKas('${r.id}')">Edit</span> &nbsp; <span class="link" onclick="delDoc('kas','${r.id}')">Hapus</span></td>`;
+    tb.appendChild(tr);
+  }
+}
+async function editKas(id){
+  const s=await db.collection('kas').doc(id).get(); if(!s.exists) return;
+  const d=s.data(); $('#kas_id').value=id; $('#kas_tgl').value=d.tanggal||''; $('#kas_kat').value=d.kategori||''; $('#kas_ket').value=d.keterangan||'';
+  $('#kas_masuk').value=d.masuk||0; $('#kas_keluar').value=d.keluar||0;
+}
+let kasChart=null;
+function renderKasGrafik(){
+  const year = $('#kas_tahun').value.trim() || new Date().getFullYear().toString();
+  const mIn = Array(12).fill(0); const mOut=Array(12).fill(0);
+  kasCache.filter(k=> String(k.tanggal||'').startsWith(year)).forEach(k=>{
+    const m = (new Date(k.tanggal)).getMonth(); mIn[m]+=(+k.masuk||0); mOut[m]+=(+k.keluar||0);
+  });
+  if(!kasChart){
+    kasChart = new Chart($('#chartKas').getContext('2d'), {
+      type:'bar',
+      data:{ labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+        datasets:[
+          {label:'Masuk', data:mIn},
+          {label:'Keluar', data:mOut}
+        ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'bottom'} } }
+    });
+  }else{
+    kasChart.data.datasets[0].data=mIn;
+    kasChart.data.datasets[1].data=mOut;
+    kasChart.update();
+  }
+}
+function renderKasCards(){
+  const y = new Date().getFullYear();
+  const byM = Array.from({length:12}, (_,i)=>({m:i,in:0,out:0}));
+  kasCache.filter(k=> new Date(k.tanggal).getFullYear()===y).forEach(k=>{
+    const m=new Date(k.tanggal).getMonth();
+    byM[m].in += (+k.masuk||0);
+    byM[m].out += (+k.keluar||0);
+  });
+  const box = $('#kasCards'); box.innerHTML='';
+  byM.forEach(o=>{
+    const saldo = o.in - o.out;
+    const el=document.createElement('div'); el.className='card';
+    el.innerHTML = `
+      <div class="lbl">Bulan ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][o.m]}</div>
+      <div class="kpi" style="margin-top:6px;">
+        <div><div class="muted">Masuk</div><div class="val">${fmtRp(o.in)}</div></div>
+        <div><div class="muted">Keluar</div><div class="val">${fmtRp(o.out)}</div></div>
+        <div><div class="muted">Saldo</div><div class="val">${fmtRp(saldo)}</div></div>
+      </div>`;
+    box.appendChild(el);
+  });
+}
+
+/* ===================== TEKNISI ===================== */
+function resetTeknisi(){ $('#tek_id').value=''; $('#tek_nama').value=''; $('#tek_hp').value=''; $('#tek_status').value='Aktif'; }
+async function saveTeknisi(){
+  const id=$('#tek_id').value;
+  const data={ nama:$('#tek_nama').value.trim(), hp:$('#tek_hp').value.trim(), status:$('#tek_status').value, updatedAt: nowISO() };
+  if(!data.nama) return alert('Nama wajib.');
+  if(id) await db.collection('teknisi').doc(id).set(data,{merge:true}); else await db.collection('teknisi').add(data);
+  resetTeknisi();
+}
+function loadTeknisi(){
+  db.collection('teknisi').orderBy('nama').onSnapshot(snap=>{
+    const tb=$('#tblTeknisi tbody'); tb.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${d.nama}</td><td>${d.hp||''}</td><td>${d.status||''}</td>
+      <td class="right"><span class="link" onclick="editTeknisi('${doc.id}')">Edit</span> &nbsp; <span class="link" onclick="delDoc('teknisi','${doc.id}')">Hapus</span></td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+async function editTeknisi(id){
+  const s=await db.collection('teknisi').doc(id).get();
+  if(s.exists){ const d=s.data(); $('#tek_id').value=id; $('#tek_nama').value=d.nama||''; $('#tek_hp').value=d.hp||''; $('#tek_status').value=d.status||'Aktif'; }
+}
+
+/* ===================== GANGGUAN ===================== */
+let gangguanCache=[];
+function openDialogOpenTicket(){ $('#dlgOpen').style.display='flex'; }
+function closeDialogOpen(){ $('#dlgOpen').style.display='none'; $('#ot_noInet').value=''; $('#ot_jenis').value='LOS'; $('#ot_nama').value=''; $('#ot_hp').value=''; $('#ot_alamat').value=''; $('#ot_sn').value=''; $('#ot_odp').value=''; }
+async function prefillByNoInet(){
+  const no = $('#ot_noInet').value.trim();
+  if(!no) return;
+  const s = await db.collection('pelanggan').doc(no).get();
+  if(s.exists){ const p=s.data();
+    $('#ot_nama').value = p.nama||''; $('#ot_hp').value=p.noHP||''; $('#ot_alamat').value=p.alamat||''; $('#ot_sn').value=p.snONT||''; $('#ot_odp').value=p.odp||'';
+  }else{
+    $('#ot_nama').value=''; $('#ot_hp').value=''; $('#ot_alamat').value=''; $('#ot_sn').value=''; $('#ot_odp').value='';
+  }
+}
+async function submitOpenTicket(){
+  const no = $('#ot_noInet').value.trim(); if(!no) return alert('Isi No. Internet');
+  const jenis = $('#ot_jenis').value;
+  const p = await db.collection('pelanggan').doc(no).get();
+  if(!p.exists) return alert('Pelanggan tidak ditemukan.');
+  const pd = p.data();
+  const tiket = genTicket();
+  await db.collection('gangguan').doc(tiket).set({
+    tiket, noInet:no, nama:pd.nama, hp:pd.noHP, alamat:pd.alamat, snONT:pd.snONT, odp:pd.odp,
+    jenis, status:'open', startAt: nowISO(), usedMaterials: []
+  });
+  closeDialogOpen();
+  alert('Tiket dibuka: '+tiket);
+}
+function loadGangguan(){
+  db.collection('gangguan').orderBy('startAt','desc').onSnapshot(snap=>{
+    gangguanCache = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    paintGangguan(gangguanCache);
+    paintMatAgg();
+    renderGGChart();
+    renderGGRepeatChart();
+  });
+}
+function paintGangguan(rows){
+  const q = $('#gg_q').value.trim().toLowerCase();
+  const tb=$('#tblGangguan tbody'); tb.innerHTML='';
+  const list = rows.filter(g=> (g.tiket||'').toLowerCase().includes(q) );
+  if(!list.length){ tb.innerHTML='<tr><td colspan="9" class="empty">Tidak ada data.</td></tr>'; return; }
+  for(const g of list){
+    const ttr = (g.status!=='close') ? `<span class="hl ttr2" data-start="${g.startAt}">${ttrStr(Date.now()-new Date(g.startAt).getTime())}</span>` : `<span>${ttrStr((new Date(g.endAt)-new Date(g.startAt)))}</span>`;
+    const badge = g.status==='open' ? '<span class="badge b-open">open</span>' : (g.status==='progres' ? '<span class="badge b-prog">progres</span>' : '<span class="badge b-close">close</span>');
+    const used = (g.usedMaterials||[]).map(u=>`${u.nama} x${u.qty}`).join(', ') || '-';
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td class="nowrap">${g.tiket}</td>
+      <td>${g.noInet||''}</td>
+      <td>${g.nama||''}</td>
+      <td>${g.jenis||''}</td>
+      <td>${tglStr(g.startAt)}</td>
+      <td>${ttr}</td>
+      <td>${badge}</td>
+      <td>${used}</td>
+      <td class="right">
+        ${g.status!=='close' ? `<button class="btn warn" onclick="setStatus('${g.tiket}','progres')">Progres</button>
+        <button class="btn success" onclick="closeTicket('${g.tiket}')">Close</button>`: ''}
+        <button class="btn ghost" onclick="addMatToTicket('${g.tiket}')">Material</button>
+        <button class="btn danger" onclick="delDoc('gangguan','${g.tiket}')">Hapus</button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  }
+  // realtime ttr
+  setInterval(()=> {
+    $$('#tblGangguan .ttr2').forEach(el=>{
+      const st=new Date(el.dataset.start).getTime();
+      el.textContent = ttrStr(Date.now()-st);
+    });
+  }, 1000);
+}
+function filterGangguan(){ paintGangguan(gangguanCache); }
+async function setStatus(tiket, st){
+  await db.collection('gangguan').doc(tiket).set({status:st, updatedAt: nowISO()},{merge:true});
+}
+async function closeTicket(tiket){
+  const s=await db.collection('gangguan').doc(tiket).get(); if(!s.exists) return;
+  const g=s.data(); const end=new Date();
+  const ms = end - new Date(g.startAt);
+  await db.collection('gangguan').doc(tiket).set({ status:'close', endAt:end.toISOString(), ttrMs: ms }, {merge:true});
+}
+async function addMatToTicket(tiket){
+  const nama = prompt('Nama material?'); if(!nama) return;
+  const qty = Number(prompt('Qty?')||'1');
+  const merk = prompt('Merk?') || '';
+  const mat = {nama, qty, merk};
+  const ref = db.collection('gangguan').doc(tiket);
+  await ref.update({ usedMaterials: firebase.firestore.FieldValue.arrayUnion(mat) });
+  // sinkron ke material usage
+  const matSnap = await db.collection('material').where('nama','==',nama).where('merk','==',merk).limit(1).get();
+  if(!matSnap.empty){
+    const mdoc = matSnap.docs[0]; const md = mdoc.data();
+    const usage = (md.usage||0)+qty; const stokAkhir = Math.max( (md.stokAwal||0)-usage, 0 );
+    await db.collection('material').doc(mdoc.id).set({usage, stokAkhir}, {merge:true});
+  }
+}
+/* Grafik gangguan 30 hari terakhir */
+let ggChart=null, ggRepeat=null;
+async function renderGGChart(){
+  const since = new Date(); since.setDate(since.getDate()-30);
+  const snap = await db.collection('gangguan').where('startAt','>=', since.toISOString()).get();
+  const byDay = {};
+  snap.forEach(d=>{
+    const day = (new Date(d.data().startAt)).toISOString().slice(0,10);
+    byDay[day]=(byDay[day]||0)+1;
+  });
+  const labels = Object.keys(byDay).sort();
+  const data = labels.map(k=>byDay[k]);
+  if(!ggChart){
+    ggChart = new Chart($('#chartGG').getContext('2d'), { type:'line',
+      data:{ labels, datasets:[{label:'Gangguan', data}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, tension:.35 }
+    });
+  }else{
+    ggChart.data.labels=labels; ggChart.data.datasets[0].data=data; ggChart.update();
+  }
+}
+/* Grafik gangguan berulang 3 bulan terakhir */
+async function renderGGRepeatChart(){
+  const since = new Date(); since.setMonth(since.getMonth()-3);
+  const snap = await db.collection('gangguan').where('startAt','>=', since.toISOString()).get();
+  const countByNo = {};
+  snap.forEach(d=>{ const x=d.data(); countByNo[x.noInet]=(countByNo[x.noInet]||0)+1; });
+  const repeated = Object.entries(countByNo).filter(([k,v])=>v>1).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const labels = repeated.map(x=>x[0]); const data = repeated.map(x=>x[1]);
+  if(!ggRepeat){
+    ggRepeat = new Chart($('#chartGGRepeat').getContext('2d'), { type:'bar',
+      data:{ labels, datasets:[{label:'Frekuensi', data}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
+    });
+  }else{
+    ggRepeat.data.labels=labels; ggRepeat.data.datasets[0].data=data; ggRepeat.update();
+  }
+}
+/* Material aggregasi dari tiket */
+function paintMatAgg(){
+  const agg = {};
+  gangguanCache.forEach(g=>{
+    (g.usedMaterials||[]).forEach(u=>{
+      const key=(u.nama||'')+'|'+(u.merk||'');
+      agg[key]=(agg[key]||0)+(Number(u.qty)||0);
+    });
+  });
+  const tb = $('#tblMatAgg tbody'); tb.innerHTML='';
+  const entries = Object.entries(agg).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ tb.innerHTML='<tr><td colspan="3" class="empty">Belum ada penggunaan material.</td></tr>'; return;}
+  for(const [k,v] of entries){
+    const [nama,merk] = k.split('|');
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${nama}</td><td>${merk||'-'}</td><td>${v}</td>`;
+    tb.appendChild(tr);
+  }
+}
+/* Auto open tiket jika LOS >= 15 menit (mulai jam 08:00) */
+async function autoOpenLOS(){
+  const now = new Date();
+  const hour = now.getHours();
+  if(hour < 8) return; // mulai jam 8 pagi
+  // ont_status: {snOnt, status:'LOS'|'OK', lastDownAt, lastUpAt, lastTicketAt}
+  const snap = await db.collection('ont_status').where('status','==','LOS').get();
+  for(const doc of snap.docs){
+    const st = doc.data();
+    if(!st.lastDownAt) continue;
+    const downMs = now - new Date(st.lastDownAt);
+    if(downMs >= 15*60*1000){
+      // cek terakhir buka tiket
+      const lastT = st.lastTicketAt ? new Date(st.lastTicketAt) : null;
+      if(!lastT || (now - lastT) > 2*60*60*1000){ // cegah spam, min 2 jam
+        // map ke pelanggan berdasarkan SN ONT
+        const pel = await db.collection('pelanggan').where('snONT','==',st.snOnt).limit(1).get();
+        if(!pel.empty){
+          const p=pel.docs[0].data();
+          const tiket=genTicket();
+          await db.collection('gangguan').doc(tiket).set({
+            tiket, noInet:p.noInet, nama:p.nama, hp:p.noHP, alamat:p.alamat, snONT:p.snONT, odp:p.odp,
+            jenis:'LOS', status:'open', startAt: nowISO(), usedMaterials:[]
+          });
+          await db.collection('ont_status').doc(doc.id).set({lastTicketAt: nowISO()},{merge:true});
+        }
+      }
+    }
+  }
+}
+
+/* ===================== MATERIAL ===================== */
+function resetMaterial(){ $('#mat_id').value=''; $('#mat_nama').value=''; $('#mat_jenis').value=''; $('#mat_merk').value=''; $('#mat_sn').value=''; $('#mat_stokAwal').value='0'; $('#mat_usage').value='0'; $('#mat_stokAkhir').value='0'; }
+async function saveMaterial(){
+  const id=$('#mat_id').value;
+  const data={
+    nama:$('#mat_nama').value.trim(), jenis:$('#mat_jenis').value.trim(), merk:$('#mat_merk').value.trim(),
+    sn:$('#mat_sn').value.trim(), stokAwal:Number($('#mat_stokAwal').value||0),
+    usage:Number($('#mat_usage').value||0), stokAkhir: Math.max(Number($('#mat_stokAwal').value||0)-Number($('#mat_usage').value||0),0),
+    updatedAt: nowISO()
+  };
+  if(!data.nama) return alert('Nama material wajib.');
+  if(id) await db.collection('material').doc(id).set(data,{merge:true}); else await db.collection('material').add(data);
+  resetMaterial();
+}
+function loadMaterial(){
+  db.collection('material').orderBy('nama').onSnapshot(snap=>{
+    const tb=$('#tblMaterial tbody'); tb.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.nama}</td><td>${d.jenis||''}</td><td>${d.merk||''}</td><td>${d.sn||''}</td>
+        <td>${d.stokAwal||0}</td><td>${d.usage||0}</td><td>${d.stokAkhir||0}</td>
+        <td class="right"><span class="link" onclick="editMaterial('${doc.id}')">Edit</span> &nbsp; <span class="link" onclick="delDoc('material','${doc.id}')">Hapus</span></td>
+      `;
+      tb.appendChild(tr);
+    });
+  });
+}
+async function editMaterial(id){
+  const s=await db.collection('material').doc(id).get();
+  if(s.exists){
+    const d=s.data();
+    $('#mat_id').value=id; $('#mat_nama').value=d.nama||''; $('#mat_jenis').value=d.jenis||''; $('#mat_merk').value=d.merk||'';
+    $('#mat_sn').value=d.sn||''; $('#mat_stokAwal').value=d.stokAwal||0; $('#mat_usage').value=d.usage||0; $('#mat_stokAkhir').value=d.stokAkhir||0;
+  }
+}
+
+/* ===================== ODP ===================== */
+function resetODP(){ $('#odp_id').value=''; $('#odp_nama').value=''; $('#odp_kapasitas').value=''; $('#odp_feeder').value=''; $('#odp_distribusi').value=''; $('#odp_core').value=''; $('#odp_lat').value=''; $('#odp_lng').value=''; }
+async function saveODP(){
+  const id=$('#odp_id').value;
+  const data={
+    nama:$('#odp_nama').value.trim(), kapasitas: Number($('#odp_kapasitas').value||0), feeder: $('#odp_feeder').value.trim(),
+    distribusi: $('#odp_distribusi').value.trim(), core: $('#odp_core').value.trim(),
+    lokasi:{lat: parseFloat($('#odp_lat').value||0)||null, lng: parseFloat($('#odp_lng').value||0)||null},
+    updatedAt: nowISO()
+  };
+  if(!data.nama) return alert('Nama ODP wajib.');
+  if(id) await db.collection('odp').doc(id).set(data,{merge:true}); else await db.collection('odp').add(data);
+  resetODP();
+}
+function loadODP(){
+  db.collection('odp').orderBy('nama').onSnapshot(async snap=>{
+    const list = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    // hitung jumlah pelanggan per ODP
+    const pel = await db.collection('pelanggan').get();
+    const byODP={}; pel.forEach(p=>{ const od=(p.data().odp||''); byODP[od]=(byODP[od]||0)+1; });
+    const tb=$('#tblODP tbody'); tb.innerHTML='';
+    for(const o of list){
+      const count = byODP[o.nama]||0;
+      const status = (count===0)? '<span class="badge b-close" style="background:#E5E7EB; color:#374151;">Kosong</span>' : (count>= (o.kapasitas||0) ? '<span class="badge b-open" style="background:#FEE2E2; color:#991B1B;">Full</span>' : '<span class="badge b-prog" style="background:#E0E7FF; color:#3730A3;">Terisi</span>');
+      const loc = (o.lokasi?.lat && o.lokasi?.lng) ? `${o.lokasi.lat.toFixed(5)}, ${o.lokasi.lng.toFixed(5)}` : '-';
+      const tr=document.createElement('tr');
+      tr.innerHTML = `
+        <td>${o.nama}</td><td>${o.kapasitas||0}</td><td>${o.feeder||''}</td><td>${o.distribusi||''}</td><td>${o.core||''}</td>
+        <td>${loc}</td><td>${count}</td><td>${status}</td>
+        <td class="right"><span class="link" onclick="editODP('${o.id}')">Edit</span> &nbsp; <span class="link" onclick="delDoc('odp','${o.id}')">Hapus</span></td>`;
+      tb.appendChild(tr);
+    }
+    filterODP(); // apply current filter
+  });
+}
+async function editODP(id){
+  const s=await db.collection('odp').doc(id).get(); if(!s.exists) return;
+  const d=s.data();
+  $('#odp_id').value=id; $('#odp_nama').value=d.nama||''; $('#odp_kapasitas').value=d.kapasitas||''; $('#odp_feeder').value=d.feeder||'';
+  $('#odp_distribusi').value=d.distribusi||''; $('#odp_core').value=d.core||'';
+  $('#odp_lat').value=d.lokasi?.lat||''; $('#odp_lng').value=d.lokasi?.lng||'';
+}
+function filterODP(){
+  const q = $('#odp_q').value?.trim().toLowerCase()||'';
+  $$('#tblODP tbody tr').forEach(tr=>{
+    const txt = tr.innerText.toLowerCase();
+    tr.style.display = txt.includes(q) ? '' : 'none';
+  });
+}
+
+/* ===================== GENERIC ===================== */
+function delDoc(col, id){
+  if(!confirm('Yakin hapus?')) return;
+  db.collection(col).doc(id).delete();
+}
+
+/* ===================== INIT ===================== */
+(async function init(){
+  await loadISPProfile();
+  refreshKPIs();
+  startDashTTRRealtime();
+  initISPChart();
+
+  loadPaket(); loadPaketPromo(); loadPaketToSelect();
+  loadPelanggan();
+  loadBilling();
+  loadKas();
+  loadTeknisi();
+  loadGangguan();
+  loadMaterial();
+  loadODP();
+
+  // Auto LOS watcher: cek tiap 1 menit
+  setInterval(autoOpenLOS, 60*1000);
+})();
 </script>
 </body>
 </html>
