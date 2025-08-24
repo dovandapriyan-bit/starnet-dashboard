@@ -69,6 +69,9 @@
         .badge.disabled { background: var(--danger-bg); color: var(--danger); }
         .badge.lunas { background: var(--success-bg); color: var(--success); }
         .badge.belum { background: var(--danger-bg); color: var(--danger); }
+        .badge.open { background: var(--danger-bg); color: var(--danger); }
+        .badge.progress { background: #fef3c7; color: #92400e; }
+        .badge.closed { background: #f3f4f6; color: #111827; }
         .mini { font-size: 11px; padding: 4px 6px; }
         #seeding-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: white; display: flex; justify-content: center; align-items: center; text-align: center; z-index: 9999; flex-direction: column; }
         #seeding-overlay h2 { margin-bottom: 10px; }
@@ -79,7 +82,7 @@
     <div id="seeding-overlay" class="hidden">
         <div>
             <h2><i class="bi bi-database-add"></i> Sedang Membuat Data Dummy...</h2>
-            <p>Sistem sedang diisi dengan 1000 pelanggan dan riwayat data. Proses ini hanya berjalan sekali.<br>Mohon tunggu sebentar, jangan tutup halaman ini.</p>
+            <p>Sistem sedang diisi dengan 150 pelanggan dan riwayat data. Proses ini hanya berjalan sekali.<br>Mohon tunggu sebentar, jangan tutup halaman ini.</p>
             <p id="seeding-progress">Mempersiapkan...</p>
         </div>
     </div>
@@ -322,13 +325,13 @@
             </div>
             <div class="card">
                 <div class="toolbar">
-                    <input id="gangguanSearch" placeholder="Cari (nomor / nama)..." style="flex-grow:1">
-                    <select id="gangguanStatusFilter"><option value="">Semua Status</option><option value="Open">Open</option><option value="Closed">Closed</option></select>
+                    <input id="gangguanSearch" placeholder="Cari (nomor / nama / tiket)..." style="flex-grow:1">
+                    <select id="gangguanStatusFilter"><option value="">Semua Status</option><option value="Open">Open</option><option value="Progress">Progress</option><option value="Closed">Closed</option></select>
                 </div>
                 <div class="spacer"></div>
                 <div class="table-wrapper">
                     <table id="gangguanTable">
-                        <thead><tr><th>No Tiket</th><th>No Internet</th><th>Nama</th><th>Jenis</th><th>Keterangan</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No Tiket</th><th>No Internet</th><th>Nama</th><th>Jenis</th><th>Keterangan</th><th>Status</th><th>Teknisi</th><th>Aksi</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -451,10 +454,7 @@
          * ======================== Global Init ============================
          * ================================================================= */
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check if data seeding is needed
             await checkAndSeedDatabase();
-
-            // Regular app initialization
             loadIspProfile();
             populatePaketDropdowns();
             setupDashboardListeners();
@@ -470,16 +470,9 @@
         });
         
         function setupAllRenderers() {
-            renderPasangBaruTable();
-            renderUserTable();
-            renderMikrotikTable();
-            renderPaketTable();
-            renderBillingTable();
-            renderKasTable();
-            renderTeknisiTable();
-            renderGangguanTable();
-            renderMaterialTable();
-            renderOdpTable();
+            renderPasangBaruTable(); renderUserTable(); renderMikrotikTable(); renderPaketTable();
+            renderBillingTable(); renderKasTable(); renderTeknisiTable(); renderGangguanTable();
+            renderMaterialTable(); renderOdpTable();
             document.getElementById('pbSearch').addEventListener('input', renderPasangBaruTable);
             document.getElementById('userSearch').addEventListener('input', renderUserTable);
             document.getElementById('mikrotikUserSearch').addEventListener('input', renderMikrotikTable);
@@ -497,7 +490,7 @@
             document.getElementById("paketForm").onsubmit = (e) => saveForm(e, "paket", "paketId", ["namaPaket", "bandwidth", "hargaPaket"]);
             document.getElementById("kasForm").onsubmit = (e) => saveForm(e, "kas", "kasId", ["kasTanggal", "kasKet", "kasTipe", "kasJumlah"]);
             document.getElementById("teknisiForm").onsubmit = (e) => saveForm(e, "teknisi", "teknisiId", ["namaTeknisi", "kontakTeknisi"]);
-            document.getElementById("gangguanForm").onsubmit = (e) => saveForm(e, "gangguan", "gangguanId", ["gtInternetNo", "gtNama", "gtJenis", "gtKeterangan", "ticketNo"], { status: 'Open' });
+            document.getElementById("gangguanForm").onsubmit = (e) => saveForm(e, "gangguan", "gangguanId", ["gtInternetNo", "gtNama", "gtJenis", "gtKeterangan", "ticketNo"], { status: 'Open', teknisi: '' });
             document.getElementById("materialForm").onsubmit = (e) => saveForm(e, "material", "materialId", ["namaMaterial", "satuanMaterial", "stokAwal", "usage", "stokAkhir"]);
             document.getElementById("odpForm").onsubmit = (e) => saveForm(e, "odp", "odpId", ["namaOdp", "kapasitasOdp", "lokasiOdp"]);
             document.getElementById('editIspForm').onsubmit = saveIspProfile;
@@ -582,7 +575,7 @@
                 document.getElementById("saldoKas").textContent = formatCurrency(saldo);
             });
             db.collection("billing").where("status", "==", "Belum").onSnapshot(snap => { document.getElementById("totalTunggakan").textContent = snap.size; });
-            db.collection("gangguan").where("status", "==", "Open").onSnapshot(snap => { document.getElementById("totalGangguan").textContent = snap.size; });
+            db.collection("gangguan").where("status", "!=", "Closed").onSnapshot(snap => { document.getElementById("totalGangguan").textContent = snap.size; });
         }
 
         /* =================================================================
@@ -732,16 +725,35 @@
         }
 
         function renderGangguanTable() {
-            const filterFn = (d) => { const q = document.getElementById('gangguanSearch').value.toLowerCase(); const status = document.getElementById('gangguanStatusFilter').value; const matchesSearch = !q || d.gtNama.toLowerCase().includes(q) || d.gtInternetNo.includes(q); const matchesStatus = !status || d.status === status; return matchesSearch && matchesStatus; };
+            const filterFn = (d) => { const q = document.getElementById('gangguanSearch').value.toLowerCase(); const status = document.getElementById('gangguanStatusFilter').value; const matchesSearch = !q || d.gtNama.toLowerCase().includes(q) || d.gtInternetNo.includes(q) || d.ticketNo.toLowerCase().includes(q); const matchesStatus = !status || d.status === status; return matchesSearch && matchesStatus; };
             const customRow = (d) => {
-                const actionButton = d.status === 'Open' ? `<button class="btn success mini" onclick="closeTicket('${d.id}')">Close Ticket</button>` : '';
-                return `<tr><td>${d.ticketNo || '-'}</td><td>${d.gtInternetNo}</td><td>${d.gtNama}</td><td>${d.gtJenis}</td><td>${d.gtKeterangan}</td><td>${d.status}</td><td>${actionButton} <button class="btn ghost danger mini" onclick="deleteItem('gangguan', '${d.id}')">Hapus</button></td></tr>`;
+                let actionButton = '';
+                const statusClass = d.status.toLowerCase();
+                if (d.status === 'Open') {
+                    actionButton = `<button class="btn primary mini" onclick="assignTeknisi('${d.id}')">Kerjakan</button>`;
+                } else if (d.status === 'Progress') {
+                    actionButton = `<button class="btn success mini" onclick="closeTicket('${d.id}')">Selesai</button>`;
+                }
+                return `<tr><td>${d.ticketNo || '-'}</td><td>${d.gtInternetNo}</td><td>${d.gtNama}</td><td>${d.gtJenis}</td><td>${d.gtKeterangan}</td><td><span class="badge ${statusClass}">${d.status}</span></td><td>${d.teknisi || '-'}</td><td>${actionButton} <button class="btn ghost danger mini" onclick="deleteItem('gangguan', '${d.id}')">Hapus</button></td></tr>`;
             };
             db.collection("gangguan").onSnapshot(snap => {
                 const tbody = document.querySelector("#gangguanTable tbody"); tbody.innerHTML = ""; let rows = [];
                 snap.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
                 rows.filter(filterFn).forEach(d => tbody.innerHTML += customRow(d));
             });
+        }
+
+        async function assignTeknisi(id) {
+            const teknisiSnap = await db.collection('teknisi').get();
+            if (teknisiSnap.empty) { alert("Tidak ada data teknisi. Silakan tambah di menu Teknisi."); return; }
+            const teknisiList = teknisiSnap.docs.map(doc => doc.data().namaTeknisi);
+            const teknisiName = prompt(`Pilih teknisi untuk mengerjakan tiket ini:\n\n${teknisiList.join("\n")}`);
+            if (teknisiName && teknisiList.includes(teknisiName)) {
+                await db.collection("gangguan").doc(id).update({ status: "Progress", teknisi: teknisiName });
+                alert(`Tiket sekarang dikerjakan oleh ${teknisiName}.`);
+            } else if (teknisiName) {
+                alert("Nama teknisi tidak valid.");
+            }
         }
 
         async function closeTicket(id) { if (confirm("Yakin menutup tiket gangguan ini?")) { await db.collection("gangguan").doc(id).update({ status: "Closed" }); alert("Tiket berhasil ditutup."); } }
@@ -815,143 +827,99 @@
          * ======================= DATA SEEDING SCRIPT =====================
          * ================================================================= */
         async function checkAndSeedDatabase() {
-            const seedFlag = await db.collection('_system_config').doc('seed_flag').get();
-            if (seedFlag.exists) {
-                console.log("Database already seeded. Skipping.");
-                return;
-            }
+            const seedFlag = await db.collection('_system_config').doc('seed_flag_150').get();
+            if (seedFlag.exists) { console.log("Database already seeded with 150 users. Skipping."); return; }
 
             const overlay = document.getElementById('seeding-overlay');
             const progress = document.getElementById('seeding-progress');
             overlay.classList.remove('hidden');
 
             try {
-                // --- Helper functions for random data ---
                 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
                 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-                const firstNames = ["Budi", "Adi", "Agus", "Dewi", "Eka", "Siti", "Joko", "Putri", "Rina", "Ahmad", "Nur", "Tri", "Indah", "Dian", "Bayu"];
+                const firstNames = ["Budi", "Adi", "Agus", "Dewi", "Eka", "Siti", "Joko", "Putri", "Rina", "Ahmad", "Nur", "Tri", "Indah", "Dian", "Bayu", "Rahmat", "Sari", "Wawan", "Lina", "Hadi"];
                 const lastNames = ["Santoso", "Wijaya", "Kusuma", "Lestari", "Pratama", "Nugroho", "Wahyuni", "Setiawan", "Hidayat", "Maulana"];
                 const streets = ["Merdeka", "Sudirman", "Diponegoro", "Gajah Mada", "Imam Bonjol", "Pahlawan", "Kartini", "Veteran", "Kenanga", "Melati"];
-                const cities = ["Surabaya", "Malang", "Jember", "Kediri", "Probolinggo", "Pasuruan", "Lumajang"];
+                const cities = ["Lumajang", "Jember", "Probolinggo", "Pasuruan", "Malang", "Kediri"];
                 const gangguanJenis = ["LOS", "Intermittent", "Lambat", "Lainnya"];
                 const gangguanKet = ["Kabel FO putus", "Redaman tinggi", "ONT mati", "Adaptor rusak", "Settingan error", "Port ODP kotor"];
-                const teknisiList = [{nama: "Andi"}, {nama: "Bambang"}, {nama: "Candra"}];
-
-                // --- 1. Seed Paket ---
+                
                 progress.textContent = "Membuat data paket...";
                 const paketData = [
                     { namaPaket: 'Home', bandwidth: '25MB', hargaPaket: 100000 },
                     { namaPaket: 'Game', bandwidth: '50MB', hargaPaket: 150000 },
                     { namaPaket: 'Bisnis', bandwidth: '200MB', hargaPaket: 300000 }
                 ];
-                for (const paket of paketData) { await db.collection('paket').add(paket); }
-                
-                // --- 2. Seed Teknisi ---
-                progress.textContent = "Membuat data teknisi...";
-                for(const tek of teknisiList) { await db.collection('teknisi').add({namaTeknisi: tek.nama, kontakTeknisi: `0812${randInt(10000000,99999999)}`}); }
+                let batch = db.batch();
+                for (const paket of paketData) { const ref = db.collection('paket').doc(); batch.set(ref, paket); }
+                await batch.commit();
 
-                // --- 3. Seed 1000 Users ---
+                progress.textContent = "Membuat data teknisi...";
+                const teknisiList = ["Andi", "Bambang", "Candra"];
+                batch = db.batch();
+                for(const tek of teknisiList) { const ref = db.collection('teknisi').doc(); batch.set(ref, {namaTeknisi: tek, kontakTeknisi: `0812${randInt(10000000,99999999)}`}); }
+                await batch.commit();
+
                 let users = [];
-                for (let i = 0; i < 1000; i++) {
-                    const firstName = rand(firstNames);
-                    const lastName = rand(lastNames);
-                    const fullName = `${firstName} ${lastName}`;
-                    const pppoe = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}`;
+                for (let i = 0; i < 150; i++) {
+                    const firstName = rand(firstNames); const lastName = rand(lastNames);
                     users.push({
-                        internetNo: (1906140000 + i).toString(),
-                        userName: fullName,
-                        pppoeUser: pppoe,
+                        internetNo: (1906140000 + i).toString(), userName: `${firstName} ${lastName}`,
+                        pppoeUser: `${firstName.toLowerCase()}${i}`,
                         alamat: `Jl. ${rand(streets)} No. ${randInt(1, 100)}, ${rand(cities)}`,
-                        noHp: `08${randInt(100000000, 999999999)}`,
-                        planName: rand(paketData).namaPaket,
-                        connectionStatus: Math.random() < 0.05 ? 'disabled' : 'enabled', // 5% disabled
-                        snOnt: `HWTC${randInt(10000000, 99999999)}`,
-                        odpUser: `ODP-${rand(cities).substring(0,3).toUpperCase()}-${randInt(1,50)}`,
-                        portOdp: randInt(1,8),
-                        portOlt: `0/${randInt(1,4)}/${randInt(1,16)}`,
-                        redamanOnt: `-${randInt(18, 25)} dB`,
-                        geoTag: `-8.${randInt(100,200)}, 113.${randInt(100,300)}`
+                        noHp: `08${randInt(100000000, 999999999)}`, planName: rand(paketData).namaPaket,
+                        connectionStatus: Math.random() < 0.05 ? 'disabled' : 'enabled',
+                        odpUser: `ODP-${rand(cities).substring(0,3).toUpperCase()}-${randInt(1,20)}`,
                     });
                 }
-                // Batch write users
-                let userBatch = db.batch();
+                batch = db.batch();
                 for (let i = 0; i < users.length; i++) {
-                    progress.textContent = `Membuat user ${i + 1} dari 1000...`;
-                    const userRef = db.collection('user').doc();
-                    userBatch.set(userRef, users[i]);
-                    if ((i + 1) % 400 === 0) {
-                        await userBatch.commit();
-                        userBatch = db.batch();
-                    }
+                    progress.textContent = `Membuat user ${i + 1} dari 150...`;
+                    const userRef = db.collection('user').doc(); batch.set(userRef, users[i]);
                 }
-                await userBatch.commit();
+                await batch.commit();
                 
-                // --- 4. Seed Billing for last 12 months ---
-                const allUsers = await db.collection('user').get();
-                let billingBatch = db.batch();
+                batch = db.batch();
                 let billingCounter = 0;
-                for (const userDoc of allUsers.docs) {
-                    const user = userDoc.data();
+                for (const user of users) {
                     const paket = paketData.find(p => p.namaPaket === user.planName);
                     if (!paket) continue;
-                    
                     progress.textContent = `Membuat tagihan untuk ${user.userName}...`;
-                    
                     for (let m = 0; m < 12; m++) {
-                        let date = new Date();
-                        date.setMonth(date.getMonth() - m);
+                        let date = new Date(); date.setMonth(date.getMonth() - m);
                         const period = date.toISOString().slice(0, 7);
-                        const isUnpaid = m < 2 && Math.random() < 0.2; // 20% unpaid in last 2 months
-                        
-                        const bill = {
-                            internetNo: user.internetNo,
-                            nama: user.userName,
-                            periode: period,
-                            jumlah: paket.hargaPaket,
-                            status: isUnpaid ? "Belum" : "Lunas"
-                        };
+                        const isUnpaid = m < 2 && Math.random() < 0.2;
                         const billRef = db.collection('billing').doc();
-                        billingBatch.set(billRef, bill);
+                        batch.set(billRef, { internetNo: user.internetNo, nama: user.userName, periode: period, jumlah: paket.hargaPaket, status: isUnpaid ? "Belum" : "Lunas" });
                         billingCounter++;
-                        if (billingCounter % 400 === 0) {
-                            await billingBatch.commit();
-                            billingBatch = db.batch();
-                        }
+                        if (billingCounter >= 400) { await batch.commit(); batch = db.batch(); billingCounter = 0; }
                     }
                 }
-                await billingBatch.commit();
+                await batch.commit();
 
-                // --- 5. Seed Gangguan ---
-                let gangguanBatch = db.batch();
+                batch = db.batch();
                 let ticketCounter = 1;
-                for (let i = 0; i < 300; i++) {
-                    progress.textContent = `Membuat tiket gangguan ${i + 1} dari 300...`;
-                    const randomUser = users[randInt(0, users.length - 1)];
-                    const status = Math.random() < 0.1 ? 'Open' : 'Closed'; // 10% open
+                for (let i = 0; i < 60; i++) { // 60 tickets for 150 users
+                    progress.textContent = `Membuat tiket gangguan ${i + 1} dari 60...`;
+                    const randomUser = rand(users);
+                    let status = 'Closed'; let teknisi = rand(teknisiList);
+                    const randStatus = Math.random();
+                    if (randStatus < 0.1) { status = 'Open'; teknisi = ''; } // 10% Open
+                    else if (randStatus < 0.25) { status = 'Progress'; } // 15% Progress
                     
-                    const ticket = {
-                        ticketNo: "TC" + String(ticketCounter).padStart(5, '0'),
-                        gtInternetNo: randomUser.internetNo,
-                        gtNama: randomUser.userName,
-                        gtJenis: rand(gangguanJenis),
-                        gtKeterangan: rand(gangguanKet),
-                        status: status
-                    };
                     const ticketRef = db.collection('gangguan').doc();
-                    gangguanBatch.set(ticketRef, ticket);
-                    ticketCounter++;
-                     if (i % 400 === 0) {
-                        await gangguanBatch.commit();
-                        gangguanBatch = db.batch();
-                    }
+                    batch.set(ticketRef, {
+                        ticketNo: "TC" + String(ticketCounter++).padStart(5, '0'), gtInternetNo: randomUser.internetNo,
+                        gtNama: randomUser.userName, gtJenis: rand(gangguanJenis), gtKeterangan: rand(gangguanKet),
+                        status: status, teknisi: teknisi
+                    });
                 }
-                await gangguanBatch.commit();
+                await batch.commit();
 
-                // --- Set seed flag ---
                 progress.textContent = "Finalisasi...";
-                await db.collection('_system_config').doc('seed_flag').set({ seeded: true, at: new Date() });
+                await db.collection('_system_config').doc('seed_flag_150').set({ seeded: true, at: new Date() });
                 
-                alert("Pembuatan data dummy selesai! Halaman akan dimuat ulang.");
+                alert("Pembuatan 150 data dummy selesai! Halaman akan dimuat ulang.");
                 window.location.reload();
 
             } catch (error) {
