@@ -124,6 +124,20 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentUser = null;
 
+// ================= ADMIN DEFAULT =================
+// User admin default: NIK=admin, password=admin123
+(async()=>{
+  const adminDoc = await db.collection('users').doc('admin').get();
+  if(!adminDoc.exists){
+    await db.collection('users').doc('admin').set({
+      nama: "Administrator",
+      password: "admin123",
+      role: "admin"
+    });
+    console.log("Admin default dibuat: NIK=admin, password=admin123");
+  }
+})();
+
 // ================= LOGIN =================
 async function loginNIK(){
   const nik=document.getElementById('nik').value;
