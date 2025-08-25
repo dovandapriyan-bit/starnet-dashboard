@@ -1,46 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>ISP Manager Full</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin:20px; background:#f9f9f9; }
-    h1 { color:#333; }
-    table { border-collapse: collapse; width:100%; margin-top:10px; background:white; }
-    th, td { border:1px solid #ddd; padding:8px; font-size:14px; }
-    th { background:#eee; }
-    button { padding:5px 10px; margin:2px; border-radius:5px; border:1px solid #ccc; }
-  </style>
-</head>
-<body>
-<h1>ISP Manager</h1>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starnet Manager Full</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-<h2>Pasang Baru</h2>
-<form id="formPasang">
-  Nama: <input id="nama" required>
-  Alamat: <input id="alamat" required>
-  Paket: <input id="paket" required>
-  <button type="submit">Daftar</button>
-</form>
-
-<table id="tblPasang">
-  <thead>
-    <tr><th>No Internet</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th><th>Aksi</th></tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<h2>Pengaturan</h2>
-<form id="formWebhook">
-  URL Webhook WA: <input id="waUrl" style="width:400px">
-  Auth Header: <input id="waAuth" style="width:200px">
-  <button type="submit">Simpan</button>
-</form>
-
-<script>
-  // --- Firebase Config (punya Anda) ---
   const firebaseConfig = {
     apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
     authDomain: "dnt-network-7.firebaseapp.com",
@@ -50,110 +17,207 @@
     appId: "1:761179668371:web:7d1468d0298041d4783266",
     measurementId: "G-CD3EQ350R4"
   };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+</script>
+<style>
+body{margin:0;font-family:sans-serif;background:#f4f4f4}
+#sidebar{width:220px;background:#111;color:white;height:100vh;position:fixed;transition:0.3s}
+#sidebar.minimized{width:60px}
+#sidebar .menu-item{padding:15px;cursor:pointer;border-bottom:1px solid #222}
+#sidebar .menu-item:hover{background:#333}
+#toggleSidebar{padding:10px;cursor:pointer;background:#222;text-align:center}
+.content-section{margin-left:220px;padding:20px;display:none}
+.content-section.active{display:block}
+table{width:100%;border-collapse:collapse;background:white;margin-bottom:20px}
+th,td{border:1px solid #ccc;padding:8px;text-align:left}
+button{cursor:pointer}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center}
+.modal.hidden{display:none}
+.modal-content{background:white;padding:20px;border-radius:8px;width:300px}
+</style>
+</head>
+<body>
 
-  let counterDoc = db.collection('settings').doc('counter');
+<div id="sidebar">
+  <div id="toggleSidebar">💫</div>
+  <div class="menu-item" data-target="dashboardSection">Dashboard</div>
+  <div class="menu-item" data-target="pelangganSection">Pelanggan</div>
+  <div class="menu-item" data-target="paketSection">Paket</div>
+  <div class="menu-item" data-target="billingSection">Billing</div>
+  <div class="menu-item" data-target="kasSection">Kas</div>
+  <div class="menu-item" data-target="gangguanSection">Gangguan</div>
+  <div class="menu-item" data-target="teknisiSection">Teknisi</div>
+  <div class="menu-item" data-target="odpSection">ODP</div>
+</div>
 
-  // generate nomor internet
-  async function getNextInternetNo() {
-    const res = await db.runTransaction(async (tx)=>{
-      const doc = await tx.get(counterDoc);
-      let val = 19061401;
-      if (doc.exists) val = doc.data().last+1;
-      tx.set(counterDoc,{last:val});
-      return val;
-    });
-    return res;
-  }
+<div class="content-section active" id="dashboardSection">
+  <h2>Dashboard</h2>
+  <p>Total Pelanggan: <span id="totalPelanggan">0</span></p>
+  <p>Total Billing: <span id="totalBilling">0</span></p>
+  <p>Saldo Kas: <span id="saldoKas">0</span></p>
+</div>
 
-  // simpan webhook
-  document.getElementById('formWebhook').onsubmit = async (e)=>{
-    e.preventDefault();
-    await db.collection('settings').doc('waWebhook').set({
-      url: document.getElementById('waUrl').value,
-      authHeader: document.getElementById('waAuth').value
-    });
-    alert('Webhook disimpan');
-  };
+<div class="content-section" id="pelangganSection">
+  <h2>Pelanggan <button onclick='showAddForm("pelanggan")'>Tambah</button></h2>
+  <table id="pelangganTable"><thead><tr><th>Nama</th><th>NIK</th><th>HP</th><th>Alamat</th><th>Paket</th><th>ODP</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
 
-  // daftar pasang baru
-  document.getElementById('formPasang').onsubmit = async (e)=>{
-    e.preventDefault();
-    const no = await getNextInternetNo();
-    await db.collection('pasang_baru').add({
-      internetNo:no,
-      nama: document.getElementById('nama').value,
-      alamat: document.getElementById('alamat').value,
-      paket: document.getElementById('paket').value,
-      status:'Survey',
-      created: new Date()
-    });
-    e.target.reset();
-  };
+<div class="content-section" id="paketSection">
+  <h2>Paket <button onclick='showAddForm("paket")'>Tambah</button></h2>
+  <table id="paketTable"><thead><tr><th>Nama</th><th>Harga</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
 
-  // render tabel
-  db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
-    const tb = document.querySelector('#tblPasang tbody');
-    tb.innerHTML='';
-    snap.forEach(doc=>{
-      const d=doc.data();
-      let tr=document.createElement('tr');
-      tr.innerHTML=`<td>${d.internetNo}</td><td>${d.nama}</td>
-        <td>${d.alamat}</td><td>${d.paket}</td><td>${d.status}</td>
-        <td>
-          <button onclick="kirim('${doc.id}')">Kirim Teknisi</button>
-          <button onclick="surveyOk('${doc.id}')">Survey OK</button>
-          <button onclick="instalasiOk('${doc.id}')">Instalasi OK</button>
-          <button onclick="materialOk('${doc.id}')">Material OK</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
+<div class="content-section" id="billingSection">
+  <h2>Billing <button onclick='showAddForm("billing")'>Tambah</button></h2>
+  <input placeholder="Search Pelanggan" id="searchBilling" class="border p-2 w-full mb-2">
+  <table id="billingTable"><thead><tr><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="content-section" id="kasSection">
+  <h2>Kas <button onclick='showAddForm("kas")'>Tambah</button></h2>
+  <table id="kasTable"><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="content-section" id="gangguanSection">
+  <h2>Gangguan <button onclick='showAddForm("gangguan")'>Tambah</button></h2>
+  <table id="gangguanTable"><thead><tr><th>Pelanggan</th><th>Deskripsi</th><th>TTR</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="content-section" id="teknisiSection">
+  <h2>Teknisi <button onclick='showAddForm("teknisi")'>Tambah</button></h2>
+  <table id="teknisiTable"><thead><tr><th>Nama</th><th>HP</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="content-section" id="odpSection">
+  <h2>ODP <button onclick='showAddForm("odp")'>Tambah</button></h2>
+  <table id="odpTable"><thead><tr><th>Nama</th><th>Alamat</th><th>Port</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <div id="modalContent"></div>
+    <button id="modalSaveBtn">Simpan</button>
+    <button onclick="closeModal()">Batal</button>
+  </div>
+</div>
+
+<script type="module">
+  import { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('toggleSidebar').onclick = () => sidebar.classList.toggle('minimized');
+
+  const menuItems = document.querySelectorAll('.menu-item');
+  const contentSections = document.querySelectorAll('.content-section');
+  menuItems.forEach(item => item.onclick = () => {
+    contentSections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById(item.dataset.target).classList.add('active');
   });
 
-  // aksi simulasi
-  async function kirim(id){
-    const doc = await db.collection('pasang_baru').doc(id).get();
-    const d=doc.data();
-    await sendWa({action:'survey_request',task:d, pasangId:id});
-    alert('Dikirim ke teknisi');
-  }
-  async function surveyOk(id){
-    await db.collection('pasang_baru').doc(id).update({status:'Instalasi'});
-    alert('Survey OK');
-  }
-  async function instalasiOk(id){
-    await db.collection('pasang_baru').doc(id).update({status:'Verifikasi Material'});
-    alert('Instalasi OK');
-  }
-  async function materialOk(id){
-    const ref=db.collection('pasang_baru').doc(id);
-    const doc=await ref.get();
-    const d=doc.data();
-    await db.runTransaction(async (tx)=>{
-      // contoh: kurangi stok ont
-      const mat= await tx.get(db.collection('material').doc('ont'));
-      if(mat.exists){
-        let stok=mat.data().stok||0;
-        if(stok<=0) throw "Stok habis";
-        tx.update(mat.ref,{stok:stok-1});
-      }
-      tx.update(ref,{status:'Active'});
-    });
-    // arsip
-    const d2=doc.data();
-    await db.collection('pasang_baru_archive').doc(id).set(d2);
-    await ref.delete();
-    await sendWa({action:'activated',task:d2,pasangId:id});
-    alert('Material OK & status Active');
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modalContent');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSaveBtn = document.getElementById('modalSaveBtn');
+  let currentCollection = '';
+  let editId = null;
+
+  async function updateDashboard() {
+    const pelangganSnap = await getDocs(collection(db,'pelanggan'));
+    const billingSnap = await getDocs(collection(db,'billing'));
+    const kasSnap = await getDocs(collection(db,'kas'));
+
+    document.getElementById('totalPelanggan').innerText = pelangganSnap.size;
+    let totalBilling = 0;
+    billingSnap.forEach(doc => totalBilling += Number(doc.data().jumlah || 0));
+    document.getElementById('totalBilling').innerText = totalBilling;
+
+    let saldo = 0;
+    kasSnap.forEach(doc => saldo += Number(doc.data().jumlah || 0));
+    document.getElementById('saldoKas').innerText = saldo;
   }
 
-  async function sendWa(payload){
-    const cfg = await db.collection('settings').doc('waWebhook').get();
-    if(!cfg.exists){ console.log('Webhook not set'); return; }
-    const {url,authHeader} = cfg.data();
-    fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':authHeader||''},body:JSON.stringify({taskId:Date.now(),payload})});
+  // ===== Fungsi tambah/edit modal =====
+  function showAddForm(collectionName, data=null, id=null) {
+    currentCollection = collectionName;
+    editId = id;
+    modalTitle.innerText = (data?'Edit ':'Tambah ') + collectionName;
+    modalContent.innerHTML = '';
+    let fields='';
+    switch(collectionName){
+      case 'pelanggan':
+        fields=`<input placeholder="Nama" id="fieldNama" value="${data?.nama||''}"><input placeholder="NIK" id="fieldNIK" value="${data?.nik||''}"><input placeholder="HP" id="fieldHP" value="${data?.hp||''}"><input placeholder="Alamat" id="fieldAlamat" value="${data?.alamat||''}"><input placeholder="Paket" id="fieldPaket" value="${data?.paket||''}"><input placeholder="ODP" id="fieldODP" value="${data?.odp||''}">`;
+        break;
+      case 'paket':
+        fields=`<input placeholder="Nama Paket" id="fieldNama" value="${data?.nama||''}"><input placeholder="Harga" id="fieldHarga" value="${data?.harga||''}">`;
+        break;
+      case 'billing':
+        fields=`<input placeholder="Pelanggan" id="fieldPelanggan" value="${data?.pelanggan||''}"><input placeholder="Periode" id="fieldPeriode" value="${data?.periode||''}"><input placeholder="Jumlah" id="fieldJumlah" value="${data?.jumlah||''}"><select id="fieldStatus"><option value="Belum Bayar" ${data?.status==='Belum Bayar'?'selected':''}>Belum Bayar</option><option value="Lunas" ${data?.status==='Lunas'?'selected':''}>Lunas</option></select>`;
+        break;
+      case 'kas':
+        fields=`<input placeholder="Keterangan" id="fieldKeterangan" value="${data?.keterangan||''}"><input placeholder="Jumlah" id="fieldJumlah" value="${data?.jumlah||''}"><input placeholder="Tanggal" id="fieldTanggal" value="${data?.tanggal||''}">`;
+        break;
+      case 'gangguan':
+        fields=`<input placeholder="Deskripsi" id="fieldDeskripsi" value="${data?.deskripsi||''}"><input placeholder="Pelanggan" id="fieldPelanggan" value="${data?.pelanggan||''}"><input placeholder="TTR" id="fieldTTR" value="${data?.ttr||''}"><input placeholder="Status" id="fieldStatus" value="${data?.status||''}">`;
+        break;
+      case 'teknisi':
+        fields=`<input placeholder="Nama" id="fieldNama" value="${data?.nama||''}"><input placeholder="HP" id="fieldHP" value="${data?.hp||''}">`;
+        break;
+      case 'odp':
+        fields=`<input placeholder="Nama ODP" id="fieldNama" value="${data?.nama||''}"><input placeholder="Alamat" id="fieldAlamat" value="${data?.alamat||''}"><input placeholder="Port" id="fieldPort" value="${data?.port||''}">`;
+        break;
+    }
+    modalContent.innerHTML = fields;
+    modal.classList.remove('hidden');
   }
+
+  function closeModal() { modal.classList.add('hidden'); }
+
+  modalSaveBtn.onclick = async () => {
+    try {
+      const colRef = collection(db,currentCollection);
+      let obj={};
+      switch(currentCollection){
+        case 'pelanggan': obj={nama:document.getElementById('fieldNama').value, nik:document.getElementById('fieldNIK').value, hp:document.getElementById('fieldHP').value, alamat:document.getElementById('fieldAlamat').value, paket:document.getElementById('fieldPaket').value, odp:document.getElementById('fieldODP').value}; break;
+        case 'paket': obj={nama:document.getElementById('fieldNama').value, harga:document.getElementById('fieldHarga').value}; break;
+        case 'billing': obj={pelanggan:document.getElementById('fieldPelanggan').value, periode:document.getElementById('fieldPeriode').value, jumlah:Number(document.getElementById('fieldJumlah').value), status:document.getElementById('fieldStatus').value}; break;
+        case 'kas': obj={keterangan:document.getElementById('fieldKeterangan').value, jumlah:Number(document.getElementById('fieldJumlah').value), tanggal:document.getElementById('fieldTanggal').value}; break;
+        case 'gangguan': obj={deskripsi:document.getElementById('fieldDeskripsi').value, pelanggan:document.getElementById('fieldPelanggan').value, ttr:document.getElementById('fieldTTR').value, status:document.getElementById('fieldStatus').value}; break;
+        case 'teknisi': obj={nama:document.getElementById('fieldNama').value, hp:document.getElementById('fieldHP').value}; break;
+        case 'odp': obj={nama:document.getElementById('fieldNama').value, alamat:document.getElementById('fieldAlamat').value, port:document.getElementById('fieldPort').value}; break;
+      }
+
+      if(editId){ await updateDoc(doc(db,currentCollection,editId),obj); editId=null; } else { await addDoc(colRef,obj); if(currentCollection==='billing' && obj.status==='Lunas'){ await addDoc(collection(db,'kas'),{keterangan:'Pembayaran '+obj.pelanggan,jumlah:obj.jumlah,tanggal:new Date().toLocaleDateString()}); } }
+      closeModal();
+    } catch(err){alert(err);}
+  };
+
+  async function bayarBilling(id,jumlah,pelanggan){
+    await updateDoc(doc(db,'billing',id),{status:'Lunas'});
+    await addDoc(collection(db,'kas'),{keterangan:'Pembayaran '+pelanggan, jumlah:jumlah, tanggal:new Date().toLocaleDateString()});
+  }
+
+  function renderCollection(colName, tableId){
+    const tbl=document.getElementById(tableId).querySelector('tbody');
+    onSnapshot(collection(db,colName),(snapshot)=>{
+      tbl.innerHTML='';
+      snapshot.docs.forEach(docu=>{
+        const data=docu.data();
+        let row=document.createElement('tr');
+        switch(colName){
+          case 'pelanggan': row.innerHTML=`<td>${data.nama||''}</td><td>${data.nik||''}</td><td>${data.hp||''}</td><td>${data.alamat||''}</td><td>${data.paket||''}</td><td>${data.odp||''}</td><td><button onclick='showAddForm("pelanggan",${JSON.stringify(data)},"${docu.id}")'>Edit</button><button onclick='deleteDoc(doc(db,"pelanggan","${docu.id}"))'>Hapus</button></td>`; break;
+          case 'paket': row.innerHTML=`<td>${data.nama||''}</td><td>${data.harga||''}</td><td><button onclick='showAddForm("paket",${JSON.stringify(data)},"${docu.id}")'>Edit</button><button onclick='deleteDoc(doc(db,"paket","${docu.id}"))'>Hapus</button></td>`; break;
+          case 'billing': row.innerHTML=`<td>${data.pelanggan||''}</td><td>${data.periode||''}</td><td>${data.jumlah||0}</td><td>${data.status||''}</td><td><button onclick='showAddForm("billing",${JSON.stringify(data)},"${docu.id}")'>Edit</button><button onclick='deleteDoc(doc(db,"billing","${docu.id}"))'>Hapus</button>${data.status==='Belum Bayar'?`<button onclick='bayarBilling("${docu.id}",${data.jumlah},"${data.pelanggan}")'>Bayar</button>`:''}</td>`; break;
+        }
+        tbl.appendChild(row);
+      });
+      updateDashboard();
+    });
+  }
+
+  ['pelanggan','paket','billing'].forEach(col=>renderCollection(col,col+'Table'));
+  updateDashboard();
 </script>
 </body>
 </html>
