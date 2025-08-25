@@ -1,55 +1,81 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>ISP Manager + Login NIK</title>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin:20px; background:#f9f9f9; }
-    h1 { color:#333; }
-    table { border-collapse: collapse; width:100%; margin-top:10px; background:white; }
-    th, td { border:1px solid #ddd; padding:8px; font-size:14px; }
-    th { background:#eee; }
-    button { padding:5px 10px; margin:2px; border-radius:5px; border:1px solid #ccc; cursor:pointer; }
-    input, select { padding:3px; }
-    .hidden { display:none; }
-  </style>
+<meta charset="UTF-8">
+<title>ISP Manager + Login NIK</title>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<style>
+/* ===== GLOBAL ===== */
+body { font-family: 'Segoe UI', sans-serif; margin:0; background:#f0f2f5; }
+h1,h2 { color:#1f3b6f; }
+button { cursor:pointer; border:none; border-radius:6px; padding:6px 12px; transition:0.3s; }
+button:hover { opacity:0.85; }
+input, select { border-radius:6px; border:1px solid #ccc; padding:8px; outline:none; transition:0.3s; }
+input:focus, select:focus { border-color:#1f3b6f; }
+
+/* ===== LOGIN ===== */
+#loginPage { display:flex; justify-content:center; align-items:center; height:100vh; background:linear-gradient(135deg,#1f3b6f,#4b6cb7); }
+#loginBox { background:white; padding:40px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.2); width:360px; text-align:center; }
+#loginBox h2 { margin-bottom:25px; }
+#loginBox input { width:100%; margin-bottom:15px; font-size:14px; }
+#loginBox button { width:100%; background:#1f3b6f; color:white; font-weight:bold; margin-top:5px; }
+#loginBox p.info { font-size:12px; color:#666; margin-top:20px; }
+
+/* ===== DASHBOARD ===== */
+#appPage { display:none; padding:20px; }
+#appPage h2 { margin-top:25px; }
+table { border-collapse:collapse; width:100%; margin-top:10px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:0.3s; }
+th, td { border:1px solid #ddd; padding:10px; font-size:14px; text-align:center; transition:0.3s; }
+th { background:#1f3b6f; color:white; }
+tr:hover { background: #e3f2fd; } /* Highlight baris saat hover */
+tr td button { transition: transform 0.2s; }
+tr td button:hover { transform: translateY(-2px); } /* Tombol naik saat hover */
+.hidden { display:none; }
+.btn-primary { background:#1f3b6f; color:white; }
+.btn-success { background:#28a745; color:white; }
+.btn-warning { background:#ffc107; color:white; }
+.btn-danger { background:#dc3545; color:white; }
+form { margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; }
+form input, form select { flex:1; min-width:100px; }
+</style>
 </head>
 <body>
 
-<h1>ISP Manager</h1>
-
 <!-- ================= LOGIN PAGE ================= -->
 <div id="loginPage">
-  <h2>Login Karyawan</h2>
-  <input id="nik" placeholder="NIK">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="loginNIK()">Login</button>
-  <p id="loginMsg" style="color:red"></p>
+  <div id="loginBox">
+    <h2>Login Karyawan</h2>
+    <input id="nik" placeholder="NIK">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="loginNIK()">Login</button>
+    <p id="loginMsg" style="color:red;margin-top:10px;font-size:13px;"></p>
+    <p class="info">by Dnt Grup - Starnet💫</p>
+    <p class="info">Email: dnt.network.lmj@gmail.com</p>
+  </div>
 </div>
 
 <!-- ================= DASHBOARD ================= -->
-<div id="appPage" class="hidden">
-  <p>Halo, <span id="userName"></span> (<span id="userRole"></span>)</p>
-  <button onclick="logout()">Logout</button>
+<div id="appPage">
+  <p>Halo, <span id="userName"></span> (<span id="userRole"></span>) 
+    <button onclick="logout()" style="float:right;" class="btn-warning">Logout</button>
+  </p>
 
   <!-- ================= ADMIN PANEL ================= -->
   <div id="adminPanel" class="hidden">
     <h2>Manajemen Karyawan</h2>
     <form id="formKaryawan">
-      NIK: <input id="nikBaru" required>
-      Nama: <input id="namaBaru" required>
-      Password: <input id="passBaru" required>
-      Role: 
+      <input id="nikBaru" placeholder="NIK" required>
+      <input id="namaBaru" placeholder="Nama" required>
+      <input id="passBaru" placeholder="Password" required>
       <select id="roleBaru">
         <option value="teknisi">Teknisi</option>
         <option value="admin">Admin</option>
       </select>
-      <button type="submit">Tambah Karyawan</button>
+      <button type="submit" class="btn-primary">Tambah Karyawan</button>
     </form>
-
     <table id="tblKaryawan">
       <thead>
         <tr><th>NIK</th><th>Nama</th><th>Role</th><th>Aksi</th></tr>
@@ -61,10 +87,10 @@
   <!-- ================= PASANG BARU ================= -->
   <h2>Pasang Baru</h2>
   <form id="formPasang">
-    Nama: <input id="nama" required>
-    Alamat: <input id="alamat" required>
-    Paket: <input id="paket" required>
-    <button type="submit">Daftar</button>
+    <input id="nama" placeholder="Nama" required>
+    <input id="alamat" placeholder="Alamat" required>
+    <input id="paket" placeholder="Paket" required>
+    <button type="submit" class="btn-primary">Daftar</button>
   </form>
 
   <table id="tblPasang">
@@ -77,204 +103,172 @@
   <!-- ================= PENGATURAN WEBHOOK ================= -->
   <h2>Pengaturan</h2>
   <form id="formWebhook">
-    URL Webhook WA: <input id="waUrl" style="width:400px">
-    Auth Header: <input id="waAuth" style="width:200px">
-    <button type="submit">Simpan</button>
+    <input id="waUrl" placeholder="URL Webhook WA" style="flex:3;">
+    <input id="waAuth" placeholder="Auth Header" style="flex:1;">
+    <button type="submit" class="btn-primary">Simpan</button>
   </form>
 </div>
 
 <script>
-  // ================= FIREBASE CONFIG =================
-  const firebaseConfig = {
-    apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
-    authDomain: "dnt-network-7.firebaseapp.com",
-    projectId: "dnt-network-7",
-    storageBucket: "dnt-network-7.firebasestorage.app",
-    messagingSenderId: "761179668371",
-    appId: "1:761179668371:web:7d1468d0298041d4783266",
-    measurementId: "G-CD3EQ350R4"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  let currentUser = null;
+// ================= FIREBASE CONFIG =================
+const firebaseConfig = {
+  apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+  authDomain: "dnt-network-7.firebaseapp.com",
+  projectId: "dnt-network-7",
+  storageBucket: "dnt-network-7.firebasestorage.app",
+  messagingSenderId: "761179668371",
+  appId: "1:761179668371:web:7d1468d0298041d4783266",
+  measurementId: "G-CD3EQ350R4"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let currentUser = null;
 
-  // ================= LOGIN =================
-  async function loginNIK(){
-    const nik=document.getElementById('nik').value;
-    const pass=document.getElementById('password').value;
-    const userDoc=await db.collection('users').doc(nik).get();
-    if(!userDoc.exists){
-      document.getElementById('loginMsg').innerText="NIK tidak ditemukan";
-      return;
-    }
-    const data=userDoc.data();
-    if(data.password!==pass){
-      document.getElementById('loginMsg').innerText="Password salah";
-      return;
-    }
-    currentUser={nik:nik,...data};
-    document.getElementById('loginPage').classList.add('hidden');
-    document.getElementById('appPage').classList.remove('hidden');
-    document.getElementById('userName').innerText=data.nama;
-    document.getElementById('userRole').innerText=data.role||'-';
+// ================= LOGIN =================
+async function loginNIK(){
+  const nik=document.getElementById('nik').value;
+  const pass=document.getElementById('password').value;
+  const userDoc=await db.collection('users').doc(nik).get();
+  if(!userDoc.exists){ document.getElementById('loginMsg').innerText="NIK tidak ditemukan"; return; }
+  const data=userDoc.data();
+  if(data.password!==pass){ document.getElementById('loginMsg').innerText="Password salah"; return; }
+  currentUser={nik:nik,...data};
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('appPage').style.display='block';
+  document.getElementById('userName').innerText=data.nama;
+  document.getElementById('userRole').innerText=data.role||'-';
+  if(data.role==="admin") document.getElementById('adminPanel').classList.remove('hidden');
+  else document.getElementById('adminPanel').classList.add('hidden');
+  loadKaryawan();
+}
 
-    // Jika admin, tampilkan panel karyawan
-    if(data.role==="admin"){
-      document.getElementById('adminPanel').classList.remove('hidden');
-      loadKaryawan();
-    }
-  }
+function logout(){
+  currentUser=null;
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('appPage').style.display='none';
+  document.getElementById('adminPanel').classList.add('hidden');
+}
 
-  function logout(){
-    currentUser=null;
-    document.getElementById('loginPage').classList.remove('hidden');
-    document.getElementById('appPage').classList.add('hidden');
-    document.getElementById('adminPanel').classList.add('hidden');
-  }
+// ================= TAMBAH KARYAWAN =================
+document.getElementById('formKaryawan').onsubmit = async e=>{
+  e.preventDefault();
+  const nik=document.getElementById('nikBaru').value;
+  const nama=document.getElementById('namaBaru').value;
+  const pass=document.getElementById('passBaru').value;
+  const role=document.getElementById('roleBaru').value;
+  await db.collection('users').doc(nik).set({nama, password:pass, role});
+  alert("Karyawan ditambahkan");
+  e.target.reset();
+  loadKaryawan();
+};
 
-  // ================= TAMBAH KARYAWAN =================
-  document.getElementById('formKaryawan').onsubmit = async (e)=>{
-    e.preventDefault();
-    const nik=document.getElementById('nikBaru').value;
-    const nama=document.getElementById('namaBaru').value;
-    const pass=document.getElementById('passBaru').value;
-    const role=document.getElementById('roleBaru').value;
-    await db.collection('users').doc(nik).set({nama, password:pass, role});
-    alert("Karyawan ditambahkan");
-    e.target.reset();
-    loadKaryawan();
-  };
-
-  // ================= LOAD KARYAWAN (dengan tombol EDIT & HAPUS) =================
-  async function loadKaryawan(){
-    const snap = await db.collection('users').get();
-    const tb = document.querySelector('#tblKaryawan tbody');
-    tb.innerHTML = '';
-    snap.forEach(doc => {
-      const d = doc.data();
-      let tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${doc.id}</td>
-        <td>${d.nama}</td>
-        <td>${d.role}</td>
-        <td>
-          <button onclick="editKaryawan('${doc.id}','${d.nama}','${d.password}','${d.role}')">Edit</button>
-          <button onclick="hapusKaryawan('${doc.id}')">Hapus</button>
-        </td>
-      `;
-      tb.appendChild(tr);
-    });
-  }
-
-  // ================= HAPUS KARYAWAN =================
-  async function hapusKaryawan(nik) {
-    if (!confirm("Yakin ingin menghapus karyawan ini?")) return;
-    if(currentUser.nik === nik){ alert("Tidak bisa menghapus diri sendiri!"); return; }
-    try {
-      await db.collection('users').doc(nik).delete();
-      alert("Karyawan berhasil dihapus");
-      loadKaryawan();
-    } catch (err) {
-      alert("Gagal menghapus karyawan: " + err);
-    }
-  }
-
-  // ================= EDIT KARYAWAN =================
-  async function editKaryawan(nik, nama, pass, role){
-    const newNama = prompt("Nama:", nama);
-    if(newNama===null) return;
-    const newPass = prompt("Password:", pass);
-    if(newPass===null) return;
-    const newRole = prompt("Role (admin/teknisi):", role);
-    if(newRole===null) return;
-    await db.collection('users').doc(nik).update({
-      nama: newNama,
-      password: newPass,
-      role: newRole
-    });
-    alert("Karyawan diperbarui");
-    loadKaryawan();
-  }
-
-  // ================= PASANG BARU =================
-  let counterDoc = db.collection('settings').doc('counter');
-
-  async function getNextInternetNo() {
-    const res = await db.runTransaction(async (tx)=>{
-      const doc = await tx.get(counterDoc);
-      let val = 19061401;
-      if (doc.exists) val = doc.data().last+1;
-      tx.set(counterDoc,{last:val});
-      return val;
-    });
-    return res;
-  }
-
-  document.getElementById('formPasang').onsubmit = async (e)=>{
-    e.preventDefault();
-    if(!currentUser){ alert("Harus login dulu"); return; }
-    const no = await getNextInternetNo();
-    await db.collection('pasang_baru').add({
-      internetNo:no,
-      nama: document.getElementById('nama').value,
-      alamat: document.getElementById('alamat').value,
-      paket: document.getElementById('paket').value,
-      status:'Survey',
-      created: new Date(),
-      createdBy: currentUser.nik
-    });
-    e.target.reset();
-  };
-
-  // ================= WEBSOCKET / WEBHOOK =================
-  document.getElementById('formWebhook').onsubmit = async (e)=>{
-    e.preventDefault();
-    await db.collection('settings').doc('waWebhook').set({
-      url: document.getElementById('waUrl').value,
-      authHeader: document.getElementById('waAuth').value
-    });
-    alert('Webhook disimpan');
-  };
-
-  // ================= TABEL PASANG BARU =================
-  db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
-    const tb = document.querySelector('#tblPasang tbody');
-    tb.innerHTML='';
-    snap.forEach(doc=>{
-      const d=doc.data();
-      let tr=document.createElement('tr');
-      tr.innerHTML=`<td>${d.internetNo}</td><td>${d.nama}</td>
-        <td>${d.alamat}</td><td>${d.paket}</td><td>${d.status}</td>
-        <td>
-          <button onclick="surveyOk('${doc.id}')">Survey OK</button>
-          <button onclick="instalasiOk('${doc.id}')">Instalasi OK</button>
-          <button onclick="materialOk('${doc.id}')">Material OK</button>
-        </td>`;
-      tb.appendChild(tr);
-    });
-  });
-
-  async function surveyOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Instalasi'}); }
-  async function instalasiOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Verifikasi Material'}); }
-  async function materialOk(id){
-    const ref=db.collection('pasang_baru').doc(id);
-    const doc=await ref.get();
+async function loadKaryawan(){
+  const snap = await db.collection('users').get();
+  const tb = document.querySelector('#tblKaryawan tbody');
+  tb.innerHTML = '';
+  snap.forEach(doc=>{
     const d=doc.data();
-    await db.runTransaction(async (tx)=>{
-      const mat= await tx.get(db.collection('material').doc('ont'));
-      if(mat.exists){
-        let stok=mat.data().stok||0;
-        if(stok<=0) throw "Stok habis";
-        tx.update(mat.ref,{stok:stok-1});
-      }
-      tx.update(ref,{status:'Active'});
-    });
-    const d2=doc.data();
-    await db.collection('pasang_baru_archive').doc(id).set(d2);
-    await ref.delete();
-  }
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td>${doc.id}</td><td>${d.nama}</td><td>${d.role}</td>
+      <td>
+        <button onclick="editKaryawan('${doc.id}','${d.nama}','${d.password}','${d.role}')" class="btn-warning">Edit</button>
+        <button onclick="hapusKaryawan('${doc.id}')" class="btn-danger">Hapus</button>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
 
+async function hapusKaryawan(nik){
+  if(!confirm("Yakin ingin menghapus karyawan ini?")) return;
+  if(currentUser.nik===nik){ alert("Tidak bisa menghapus diri sendiri!"); return; }
+  await db.collection('users').doc(nik).delete();
+  loadKaryawan();
+}
+
+async function editKaryawan(nik,nama,pass,role){
+  const newNama=prompt("Nama:",nama); if(newNama===null) return;
+  const newPass=prompt("Password:",pass); if(newPass===null) return;
+  const newRole=prompt("Role (admin/teknisi):",role); if(newRole===null) return;
+  await db.collection('users').doc(nik).update({nama:newNama,password:newPass,role:newRole});
+  loadKaryawan();
+}
+
+// ================= PASANG BARU =================
+let counterDoc=db.collection('settings').doc('counter');
+async function getNextInternetNo(){
+  const res = await db.runTransaction(async tx=>{
+    const doc = await tx.get(counterDoc);
+    let val = 19061401;
+    if(doc.exists) val = doc.data().last + 1;
+    tx.set(counterDoc,{last:val});
+    return val;
+  });
+  return res;
+}
+
+document.getElementById('formPasang').onsubmit = async e=>{
+  e.preventDefault();
+  if(!currentUser){ alert("Harus login dulu"); return; }
+  const no = await getNextInternetNo();
+  await db.collection('pasang_baru').add({
+    internetNo:no,
+    nama: document.getElementById('nama').value,
+    alamat: document.getElementById('alamat').value,
+    paket: document.getElementById('paket').value,
+    status:'Survey',
+    created: new Date(),
+    createdBy: currentUser.nik
+  });
+  e.target.reset();
+};
+
+// ================= WEBSOCKET / WEBHOOK =================
+document.getElementById('formWebhook').onsubmit = async e=>{
+  e.preventDefault();
+  await db.collection('settings').doc('waWebhook').set({
+    url: document.getElementById('waUrl').value,
+    authHeader: document.getElementById('waAuth').value
+  });
+  alert('Webhook disimpan');
+};
+
+// ================= TABEL PASANG BARU =================
+db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
+  const tb = document.querySelector('#tblPasang tbody');
+  tb.innerHTML='';
+  snap.forEach(doc=>{
+    const d=doc.data();
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.internetNo}</td><td>${d.nama}</td>
+      <td>${d.alamat}</td><td>${d.paket}</td><td>${d.status}</td>
+      <td>
+        <button onclick="surveyOk('${doc.id}')" class="btn-success">Survey OK</button>
+        <button onclick="instalasiOk('${doc.id}')" class="btn-warning">Instalasi OK</button>
+        <button onclick="materialOk('${doc.id}')" class="btn-primary">Material OK</button>
+      </td>`;
+    tb.appendChild(tr);
+  });
+});
+
+async function surveyOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Instalasi'}); }
+async function instalasiOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Verifikasi Material'}); }
+
+async function materialOk(id){
+  const ref=db.collection('pasang_baru').doc(id);
+  const doc=await ref.get();
+  await db.runTransaction(async tx=>{
+    const mat= await tx.get(db.collection('material').doc('ont'));
+    if(mat.exists){
+      let stok=mat.data().stok||0;
+      if(stok<=0) throw "Stok habis";
+      tx.update(mat.ref,{stok:stok-1});
+    }
+    tx.update(ref,{status:'Active'});
+  });
+  const d2=doc.data();
+  await db.collection('pasang_baru_archive').doc(id).set(d2);
+  await ref.delete();
+}
 </script>
 </body>
 </html>
-
