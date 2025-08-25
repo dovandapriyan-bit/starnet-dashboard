@@ -8,7 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <style>
-/* ===== GLOBAL ===== */
 body { font-family: 'Segoe UI', sans-serif; margin:0; background:#f0f2f5; }
 h1,h2 { color:#1f3b6f; }
 button { cursor:pointer; border:none; border-radius:6px; padding:6px 12px; transition:0.3s; }
@@ -16,7 +15,7 @@ button:hover { opacity:0.85; }
 input, select { border-radius:6px; border:1px solid #ccc; padding:8px; outline:none; transition:0.3s; }
 input:focus, select:focus { border-color:#1f3b6f; }
 
-/* ===== LOGIN ===== */
+/* LOGIN PAGE */
 #loginPage { display:flex; justify-content:center; align-items:center; height:100vh; background:linear-gradient(135deg,#1f3b6f,#4b6cb7); }
 #loginBox { background:white; padding:40px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.2); width:360px; text-align:center; }
 #loginBox h2 { margin-bottom:25px; }
@@ -24,15 +23,15 @@ input:focus, select:focus { border-color:#1f3b6f; }
 #loginBox button { width:100%; background:#1f3b6f; color:white; font-weight:bold; margin-top:5px; }
 #loginBox p.info { font-size:12px; color:#666; margin-top:20px; }
 
-/* ===== DASHBOARD ===== */
+/* DASHBOARD */
 #appPage { display:none; padding:20px; }
 #appPage h2 { margin-top:25px; }
 table { border-collapse:collapse; width:100%; margin-top:10px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:0.3s; }
 th, td { border:1px solid #ddd; padding:10px; font-size:14px; text-align:center; transition:0.3s; }
 th { background:#1f3b6f; color:white; }
-tr:hover { background: #e3f2fd; } /* Highlight baris saat hover */
+tr:hover { background: #e3f2fd; }
 tr td button { transition: transform 0.2s; }
-tr td button:hover { transform: translateY(-2px); } /* Tombol naik saat hover */
+tr td button:hover { transform: translateY(-2px); }
 .hidden { display:none; }
 .btn-primary { background:#1f3b6f; color:white; }
 .btn-success { background:#28a745; color:white; }
@@ -44,7 +43,7 @@ form input, form select { flex:1; min-width:100px; }
 </head>
 <body>
 
-<!-- ================= LOGIN PAGE ================= -->
+<!-- LOGIN PAGE -->
 <div id="loginPage">
   <div id="loginBox">
     <h2>Login Karyawan</h2>
@@ -57,13 +56,13 @@ form input, form select { flex:1; min-width:100px; }
   </div>
 </div>
 
-<!-- ================= DASHBOARD ================= -->
+<!-- DASHBOARD -->
 <div id="appPage">
   <p>Halo, <span id="userName"></span> (<span id="userRole"></span>) 
     <button onclick="logout()" style="float:right;" class="btn-warning">Logout</button>
   </p>
 
-  <!-- ================= ADMIN PANEL ================= -->
+  <!-- ADMIN PANEL -->
   <div id="adminPanel" class="hidden">
     <h2>Manajemen Karyawan</h2>
     <form id="formKaryawan">
@@ -84,7 +83,7 @@ form input, form select { flex:1; min-width:100px; }
     </table>
   </div>
 
-  <!-- ================= PASANG BARU ================= -->
+  <!-- PASANG BARU -->
   <h2>Pasang Baru</h2>
   <form id="formPasang">
     <input id="nama" placeholder="Nama" required>
@@ -100,7 +99,7 @@ form input, form select { flex:1; min-width:100px; }
     <tbody></tbody>
   </table>
 
-  <!-- ================= PENGATURAN WEBHOOK ================= -->
+  <!-- PENGATURAN WEBHOOK -->
   <h2>Pengaturan</h2>
   <form id="formWebhook">
     <input id="waUrl" placeholder="URL Webhook WA" style="flex:3;">
@@ -110,7 +109,7 @@ form input, form select { flex:1; min-width:100px; }
 </div>
 
 <script>
-// ================= FIREBASE CONFIG =================
+// FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
   authDomain: "dnt-network-7.firebaseapp.com",
@@ -124,12 +123,12 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentUser = null;
 
-// ================= ADMIN DEFAULT =================
-// User admin default: NIK=admin, password=admin123
+// ADMIN DEFAULT
 (async()=>{
-  const adminDoc = await db.collection('users').doc('admin').get();
+  const adminRef = db.collection('users').doc('admin');
+  const adminDoc = await adminRef.get();
   if(!adminDoc.exists){
-    await db.collection('users').doc('admin').set({
+    await adminRef.set({
       nama: "Administrator",
       password: "admin123",
       role: "admin"
@@ -138,10 +137,10 @@ let currentUser = null;
   }
 })();
 
-// ================= LOGIN =================
+// LOGIN
 async function loginNIK(){
-  const nik=document.getElementById('nik').value;
-  const pass=document.getElementById('password').value;
+  const nik=document.getElementById('nik').value.trim().toLowerCase();
+  const pass=document.getElementById('password').value.trim();
   const userDoc=await db.collection('users').doc(nik).get();
   if(!userDoc.exists){ document.getElementById('loginMsg').innerText="NIK tidak ditemukan"; return; }
   const data=userDoc.data();
@@ -163,12 +162,12 @@ function logout(){
   document.getElementById('adminPanel').classList.add('hidden');
 }
 
-// ================= TAMBAH KARYAWAN =================
+// TAMBAH KARYAWAN
 document.getElementById('formKaryawan').onsubmit = async e=>{
   e.preventDefault();
-  const nik=document.getElementById('nikBaru').value;
-  const nama=document.getElementById('namaBaru').value;
-  const pass=document.getElementById('passBaru').value;
+  const nik=document.getElementById('nikBaru').value.trim().toLowerCase();
+  const nama=document.getElementById('namaBaru').value.trim();
+  const pass=document.getElementById('passBaru').value.trim();
   const role=document.getElementById('roleBaru').value;
   await db.collection('users').doc(nik).set({nama, password:pass, role});
   alert("Karyawan ditambahkan");
@@ -207,7 +206,7 @@ async function editKaryawan(nik,nama,pass,role){
   loadKaryawan();
 }
 
-// ================= PASANG BARU =================
+// PASANG BARU
 let counterDoc=db.collection('settings').doc('counter');
 async function getNextInternetNo(){
   const res = await db.runTransaction(async tx=>{
@@ -236,7 +235,7 @@ document.getElementById('formPasang').onsubmit = async e=>{
   e.target.reset();
 };
 
-// ================= WEBSOCKET / WEBHOOK =================
+// WEBHOOK
 document.getElementById('formWebhook').onsubmit = async e=>{
   e.preventDefault();
   await db.collection('settings').doc('waWebhook').set({
@@ -246,7 +245,7 @@ document.getElementById('formWebhook').onsubmit = async e=>{
   alert('Webhook disimpan');
 };
 
-// ================= TABEL PASANG BARU =================
+// TABEL PASANG BARU
 db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
   const tb = document.querySelector('#tblPasang tbody');
   tb.innerHTML='';
