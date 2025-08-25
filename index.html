@@ -1,14 +1,90 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Starnet Manager Dashboard Full CRUD</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+  <meta charset="UTF-8">
+  <title>ISP Manager + Login NIK</title>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin:20px; background:#f9f9f9; }
+    h1 { color:#333; }
+    table { border-collapse: collapse; width:100%; margin-top:10px; background:white; }
+    th, td { border:1px solid #ddd; padding:8px; font-size:14px; }
+    th { background:#eee; }
+    button { padding:5px 10px; margin:2px; border-radius:5px; border:1px solid #ccc; cursor:pointer; }
+    input, select { padding:3px; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
 
+<h1>ISP Manager</h1>
+
+<!-- ================= LOGIN PAGE ================= -->
+<div id="loginPage">
+  <h2>Login Karyawan</h2>
+  <input id="nik" placeholder="NIK">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="loginNIK()">Login</button>
+  <p id="loginMsg" style="color:red"></p>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="appPage" class="hidden">
+  <p>Halo, <span id="userName"></span> (<span id="userRole"></span>)</p>
+  <button onclick="logout()">Logout</button>
+
+  <!-- ================= ADMIN PANEL ================= -->
+  <div id="adminPanel" class="hidden">
+    <h2>Manajemen Karyawan</h2>
+    <form id="formKaryawan">
+      NIK: <input id="nikBaru" required>
+      Nama: <input id="namaBaru" required>
+      Password: <input id="passBaru" required>
+      Role: 
+      <select id="roleBaru">
+        <option value="teknisi">Teknisi</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button type="submit">Tambah Karyawan</button>
+    </form>
+
+    <table id="tblKaryawan">
+      <thead>
+        <tr><th>NIK</th><th>Nama</th><th>Role</th><th>Aksi</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ================= PASANG BARU ================= -->
+  <h2>Pasang Baru</h2>
+  <form id="formPasang">
+    Nama: <input id="nama" required>
+    Alamat: <input id="alamat" required>
+    Paket: <input id="paket" required>
+    <button type="submit">Daftar</button>
+  </form>
+
+  <table id="tblPasang">
+    <thead>
+      <tr><th>No Internet</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th><th>Aksi</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- ================= PENGATURAN WEBHOOK ================= -->
+  <h2>Pengaturan</h2>
+  <form id="formWebhook">
+    URL Webhook WA: <input id="waUrl" style="width:400px">
+    Auth Header: <input id="waAuth" style="width:200px">
+    <button type="submit">Simpan</button>
+  </form>
+</div>
+
+<script>
+  // ================= FIREBASE CONFIG =================
   const firebaseConfig = {
     apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
     authDomain: "dnt-network-7.firebaseapp.com",
@@ -18,311 +94,187 @@
     appId: "1:761179668371:web:7d1468d0298041d4783266",
     measurementId: "G-CD3EQ350R4"
   };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  let currentUser = null;
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.db = db;
-  window.collection = collection;
-  window.addDoc = addDoc;
-  window.updateDoc = updateDoc;
-  window.deleteDoc = deleteDoc;
-  window.doc = doc;
-  window.onSnapshot = onSnapshot;
-</script>
-<style>
-  body { font-family: 'Inter', sans-serif; }
-  .sidebar { transition: all 0.3s; }
-  .sidebar.minimized { width: 60px; }
-  .sidebar.minimized .menu-text { display: none; }
-  .table-container { max-height: 500px; overflow-y: auto; }
-</style>
-</head>
-<body class="bg-gray-100">
-
-<div class="flex h-screen">
-  <!-- Sidebar -->
-  <div id="sidebar" class="sidebar bg-gray-800 text-white w-64 p-4 flex flex-col">
-    <div class="flex items-center justify-between mb-6">
-      <span class="font-bold text-xl">💫 Starnet</span>
-      <button id="toggleSidebar" class="text-gray-400 hover:text-white">☰</button>
-    </div>
-    <nav class="flex flex-col gap-2">
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="dashboard"><span>📊</span><span class="menu-text">Dashboard</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="pelanggan"><span>👤</span><span class="menu-text">Pelanggan</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="paket"><span>📦</span><span class="menu-text">Paket</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="billing"><span>💰</span><span class="menu-text">Billing</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="kas"><span>🧾</span><span class="menu-text">Kas</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="gangguan"><span>⚠️</span><span class="menu-text">Gangguan</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="teknisi"><span>🛠️</span><span class="menu-text">Teknisi</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="odp"><span>🔌</span><span class="menu-text">ODP</span></button>
-      <button class="menu-item flex items-center gap-2 p-2 hover:bg-gray-700" data-target="pengaturan"><span>⚙️</span><span class="menu-text">Pengaturan</span></button>
-    </nav>
-  </div>
-
-  <!-- Main Content -->
-  <div class="flex-1 p-6 overflow-auto">
-    <!-- Dashboard -->
-    <div id="dashboard" class="content-section">
-      <h2 class="text-2xl font-bold mb-4">Dashboard</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-4 rounded shadow">Total Pelanggan: <span id="totalPelanggan">0</span></div>
-        <div class="bg-white p-4 rounded shadow">Total Billing: <span id="totalBilling">0</span></div>
-        <div class="bg-white p-4 rounded shadow">Saldo Kas: <span id="saldoKas">0</span></div>
-      </div>
-    </div>
-
-    <!-- Semua menu -->
-    <div id="pelanggan" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">Pelanggan</h2>
-      <button onclick="showAddForm('pelanggan')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah Pelanggan</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="pelangganTable">
-          <thead class="bg-gray-200"><tr><th>Nama</th><th>NIK</th><th>HP</th><th>Alamat</th><th>Paket</th><th>ODP</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Paket -->
-    <div id="paket" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">Paket</h2>
-      <button onclick="showAddForm('paket')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah Paket</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="paketTable">
-          <thead class="bg-gray-200"><tr><th>Nama Paket</th><th>Harga</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Billing -->
-    <div id="billing" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">Billing</h2>
-      <button onclick="showAddForm('billing')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah Billing</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="billingTable">
-          <thead class="bg-gray-200"><tr><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Kas -->
-    <div id="kas" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">Kas</h2>
-      <button onclick="showAddForm('kas')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah Kas</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="kasTable">
-          <thead class="bg-gray-200"><tr><th>Keterangan</th><th>Jumlah</th><th>Tanggal</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Gangguan -->
-    <div id="gangguan" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">Gangguan</h2>
-      <button onclick="showAddForm('gangguan')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah Gangguan</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="gangguanTable">
-          <thead class="bg-gray-200"><tr><th>Deskripsi</th><th>Pelanggan</th><th>TTR</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Teknisi -->
-    <div id="teknisi" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">Teknisi</h2>
-      <button onclick="showAddForm('teknisi')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah Teknisi</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="teknisiTable">
-          <thead class="bg-gray-200"><tr><th>Nama</th><th>HP</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ODP -->
-    <div id="odp" class="content-section hidden">
-      <h2 class="text-xl font-bold mb-2">ODP</h2>
-      <button onclick="showAddForm('odp')" class="mb-2 px-4 py-2 bg-green-500 text-white rounded">Tambah ODP</button>
-      <div class="table-container overflow-auto">
-        <table class="min-w-full bg-white" id="odpTable">
-          <thead class="bg-gray-200"><tr><th>Nama ODP</th><th>Alamat</th><th>Port</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- Modal -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-  <div class="bg-white p-6 rounded w-96">
-    <h3 id="modalTitle" class="text-xl font-bold mb-4">Tambah Data</h3>
-    <div id="modalContent"></div>
-    <div class="mt-4 flex justify-end gap-2">
-      <button onclick="closeModal()" class="px-4 py-2 rounded bg-gray-300">Batal</button>
-      <button id="modalSaveBtn" class="px-4 py-2 rounded bg-blue-500 text-white">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  const sidebar = document.getElementById('sidebar');
-  document.getElementById('toggleSidebar').onclick = () => sidebar.classList.toggle('minimized');
-
-  const menuItems = document.querySelectorAll('.menu-item');
-  const contentSections = document.querySelectorAll('.content-section');
-  menuItems.forEach(item => item.onclick = () => {
-    contentSections.forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(item.dataset.target).classList.remove('hidden');
-  });
-
-  const modal = document.getElementById('modal');
-  const modalContent = document.getElementById('modalContent');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalSaveBtn = document.getElementById('modalSaveBtn');
-  let currentCollection = '';
-  let editId = null;
-
-  function showAddForm(collectionName, data=null, id=null) {
-    currentCollection = collectionName;
-    editId = id;
-    modalTitle.innerText = (data?'Edit ':'Tambah ') + collectionName;
-    modalContent.innerHTML = '';
-    let fields='';
-    switch(collectionName){
-      case 'pelanggan':
-        fields=`<input placeholder="Nama" id="fieldNama" class="border p-2 w-full mb-2" value="${data?.nama||''}">
-                <input placeholder="NIK" id="fieldNIK" class="border p-2 w-full mb-2" value="${data?.nik||''}">
-                <input placeholder="HP" id="fieldHP" class="border p-2 w-full mb-2" value="${data?.hp||''}">
-                <input placeholder="Alamat" id="fieldAlamat" class="border p-2 w-full mb-2" value="${data?.alamat||''}">
-                <input placeholder="Paket" id="fieldPaket" class="border p-2 w-full mb-2" value="${data?.paket||''}">
-                <input placeholder="ODP" id="fieldODP" class="border p-2 w-full mb-2" value="${data?.odp||''}">`;
-        break;
-      case 'paket':
-        fields=`<input placeholder="Nama Paket" id="fieldNama" class="border p-2 w-full mb-2" value="${data?.nama||''}">
-                <input placeholder="Harga" id="fieldHarga" class="border p-2 w-full mb-2" value="${data?.harga||''}">`;
-        break;
-      case 'billing':
-        fields=`<input placeholder="Pelanggan" id="fieldPelanggan" class="border p-2 w-full mb-2" value="${data?.pelanggan||''}">
-                <input placeholder="Periode" id="fieldPeriode" class="border p-2 w-full mb-2" value="${data?.periode||''}">
-                <input placeholder="Jumlah" id="fieldJumlah" class="border p-2 w-full mb-2" value="${data?.jumlah||''}">
-                <input placeholder="Status" id="fieldStatus" class="border p-2 w-full mb-2" value="${data?.status||''}">`;
-        break;
-      case 'kas':
-        fields=`<input placeholder="Keterangan" id="fieldKeterangan" class="border p-2 w-full mb-2" value="${data?.keterangan||''}">
-                <input placeholder="Jumlah" id="fieldJumlah" class="border p-2 w-full mb-2" value="${data?.jumlah||''}">
-                <input placeholder="Tanggal" id="fieldTanggal" class="border p-2 w-full mb-2" value="${data?.tanggal||''}">`;
-        break;
-      case 'gangguan':
-        fields=`<input placeholder="Deskripsi" id="fieldDeskripsi" class="border p-2 w-full mb-2" value="${data?.deskripsi||''}">
-                <input placeholder="Pelanggan" id="fieldPelanggan" class="border p-2 w-full mb-2" value="${data?.pelanggan||''}">
-                <input placeholder="TTR" id="fieldTTR" class="border p-2 w-full mb-2" value="${data?.ttr||''}">
-                <input placeholder="Status" id="fieldStatus" class="border p-2 w-full mb-2" value="${data?.status||''}">`;
-        break;
-      case 'teknisi':
-        fields=`<input placeholder="Nama" id="fieldNama" class="border p-2 w-full mb-2" value="${data?.nama||''}">
-                <input placeholder="HP" id="fieldHP" class="border p-2 w-full mb-2" value="${data?.hp||''}">`;
-        break;
-      case 'odp':
-        fields=`<input placeholder="Nama ODP" id="fieldNama" class="border p-2 w-full mb-2" value="${data?.nama||''}">
-                <input placeholder="Alamat" id="fieldAlamat" class="border p-2 w-full mb-2" value="${data?.alamat||''}">
-                <input placeholder="Port" id="fieldPort" class="border p-2 w-full mb-2" value="${data?.port||''}">`;
-        break;
+  // ================= LOGIN =================
+  async function loginNIK(){
+    const nik=document.getElementById('nik').value;
+    const pass=document.getElementById('password').value;
+    const userDoc=await db.collection('users').doc(nik).get();
+    if(!userDoc.exists){
+      document.getElementById('loginMsg').innerText="NIK tidak ditemukan";
+      return;
     }
-    modalContent.innerHTML = fields;
-    modal.classList.remove('hidden');
+    const data=userDoc.data();
+    if(data.password!==pass){
+      document.getElementById('loginMsg').innerText="Password salah";
+      return;
+    }
+    currentUser={nik:nik,...data};
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('appPage').classList.remove('hidden');
+    document.getElementById('userName').innerText=data.nama;
+    document.getElementById('userRole').innerText=data.role||'-';
+
+    // Jika admin, tampilkan panel karyawan
+    if(data.role==="admin"){
+      document.getElementById('adminPanel').classList.remove('hidden');
+      loadKaryawan();
+    }
   }
 
-  function closeModal() { modal.classList.add('hidden'); }
+  function logout(){
+    currentUser=null;
+    document.getElementById('loginPage').classList.remove('hidden');
+    document.getElementById('appPage').classList.add('hidden');
+    document.getElementById('adminPanel').classList.add('hidden');
+  }
 
-  modalSaveBtn.onclick = async () => {
-    try {
-      const db = window.db;
-      const colRef = collection(db,currentCollection);
-      let obj={};
-      switch(currentCollection){
-        case 'pelanggan':
-          obj={nama: document.getElementById('fieldNama').value, nik: document.getElementById('fieldNIK').value,
-              hp: document.getElementById('fieldHP').value, alamat: document.getElementById('fieldAlamat').value,
-              paket: document.getElementById('fieldPaket').value, odp: document.getElementById('fieldODP').value};
-          break;
-        case 'paket':
-          obj={nama: document.getElementById('fieldNama').value, harga: document.getElementById('fieldHarga').value};
-          break;
-        case 'billing':
-          obj={pelanggan: document.getElementById('fieldPelanggan').value, periode: document.getElementById('fieldPeriode').value,
-               jumlah: document.getElementById('fieldJumlah').value, status: document.getElementById('fieldStatus').value};
-          break;
-        case 'kas':
-          obj={keterangan: document.getElementById('fieldKeterangan').value, jumlah: document.getElementById('fieldJumlah').value,
-               tanggal: document.getElementById('fieldTanggal').value};
-          break;
-        case 'gangguan':
-          obj={deskripsi: document.getElementById('fieldDeskripsi').value, pelanggan: document.getElementById('fieldPelanggan').value,
-               ttr: document.getElementById('fieldTTR').value, status: document.getElementById('fieldStatus').value};
-          break;
-        case 'teknisi':
-          obj={nama: document.getElementById('fieldNama').value, hp: document.getElementById('fieldHP').value};
-          break;
-        case 'odp':
-          obj={nama: document.getElementById('fieldNama').value, alamat: document.getElementById('fieldAlamat').value,
-               port: document.getElementById('fieldPort').value};
-          break;
-      }
-      if(editId){await updateDoc(doc(db,currentCollection,editId),obj); editId=null;}
-      else{await addDoc(colRef,obj);}
-      closeModal();
-    } catch(err){alert(err);}
+  // ================= TAMBAH KARYAWAN =================
+  document.getElementById('formKaryawan').onsubmit = async (e)=>{
+    e.preventDefault();
+    const nik=document.getElementById('nikBaru').value;
+    const nama=document.getElementById('namaBaru').value;
+    const pass=document.getElementById('passBaru').value;
+    const role=document.getElementById('roleBaru').value;
+    await db.collection('users').doc(nik).set({nama, password:pass, role});
+    alert("Karyawan ditambahkan");
+    e.target.reset();
+    loadKaryawan();
   };
 
-  function renderCollection(colName, tableId){
-    const tbl=document.getElementById(tableId).querySelector('tbody');
-    onSnapshot(collection(db,colName),(snapshot)=>{
-      tbl.innerHTML='';
-      snapshot.docs.forEach(docu=>{
-        const data=docu.data();
-        let row=document.createElement('tr');
-        switch(colName){
-          case 'pelanggan':
-            row.innerHTML=`<td class="px-4 py-2">${data.nama}</td><td class="px-4 py-2">${data.nik}</td><td class="px-4 py-2">${data.hp}</td><td class="px-4 py-2">${data.alamat}</td><td class="px-4 py-2">${data.paket}</td><td class="px-4 py-2">${data.odp}</td><td class="px-4 py-2 flex gap-2"><button onclick='showAddForm("pelanggan",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"pelanggan","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-          case 'paket':
-            row.innerHTML=`<td class="px-4 py-2">${data.nama}</td><td class="px-4 py-2">${data.harga}</td><td class="px-4 py-2 flex gap-2"><button onclick='showAddForm("paket",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"paket","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-          case 'billing':
-            row.innerHTML=`<td>${data.pelanggan}</td><td>${data.periode}</td><td>${data.jumlah}</td><td>${data.status}</td><td class="flex gap-2"><button onclick='showAddForm("billing",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"billing","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-          case 'kas':
-            row.innerHTML=`<td>${data.keterangan}</td><td>${data.jumlah}</td><td>${data.tanggal}</td><td class="flex gap-2"><button onclick='showAddForm("kas",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"kas","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-          case 'gangguan':
-            row.innerHTML=`<td>${data.deskripsi}</td><td>${data.pelanggan}</td><td>${data.ttr}</td><td>${data.status}</td><td class="flex gap-2"><button onclick='showAddForm("gangguan",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"gangguan","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-          case 'teknisi':
-            row.innerHTML=`<td>${data.nama}</td><td>${data.hp}</td><td class="flex gap-2"><button onclick='showAddForm("teknisi",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"teknisi","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-          case 'odp':
-            row.innerHTML=`<td>${data.nama}</td><td>${data.alamat}</td><td>${data.port}</td><td class="flex gap-2"><button onclick='showAddForm("odp",${JSON.stringify(data)},"${docu.id}")' class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</button><button onclick='deleteDoc(doc(db,"odp","${docu.id}"))' class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button></td>`;
-            break;
-        }
-        tbl.appendChild(row);
-      });
+  // ================= LOAD KARYAWAN (dengan tombol EDIT & HAPUS) =================
+  async function loadKaryawan(){
+    const snap = await db.collection('users').get();
+    const tb = document.querySelector('#tblKaryawan tbody');
+    tb.innerHTML = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      let tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${doc.id}</td>
+        <td>${d.nama}</td>
+        <td>${d.role}</td>
+        <td>
+          <button onclick="editKaryawan('${doc.id}','${d.nama}','${d.password}','${d.role}')">Edit</button>
+          <button onclick="hapusKaryawan('${doc.id}')">Hapus</button>
+        </td>
+      `;
+      tb.appendChild(tr);
     });
   }
 
-  renderCollection('pelanggan','pelangganTable');
-  renderCollection('paket','paketTable');
-  renderCollection('billing','billingTable');
-  renderCollection('kas','kasTable');
-  renderCollection('gangguan','gangguanTable');
-  renderCollection('teknisi','teknisiTable');
-  renderCollection('odp','odpTable');
+  // ================= HAPUS KARYAWAN =================
+  async function hapusKaryawan(nik) {
+    if (!confirm("Yakin ingin menghapus karyawan ini?")) return;
+    if(currentUser.nik === nik){ alert("Tidak bisa menghapus diri sendiri!"); return; }
+    try {
+      await db.collection('users').doc(nik).delete();
+      alert("Karyawan berhasil dihapus");
+      loadKaryawan();
+    } catch (err) {
+      alert("Gagal menghapus karyawan: " + err);
+    }
+  }
+
+  // ================= EDIT KARYAWAN =================
+  async function editKaryawan(nik, nama, pass, role){
+    const newNama = prompt("Nama:", nama);
+    if(newNama===null) return;
+    const newPass = prompt("Password:", pass);
+    if(newPass===null) return;
+    const newRole = prompt("Role (admin/teknisi):", role);
+    if(newRole===null) return;
+    await db.collection('users').doc(nik).update({
+      nama: newNama,
+      password: newPass,
+      role: newRole
+    });
+    alert("Karyawan diperbarui");
+    loadKaryawan();
+  }
+
+  // ================= PASANG BARU =================
+  let counterDoc = db.collection('settings').doc('counter');
+
+  async function getNextInternetNo() {
+    const res = await db.runTransaction(async (tx)=>{
+      const doc = await tx.get(counterDoc);
+      let val = 19061401;
+      if (doc.exists) val = doc.data().last+1;
+      tx.set(counterDoc,{last:val});
+      return val;
+    });
+    return res;
+  }
+
+  document.getElementById('formPasang').onsubmit = async (e)=>{
+    e.preventDefault();
+    if(!currentUser){ alert("Harus login dulu"); return; }
+    const no = await getNextInternetNo();
+    await db.collection('pasang_baru').add({
+      internetNo:no,
+      nama: document.getElementById('nama').value,
+      alamat: document.getElementById('alamat').value,
+      paket: document.getElementById('paket').value,
+      status:'Survey',
+      created: new Date(),
+      createdBy: currentUser.nik
+    });
+    e.target.reset();
+  };
+
+  // ================= WEBSOCKET / WEBHOOK =================
+  document.getElementById('formWebhook').onsubmit = async (e)=>{
+    e.preventDefault();
+    await db.collection('settings').doc('waWebhook').set({
+      url: document.getElementById('waUrl').value,
+      authHeader: document.getElementById('waAuth').value
+    });
+    alert('Webhook disimpan');
+  };
+
+  // ================= TABEL PASANG BARU =================
+  db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
+    const tb = document.querySelector('#tblPasang tbody');
+    tb.innerHTML='';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      let tr=document.createElement('tr');
+      tr.innerHTML=`<td>${d.internetNo}</td><td>${d.nama}</td>
+        <td>${d.alamat}</td><td>${d.paket}</td><td>${d.status}</td>
+        <td>
+          <button onclick="surveyOk('${doc.id}')">Survey OK</button>
+          <button onclick="instalasiOk('${doc.id}')">Instalasi OK</button>
+          <button onclick="materialOk('${doc.id}')">Material OK</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+  });
+
+  async function surveyOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Instalasi'}); }
+  async function instalasiOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Verifikasi Material'}); }
+  async function materialOk(id){
+    const ref=db.collection('pasang_baru').doc(id);
+    const doc=await ref.get();
+    const d=doc.data();
+    await db.runTransaction(async (tx)=>{
+      const mat= await tx.get(db.collection('material').doc('ont'));
+      if(mat.exists){
+        let stok=mat.data().stok||0;
+        if(stok<=0) throw "Stok habis";
+        tx.update(mat.ref,{stok:stok-1});
+      }
+      tx.update(ref,{status:'Active'});
+    });
+    const d2=doc.data();
+    await db.collection('pasang_baru_archive').doc(id).set(d2);
+    await ref.delete();
+  }
+
 </script>
 </body>
 </html>
+
