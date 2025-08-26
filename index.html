@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ISP Manager — Full Final (Mobile & Desktop)</title>
+<title>ISP Manager — Full Final</title>
 
 <!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -21,45 +21,39 @@
     --success: #28a745;
     --danger: #dc3545;
     --card: #ffffff;
-    --glass: rgba(255,255,255,0.6);
   }
   *{box-sizing:border-box}
   body{font-family:Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial; margin:0;background:var(--bg); color:#111}
   a{color:inherit}
-  /* Topbar & layout */
+  /* Login */
   #loginPage{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,var(--blue),var(--accent))}
-  #loginBox{background:var(--card);padding:32px;border-radius:12px;box-shadow:0 14px 40px rgba(31,59,111,0.18);width:360px;max-width:92%}
-  h1,h2{margin:0 0 6px 0;color:var(--blue)}
-  p{margin:0}
-  input, select, textarea, button {font-family:inherit}
-  input, select, textarea {border-radius:8px;border:1px solid #d1d5db;padding:10px;outline:none;background:#fff}
-  input:focus, select:focus, textarea:focus {border-color:var(--blue);box-shadow:0 0 0 3px rgba(31,59,111,0.06)}
-  button {border-radius:8px;border:none;padding:8px 12px}
+  #loginBox{background:var(--card);padding:28px;border-radius:12px;box-shadow:0 12px 36px rgba(31,59,111,0.18);width:380px;max-width:94%}
+  #loginBox h2{margin:0 0 12px;color:var(--blue)}
+  input, select, textarea {border-radius:8px;border:1px solid #d1d5db;padding:10px;outline:none;width:100%;margin-bottom:10px}
+  input:focus, select:focus, textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(31,59,111,0.06)}
+  button{border-radius:8px;border:none;padding:8px 12px;cursor:pointer}
   .muted{color:var(--muted);font-size:13px}
   /* App layout */
   #appPage{display:none;min-height:100vh;display:flex}
-  /* Sidebar */
   #sidebar{width:240px;background:linear-gradient(180deg,var(--blue),var(--accent));color:#fff;min-height:100vh;transition:width .2s ease, transform .2s ease;position:relative;z-index:50}
   #sidebar.collapsed{width:72px}
-  #sidebar h2{padding:18px 16px;margin:0;font-size:18px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+  #sidebar h2{padding:16px 12px;margin:0;font-size:18px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)}
   #sidebar ul{list-style:none;padding:0;margin:0}
-  #sidebar ul li{padding:12px 18px;cursor:pointer;display:flex;gap:10px;align-items:center}
+  #sidebar ul li{padding:12px 16px;cursor:pointer;display:flex;gap:10px;align-items:center}
   #sidebar ul li:hover{background:rgba(255,255,255,0.06)}
-  #sidebar ul li .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  /* Main */
+  #sidebar .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #mainContent{flex:1;padding:18px;display:flex;flex-direction:column;gap:12px}
   #topBar{display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:10px 12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.05)}
   #topLeft{display:flex;align-items:center;gap:12px}
   #hamburger{font-size:20px;padding:6px;background:transparent;border-radius:6px;cursor:pointer}
-  .userBadge{display:flex;flex-direction:column;align-items:flex-end;font-size:13px}
   .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.04);display:flex;flex-direction:column;gap:8px}
   .card h3{margin:0;font-size:14px;color:var(--muted)}
   .card .val{font-size:22px;font-weight:700;color:var(--blue)}
   .grid-two{display:grid;grid-template-columns:2fr 1fr;gap:12px}
   .panel{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border-radius:8px;overflow:hidden}
+  th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left}
   th{background:linear-gradient(180deg,var(--blue),var(--accent));color:#fff;font-weight:600}
   tr:hover td{background:#fbfdff}
   .actions{display:flex;gap:6px;justify-content:flex-end}
@@ -68,7 +62,7 @@
   .btn-success{background:var(--success);color:#fff}
   .btn-danger{background:var(--danger);color:#fff}
   .btn-warning{background:#ffc107;color:#111}
-  /* Responsive */
+  /* responsive */
   @media(max-width:1100px){
     .cards{grid-template-columns:repeat(2,1fr)}
     .grid-two{grid-template-columns:1fr}
@@ -78,9 +72,8 @@
     #sidebar.open{left:0}
     #mainContent{padding:12px}
     .cards{grid-template-columns:1fr}
-    .userBadge{align-items:flex-start}
   }
-  /* overlay when mobile menu open */
+  /* overlay */
   #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:60}
   #overlay.show{display:block}
 </style>
@@ -142,44 +135,21 @@
     <div id="dashboardPage">
       <h2>Dashboard</h2>
       <div class="cards" style="margin-top:10px">
-        <div class="card">
-          <h3>Aktif Pelanggan</h3>
-          <div class="val" id="cardPelanggan">-</div>
-          <div class="muted">Pelanggan yang aktif</div>
-        </div>
-        <div class="card">
-          <h3>Gangguan Hari Ini</h3>
-          <div class="val" id="cardGangguan">-</div>
-          <div class="muted">Jumlah tiket hari ini</div>
-        </div>
-        <div class="card">
-          <h3>Pasang Baru (Bulan)</h3>
-          <div class="val" id="cardPasang">-</div>
-          <div class="muted">Pendaftaran pasang baru bulan ini</div>
-        </div>
-        <div class="card">
-          <h3>Pendapatan (Dummy)</h3>
-          <div class="val" id="cardBilling">Rp 0</div>
-          <div class="muted">Total billing dummy</div>
-        </div>
+        <div class="card"><h3>Aktif Pelanggan</h3><div class="val" id="cardPelanggan">-</div><div class="muted">Pelanggan yang aktif</div></div>
+        <div class="card"><h3>Gangguan Hari Ini</h3><div class="val" id="cardGangguan">-</div><div class="muted">Jumlah tiket hari ini</div></div>
+        <div class="card"><h3>Pasang Baru (Bulan)</h3><div class="val" id="cardPasang">-</div><div class="muted">Pendaftaran pasang baru bulan ini</div></div>
+        <div class="card"><h3>Pendapatan (Dummy)</h3><div class="val" id="cardBilling">Rp 0</div><div class="muted">Total billing dummy</div></div>
       </div>
 
-      <div class="grid-two" style="margin-top:12px;gap:12px">
-        <div class="panel">
-          <h3 style="margin-bottom:8px">Grafik Aktivitas</h3>
-          <canvas id="chartDashboard" height="120"></canvas>
-        </div>
-        <div class="panel">
-          <h3 style="margin-bottom:8px">Recent Activity</h3>
-          <div id="recentList" style="max-height:220px;overflow:auto"></div>
-        </div>
+      <div class="grid-two" style="margin-top:12px">
+        <div class="panel"><h3 style="margin-bottom:8px">Grafik Aktivitas</h3><canvas id="chartDashboard" height="120"></canvas></div>
+        <div class="panel"><h3 style="margin-bottom:8px">Recent Activity</h3><div id="recentList" style="max-height:220px;overflow:auto"></div></div>
       </div>
     </div>
 
     <!-- GANGGUAN -->
     <div id="gangguanPage" class="hidden">
       <h2>Gangguan / Tiket Pelanggan</h2>
-
       <form id="formGangguan" style="margin-top:10px">
         <input id="g_pelanggan" placeholder="Nama Pelanggan" required />
         <input id="g_nohp" placeholder="No HP (opsional)" />
@@ -194,15 +164,7 @@
 
       <table id="tblGangguan" style="margin-top:12px">
         <thead>
-          <tr>
-            <th>Tiket Gangguan</th>
-            <th>Pelanggan</th>
-            <th>No HP</th>
-            <th>Masalah</th>
-            <th>Status</th>
-            <th>TTR</th>
-            <th style="text-align:right">Aksi</th>
-          </tr>
+          <tr><th>Tiket Gangguan</th><th>Pelanggan</th><th>No HP</th><th>Masalah</th><th>Status</th><th>TTR</th><th style="text-align:right">Aksi</th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -223,16 +185,12 @@
         <input id="p_paket" placeholder="Paket" required />
         <input id="p_sn" placeholder="SN ONT (opsional)" />
         <input id="p_odp" placeholder="ODP (opsional)" />
-        <select id="p_status" style="width:140px">
-          <option>Menunggu</option><option>Survey</option><option>Instalasi</option><option>Active</option>
-        </select>
+        <select id="p_status" style="width:140px"><option>Menunggu</option><option>Survey</option><option>Instalasi</option><option>Active</option></select>
         <button type="submit" class="btn-primary">Daftar</button>
       </form>
 
       <table id="tblPasang" style="margin-top:12px">
-        <thead>
-          <tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>Alamat</th><th>Paket</th><th>SN ONT</th><th>ODP</th><th>Status</th><th style="text-align:right">Aksi</th></tr>
-        </thead>
+        <thead><tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>Alamat</th><th>Paket</th><th>SN ONT</th><th>ODP</th><th>Status</th><th style="text-align:right">Aksi</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -240,21 +198,14 @@
     <!-- PELANGGAN -->
     <div id="pelangganPage" class="hidden">
       <h2>Pelanggan</h2>
-      <table id="tblPelanggan" style="margin-top:12px">
-        <thead><tr><th>No Internet</th><th>Nama</th><th>Alamat</th><th>No HP</th><th>Paket</th><th style="text-align:right">Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
+      <table id="tblPelanggan" style="margin-top:12px"><thead><tr><th>No Internet</th><th>Nama</th><th>Alamat</th><th>No HP</th><th>Paket</th><th style="text-align:right">Aksi</th></tr></thead><tbody></tbody></table>
     </div>
 
     <!-- BILLING -->
     <div id="billingPage" class="hidden">
       <h2>Billing</h2>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn-primary small" onclick="generateDummyBilling()">Generate Billing Dummy</button>
-      </div>
-      <table id="tblBilling" style="margin-top:12px">
-        <thead><tr><th>No</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th><th style="text-align:right">Aksi</th></tr></thead><tbody></tbody>
-      </table>
+      <div style="margin-top:10px;display:flex;gap:8px"><button class="btn-primary small" onclick="generateDummyBilling()">Generate Billing Dummy</button></div>
+      <table id="tblBilling" style="margin-top:12px"><thead><tr><th>No</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th><th style="text-align:right">Aksi</th></tr></thead><tbody></tbody></table>
     </div>
 
     <!-- KAS, ODP, MATERIAL, PAKET, KARYAWAN, WEBHOOK, HISTORY, PORTAL -->
@@ -264,44 +215,25 @@
 
     <div id="materialPage" class="hidden">
       <h2>Material / Inventory</h2>
-      <form id="formMaterial" style="margin-top:10px">
-        <input id="m_nama" placeholder="Nama Material" required />
-        <input id="m_stok" type="number" placeholder="Stok Awal" required />
-        <button type="submit" class="btn-primary">Tambah Material</button>
-      </form>
+      <form id="formMaterial" style="margin-top:10px"><input id="m_nama" placeholder="Nama Material" required /><input id="m_stok" type="number" placeholder="Stok Awal" required /><button type="submit" class="btn-primary">Tambah Material</button></form>
       <table id="tblMaterial" style="margin-top:12px"><thead><tr><th>Nama</th><th>Stok</th><th style="text-align:right">Aksi</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="paketPage" class="hidden">
       <h2>Paket / Tarif</h2>
-      <form id="formPaket" style="margin-top:10px">
-        <input id="pkg_nama" placeholder="Nama Paket" required />
-        <input id="pkg_harga" type="number" placeholder="Harga" required />
-        <input id="pkg_speed" placeholder="Kecepatan" required />
-        <button type="submit" class="btn-primary">Tambah Paket</button>
-      </form>
+      <form id="formPaket" style="margin-top:10px"><input id="pkg_nama" placeholder="Nama Paket" required /><input id="pkg_harga" type="number" placeholder="Harga" required /><input id="pkg_speed" placeholder="Kecepatan" required /><button type="submit" class="btn-primary">Tambah Paket</button></form>
       <table id="tblPaket" style="margin-top:12px"><thead><tr><th>Nama Paket</th><th>Harga</th><th>Kecepatan</th><th style="text-align:right">Aksi</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="karyawanPage" class="hidden">
       <h2>Karyawan</h2>
-      <form id="formKaryawan" style="margin-top:10px">
-        <input id="k_nik" placeholder="NIK" required />
-        <input id="k_nama" placeholder="Nama" required />
-        <input id="k_pass" placeholder="Password" required />
-        <select id="k_role"><option value="admin">Admin</option><option value="teknisi">Teknisi</option></select>
-        <button type="submit" class="btn-primary">Tambah</button>
-      </form>
+      <form id="formKaryawan" style="margin-top:10px"><input id="k_nik" placeholder="NIK" required /><input id="k_nama" placeholder="Nama" required /><input id="k_pass" placeholder="Password" required /><select id="k_role"><option value="admin">Admin</option><option value="teknisi">Teknisi</option></select><button type="submit" class="btn-primary">Tambah</button></form>
       <table id="tblKaryawan" style="margin-top:12px"><thead><tr><th>NIK</th><th>Nama</th><th>Role</th><th style="text-align:right">Aksi</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="webhookPage" class="hidden">
       <h2>Webhook</h2>
-      <form id="formWebhook" style="margin-top:10px">
-        <input id="wh_url" placeholder="URL Webhook WA" />
-        <input id="wh_auth" placeholder="Auth Header (opsional)" />
-        <button type="submit" class="btn-primary">Simpan</button>
-      </form>
+      <form id="formWebhook" style="margin-top:10px"><input id="wh_url" placeholder="URL Webhook WA" /><input id="wh_auth" placeholder="Auth Header (opsional)" /><button type="submit" class="btn-primary">Simpan</button></form>
     </div>
 
     <div id="historyPage" class="hidden">
@@ -318,7 +250,6 @@
   </div>
 </div>
 
-<!-- overlay for mobile menu -->
 <div id="overlay"></div>
 
 <script>
@@ -337,19 +268,17 @@ const db = firebase.firestore();
 
 /* ================ helpers ================ */
 const q = id => document.getElementById(id);
-const now = ()=> new Date().toLocaleString();
-function toast(msg){ alert(msg); } // simple for demo; replace with non-blocking toast if desired
-
+function toast(msg){ try{ /* non-blocking simple toast */ console.log('TOAST:',msg); alert(msg); } catch(e){ console.log(msg);} }
 async function logHistory(type, item, desc){
-  try{ await db.collection('history').add({ ts: firebase.firestore.FieldValue.serverTimestamp(), type, item, desc }); }catch(e){ console.warn('history err',e); }
+  try{ await db.collection('history').add({ ts: firebase.firestore.FieldValue.serverTimestamp(), type, item, desc }); }catch(e){ console.warn('history log failed', e); }
 }
 
-/* ================ AUTH ================ */
+/* ================ AUTH & UI ================ */
 let currentUser = null;
 async function loginNIK(){
   q('loginMsg').innerText = '';
-  const nik = (q('nik').value || '').trim().toLowerCase();
-  const pass = (q('password').value || '').trim();
+  const nik = (q('nik').value||'').trim().toLowerCase();
+  const pass = (q('password').value||'').trim();
   if(!nik || !pass){ q('loginMsg').innerText = 'Isi NIK & password'; return; }
   try{
     const doc = await db.collection('users').doc(nik).get();
@@ -369,14 +298,13 @@ function logout(){
   currentUser = null;
   q('loginPage').style.display = 'flex';
   q('appPage').style.display = 'none';
-  // close sidebar on mobile
   closeMobileMenu();
 }
 
-/* ================ MOBILE / SIDEBAR HANDLING ================ */
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-const hamburger = document.getElementById('hamburger');
+/* ================ SIDEBAR/MOBILE ================ */
+const sidebar = q('sidebar');
+const overlay = q('overlay');
+const hamburger = q('hamburger');
 
 function openMobileMenu(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
 function closeMobileMenu(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
@@ -390,8 +318,16 @@ function toggleSidebar(){
 hamburger.addEventListener('click', toggleSidebar);
 overlay.addEventListener('click', closeMobileMenu);
 
-/* auto time display */
-setInterval(()=>{ const t = new Date(); q('timeNow').innerText = t.toLocaleString(); },1000);
+/* show page helper */
+function showPage(page){
+  const pages = ['dashboard','gangguan','pasangBaru','pelanggan','billing','kas','odp','material','paket','karyawan','webhook','history','portal'];
+  pages.forEach(p=>{ const el = q(p+'Page'); if(el) el.classList.add('hidden'); });
+  const active = q(page+'Page');
+  if(active) active.classList.remove('hidden');
+}
+
+/* time display */
+setInterval(()=>{ q('timeNow').innerText = new Date().toLocaleString(); },1000);
 
 /* ================ DASHBOARD ================ */
 let chartDashboard = null;
@@ -411,9 +347,9 @@ function initDashboard(){
   });
 }
 
-/* ================ GANGGUAN (Tiket Gangguan TC0001..) ================ */
+/* ================ GANGGUAN (Tiket Gangguan TC0001...) ================ */
 
-/* Ensure TC0000 reserved exists and never changed */
+/* ensure reserved TC0000 exists */
 async function prepareReservedTicket(){
   try{
     const docRef = db.collection('gangguan').doc('TC0000');
@@ -432,7 +368,7 @@ async function prepareReservedTicket(){
   }catch(e){ console.warn('prepareReservedTicket err', e); }
 }
 
-/* Find next ticket code by scanning existing TC docs */
+/* determine next ticket code by scanning existing TC docs */
 async function getNextTicketCode(){
   try{
     const snap = await db.collection('gangguan').get();
@@ -449,13 +385,14 @@ async function getNextTicketCode(){
   }catch(e){ console.error('getNextTicketCode err', e); return 'TC0001'; }
 }
 
+/* create ticket */
 q('formGangguan').addEventListener('submit', async function(e){
   e.preventDefault();
-  const pelanggan = (q('g_pelanggan').value || '').trim();
-  const nohp = (q('g_nohp').value || '').trim();
-  const alamat = (q('g_alamat').value || '').trim();
-  const masalah = (q('g_masalah').value || '').trim();
-  const prioritas = (q('g_prioritas').value || 'Normal');
+  const pelanggan = (q('g_pelanggan').value||'').trim();
+  const nohp = (q('g_nohp').value||'').trim();
+  const alamat = (q('g_alamat').value||'').trim();
+  const masalah = (q('g_masalah').value||'').trim();
+  const prioritas = (q('g_prioritas').value||'Normal');
   if(!pelanggan || !masalah){ toast('Isi pelanggan & masalah'); return; }
   try{
     const code = await getNextTicketCode();
@@ -470,15 +407,15 @@ q('formGangguan').addEventListener('submit', async function(e){
   }catch(e){ console.error(e); toast('Gagal buat tiket'); }
 });
 
+/* load gangguan table */
 async function loadGangguan(){
   try{
     const snap = await db.collection('gangguan').orderBy('createdAt','desc').get();
     const tbody = q('tblGangguan').querySelector('tbody'); tbody.innerHTML = '';
-    let todayCount=0;
+    let todayCount = 0;
     snap.forEach(doc => {
       const d = doc.data();
       const id = doc.id;
-      // create row
       const tr = document.createElement('tr');
       const masalahTxt = (d.masalah || '-');
       const statusTxt = (d.status || '-');
@@ -488,7 +425,7 @@ async function loadGangguan(){
         const today = new Date();
         if(created.toDateString() === today.toDateString()) todayCount++;
       }
-      const aksi = (()=>{
+      const aksi = (() => {
         if(d.reserved) return `<span class="muted small">Reserved</span>`;
         if(statusTxt === 'Menunggu') return `<div class="actions"><button class="btn-success small" onclick="assignToTechnician('${id}')">Kirim ke Teknisi</button><button class="btn-danger small" onclick="hapusGangguan('${id}')">Hapus</button></div>`;
         if(statusTxt === 'Progres' || statusTxt === 'Material Dicek') return `<div class="actions"><button class="btn-primary small" onclick="closeGangguan('${id}')">Tutup</button><button class="btn-danger small" onclick="hapusGangguan('${id}')">Hapus</button></div>`;
@@ -502,25 +439,25 @@ async function loadGangguan(){
   }catch(e){ console.error('loadGangguan', e); }
 }
 
-/* assign to technician => simulate WA send, then technicianVerify */
+/* assign -> simulate WA -> technician verify */
 async function assignToTechnician(code){
   try{
     await db.collection('gangguan').doc(code).update({ status:'Progres', assignedAt: firebase.firestore.FieldValue.serverTimestamp() });
     await logHistory('gangguan.assign', code, `Assigned by ${currentUser?.nik||'unknown'}`);
     toast(`WA SIMULASI: Admin mengirim tiket ${code} ke teknisi`);
     await loadGangguan();
-    setTimeout(()=> technicianVerify(code), 1200);
+    setTimeout(()=> technicianVerify(code), 1000);
   }catch(e){ console.error(e); toast('Gagal assign'); }
 }
 
-/* technician verifies => checks material => reduces stock => close */
+/* technician verifies: check material, reduce stock, close ticket */
 async function technicianVerify(code){
   try{
     await db.collection('gangguan').doc(code).update({ status:'Material Dicek' });
     await logHistory('gangguan.verify', code, 'Teknisi verifikasi progres');
     toast('WA SIMULASI: Teknisi verifikasi dan cek material');
 
-    // reduce one unit from the first material found (demo)
+    // reduce one unit of first available material (demo)
     const matSnap = await db.collection('material').limit(1).get();
     if(!matSnap.empty){
       const matDoc = matSnap.docs[0];
@@ -530,16 +467,16 @@ async function technicianVerify(code){
       await logHistory('material.update', matDoc.id, `Stok -1 for ticket ${code}`);
       toast(`Stok '${matDoc.id}' dikurangi 1 (sisa ${newStok})`);
     } else {
-      toast('Tidak ada material untuk dikurangi (demo)');
+      toast('Tidak ada material terdaftar untuk dikurangi (demo)');
     }
 
-    // auto-close after a delay
-    setTimeout(async ()=>{
+    // close after short delay
+    setTimeout(async () => {
       await db.collection('gangguan').doc(code).update({ status:'Selesai', ttr:'1 jam', closedAt: firebase.firestore.FieldValue.serverTimestamp() });
       await logHistory('gangguan.close', code, 'Closed by technician');
       toast(`Tiket ${code} selesai`);
       loadGangguan();
-    }, 1400);
+    }, 1200);
 
   }catch(e){ console.error('technicianVerify', e); }
 }
@@ -564,7 +501,7 @@ async function closeGangguan(id){
   }catch(e){ console.error(e); toast('Gagal tutup'); }
 }
 
-/* ================ PASANG BARU (auto number) ================ */
+/* ================ PASANG BARU (auto No Internet) ================ */
 let localNextNo = 1906140000;
 q('formPasang').addEventListener('submit', async function(e){
   e.preventDefault();
@@ -574,10 +511,9 @@ q('formPasang').addEventListener('submit', async function(e){
   const paket = (q('p_paket').value||'').trim();
   const sn = (q('p_sn').value||'').trim();
   const odp = (q('p_odp').value||'').trim();
-  const status = (q('p_status').value || 'Menunggu');
+  const status = (q('p_status').value||'Menunggu');
   if(!nama || !nohp || !alamat || !paket){ toast('Lengkapi field wajib'); return; }
   try{
-    // find max existing id numeric
     const snap = await db.collection('pasangBaru').get();
     let max = 0;
     snap.forEach(doc => {
@@ -594,6 +530,7 @@ q('formPasang').addEventListener('submit', async function(e){
     toast('Pasang baru terdaftar: ' + idStr);
   }catch(e){ console.error(e); toast('Gagal daftar'); }
 });
+
 async function loadPasangBaru(){
   try{
     const snap = await db.collection('pasangBaru').orderBy('createdAt','desc').get();
@@ -656,9 +593,8 @@ async function loadBilling(){
       sum += (d.jumlah || 0);
     });
     q('cardBilling').innerText = 'Rp ' + sum.toLocaleString('id-ID');
-    // portal table
     const pbody = q('tblPortalBilling').querySelector('tbody'); pbody.innerHTML='';
-    snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.pelanggan||'-'}</td><td>${d.periode||'-'}</td><td>${d.jumlah||0}</td><td>${d.status||'-'}</td>`; pbody.appendChild(tr); });
+    snap.forEach(doc => { const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.pelanggan||'-'}</td><td>${d.periode||'-'}</td><td>${d.jumlah||0}</td><td>${d.status||'-'}</td>`; pbody.appendChild(tr); });
   }catch(e){ console.error(e); }
 }
 async function hapusBilling(id){ if(!confirm('Hapus billing '+id+'?')) return; await db.collection('billing').doc(id).delete(); loadBilling(); }
@@ -691,7 +627,7 @@ q('formPaket').addEventListener('submit', async function(e){
   await logHistory('paket.create', nama, `paket ${nama}`);
   q('formPaket').reset(); loadPaket();
 });
-async function loadPaket(){ try{ const snap = await db.collection('paket').get(); const tbody = q('tblPaket').querySelector('tbody'); tbody.innerHTML=''; snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.harga||0}</td><td>${d.speed||'-'}</td><td style="text-align:right"><button class="btn-danger small" onclick="hapusPaket('${doc.id}')">Hapus</button></td>`; tbody.appendChild(tr); }); }catch(e){ console.error(e); } }
+async function loadPaket(){ try{ const snap = await db.collection('paket').get(); const tbody = q('tblPaket').querySelector('tbody'); tbody.innerHTML=''; snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML = `<td>${doc.id}</td><td>${d.harga||0}</td><td>${d.speed||'-'}</td><td style="text-align:right"><button class="btn-danger small" onclick="hapusPaket('${doc.id}')">Hapus</button></td>`; tbody.appendChild(tr); }); }catch(e){ console.error(e); } }
 async function hapusPaket(id){ if(!confirm('Hapus paket '+id+'?')) return; await db.collection('paket').doc(id).delete(); loadPaket(); }
 
 /* ================ KARYAWAN CRUD ================ */
@@ -706,13 +642,7 @@ q('formKaryawan').addEventListener('submit', async function(e){
   await logHistory('user.create', nik, `karyawan ${nama}`);
   q('formKaryawan').reset(); loadKaryawan();
 });
-async function loadKaryawan(){
-  try{
-    const snap = await db.collection('users').get();
-    const tbody = q('tblKaryawan').querySelector('tbody'); tbody.innerHTML='';
-    snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.nama||'-'}</td><td>${d.role||'-'}</td><td style="text-align:right"><button class="btn-danger small" onclick="hapusKaryawan('${doc.id}')">Hapus</button></td>`; tbody.appendChild(tr); });
-  }catch(e){ console.error(e); }
-}
+async function loadKaryawan(){ try{ const snap = await db.collection('users').get(); const tbody = q('tblKaryawan').querySelector('tbody'); tbody.innerHTML=''; snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.nama||'-'}</td><td>${d.role||'-'}</td><td style="text-align:right"><button class="btn-danger small" onclick="hapusKaryawan('${doc.id}')">Hapus</button></td>`; tbody.appendChild(tr); }); }catch(e){ console.error(e); } }
 async function hapusKaryawan(id){ if(!confirm('Hapus karyawan '+id+'?')) return; if(currentUser && currentUser.nik === id){ toast('Tidak bisa hapus diri sendiri'); return; } await db.collection('users').doc(id).delete(); loadKaryawan(); }
 
 /* ================ WEBHOOK save ================ */
@@ -720,7 +650,7 @@ q('formWebhook').addEventListener('submit', async function(e){
   e.preventDefault();
   const url = (q('wh_url').value||'').trim();
   const auth = (q('wh_auth').value||'').trim();
-  if(!url) { toast('URL wajib'); return; }
+  if(!url){ toast('URL wajib'); return; }
   await db.collection('webhook').doc('wa').set({ url, auth, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
   await logHistory('webhook.update','wa','webhook updated');
   toast('Webhook disimpan');
@@ -732,14 +662,14 @@ async function loadHistory(){
     const snap = await db.collection('history').orderBy('ts','desc').limit(200).get();
     const tbody = q('tblHistory').querySelector('tbody'); tbody.innerHTML='';
     const recent = q('recentList'); recent.innerHTML='';
-    snap.forEach(doc=>{ const d=doc.data(); const date = d.ts ? d.ts.toDate().toLocaleString() : '-'; const tr=document.createElement('tr'); tr.innerHTML=`<td>${date}</td><td>${d.type||'-'}</td><td>${d.item||'-'}</td><td>${d.desc||'-'}</td>`; tbody.appendChild(tr); const div=document.createElement('div'); div.className='muted'; div.style.marginBottom='6px'; div.innerText=`${date} — ${d.type||''} — ${d.item||''} — ${d.desc||''}`; recent.appendChild(div); });
+    snap.forEach(doc=>{ const d=doc.data(); const date = d.ts ? d.ts.toDate().toLocaleString() : '-'; const tr=document.createElement('tr'); tr.innerHTML = `<td>${date}</td><td>${d.type||'-'}</td><td>${d.item||'-'}</td><td>${d.desc||'-'}</td>`; tbody.appendChild(tr); const div=document.createElement('div'); div.className='muted'; div.style.marginBottom='6px'; div.innerText=`${date} — ${d.type||''} — ${d.item||''} — ${d.desc||''}`; recent.appendChild(div); });
   }catch(e){ console.error(e); }
 }
 
 /* ================ ODP, KAS loaders ================ */
 async function loadODP(){ try{ const snap = await db.collection('odp').get(); const tbody = q('tblODP').querySelector('tbody'); tbody.innerHTML=''; snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.sn||'-'}</td><td>${d.ip||'-'}</td><td style="text-align:right"><button class="btn-danger small" onclick="hapusODP('${doc.id}')">Hapus</button></td>`; tbody.appendChild(tr); }); }catch(e){ console.error(e); } }
 async function hapusODP(id){ if(!confirm('Hapus ODP '+id+'?')) return; await db.collection('odp').doc(id).delete(); loadODP(); }
-async function loadKas(){ try{ const snap = await db.collection('kas').orderBy('ts','desc').get(); const tbody = q('tblKas').querySelector('tbody'); tbody.innerHTML=''; snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.desc||'-'}</td><td>${d.masuk||0}</td><td>${d.keluar||0}</td><td>${d.saldo||0}</td>`; tbody.appendChild(tr); }); }catch(e){ console.error(e); } }
+async function loadKas(){ try{ const snap = await db.collection('kas').orderBy('ts','desc').get(); const tbody = q('tblKas').querySelector('tbody'); tbody.innerHTML=''; snap.forEach(doc=>{ const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML = `<td>${doc.id}</td><td>${d.desc||'-'}</td><td>${d.masuk||0}</td><td>${d.keluar||0}</td><td>${d.saldo||0}</td>`; tbody.appendChild(tr); }); }catch(e){ console.error(e); } }
 
 /* ================ INIT ALL ================ */
 async function initAll(){
@@ -759,14 +689,9 @@ async function initAll(){
   showPage('dashboard');
 }
 
-/* ================ small helpers run on load ================ */
-window.addEventListener('load', ()=> {
-  q('appPage').style.display = 'none';
-  q('loginPage').style.display = 'flex';
-  // close overlay initially
-  overlay.classList.remove('show');
-});
-</script>
+/* ================ utilities ================ */
+window.addEventListener('load', ()=>{ q('appPage').style.display = 'none'; q('loginPage').style.display = 'flex'; overlay.classList.remove('show'); });
 
+</script>
 </body>
 </html>
