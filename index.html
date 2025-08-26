@@ -1,190 +1,250 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ISP Manager — Final (Local)</title>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ISP Manager — Final (LocalStorage)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-  :root{
-    --bg:#f3f0ff;
-    --card:#ffffff;
-    --purple:#5b21b6;
-    --purple-2:#7c3aed;
-    --muted:#6b7280;
-    --success:#16a34a;
-    --danger:#ef4444;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,Arial;font-size:14px;background:var(--bg);color:#0b1220}
-  header{height:64px;background:linear-gradient(90deg,var(--purple),var(--purple-2));color:#fff;display:flex;align-items:center;padding:0 16px;gap:12px}
-  header .hamb{font-size:20px;border:none;background:transparent;color:#fff;cursor:pointer}
-  header h1{font-size:18px;margin:0;font-weight:600}
-  header .right{margin-left:auto;display:flex;gap:8px;align-items:center}
-  header .btn{background:#fff;color:var(--purple);padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
-  .wrap{display:flex;height:calc(100vh - 64px)}
-  .sidebar{width:240px;background:linear-gradient(180deg,var(--purple),var(--purple-2));color:#fff;padding:18px 10px;transition:all .2s;overflow:auto}
-  .sidebar.collapsed{width:64px}
-  .sidebar ul{list-style:none;padding:0;margin:0}
-  .sidebar li{padding:10px 12px;cursor:pointer;border-radius:8px;display:flex;gap:10px;align-items:center}
-  .sidebar li:hover{background:rgba(255,255,255,0.06)}
-  .main{flex:1;padding:18px;overflow:auto}
-  .hidden{display:none}
-  .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 30px rgba(15,23,42,0.06);margin-bottom:12px}
-  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  .stat{font-size:22px;font-weight:700;color:var(--purple)}
-  .muted{color:var(--muted);font-size:13px}
-  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:8px;overflow:hidden}
-  th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left;font-size:13px}
-  th{background:linear-gradient(180deg,var(--purple),var(--purple-2));color:#fff}
-  button.btn{padding:6px 10px;border-radius:8px;border:none;cursor:pointer}
-  .btn-primary{background:var(--purple);color:#fff}
-  .btn-success{background:var(--success);color:#fff}
-  .btn-danger{background:var(--danger);color:#fff}
-  .form-row{display:flex;gap:8px;flex-wrap:wrap}
-  input,select,textarea{padding:8px;border-radius:8px;border:1px solid #d1d5db;min-width:120px}
-  /* login */
-  #loginScreen{height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center}
-  #loginBox{width:420px;background:#fff;padding:22px;border-radius:12px;box-shadow:0 14px 40px rgba(2,6,23,0.08);text-align:left}
-  #loginBox h2{margin:0 0 8px;color:var(--purple)}
-  /* responsive */
-  @media(max-width:900px){
-    .grid-4{grid-template-columns:repeat(2,1fr)}
-    .sidebar{position:fixed;left:-320px;top:64px;height:calc(100vh - 64px);z-index:60}
-    .sidebar.show{left:0;}
-    .main{padding:12px}
-  }
-  .toast-wrap{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-  .toast{background:#111;color:#fff;padding:8px 12px;border-radius:8px;opacity:0.95}
-  .small{font-size:12px}
-  .table-actions button{margin-left:6px}
+:root{
+  --bg:#f3f5fa;
+  --card:#ffffff;
+  --text:#0b1220;
+  --muted:#6b7280;
+  --sidebar:#153362;  /* deep blue */
+  --sidebar2:#1e3a8a;
+  --accent:#6366f1;
+  --success:#16a34a;
+  --danger:#ef4444;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+body{background:var(--bg);color:var(--text)}
+.app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;grid-template-areas:"sidebar header" "sidebar main";height:100vh}
+.header{grid-area:header;background:#fff;border-bottom:1px solid #eef2f7;display:flex;align-items:center;padding:0 18px;gap:12px}
+.hamb{display:none;background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--sidebar2)}
+.brand-title{font-weight:700;font-size:18px}
+.header .right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.header .btn{padding:8px 12px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+.sidebar{grid-area:sidebar;background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));color:#e9f0ff;padding:14px 12px;overflow:auto}
+.sidebar .logo{display:flex;align-items:center;gap:12px;height:56px;padding:6px 8px}
+.sidebar .logo .mark{width:40px;height:40px;border-radius:10px;background:#fff;color:var(--sidebar2);display:grid;place-items:center;font-weight:700}
+.sidebar ul{list-style:none;padding:12px 6px;margin:0}
+.sidebar li{padding:10px 10px;border-radius:8px;display:flex;gap:10px;align-items:center;cursor:pointer}
+.sidebar li:hover{background:rgba(255,255,255,0.05)}
+.sidebar li.active{background:rgba(255,255,255,0.08)}
+.main{grid-area:main;padding:18px;overflow:auto}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(15,23,42,0.06);padding:14px;margin-bottom:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{padding:12px;border-radius:10px;background:#fff;display:flex;flex-direction:column;gap:6px}
+.kpi .label{color:var(--muted);font-size:13px}
+.kpi .value{font-weight:700;font-size:20px;color:var(--sidebar2)}
+.row{display:flex;gap:12px;align-items:flex-start}
+.col{flex:1}
+.small{font-size:13px;color:var(--muted)}
+.table{width:100%;border-collapse:collapse;margin-top:8px;background:#fff;border-radius:10px;overflow:hidden}
+.table th,.table td{padding:10px;font-size:13px;border-bottom:1px solid #eef2f7;text-align:left}
+.table thead th{background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));color:#fff}
+.form{display:flex;flex-wrap:wrap;gap:8px}
+input,select,textarea{padding:8px;border-radius:8px;border:1px solid #e6edf6;background:#fff;min-width:140px}
+button.btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+.btn-primary{background:var(--sidebar2);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.badge{display:inline-block;padding:6px 10px;border-radius:8px;font-size:13px}
+.badge-green{background:#ecfdf5;color:#065f46}
+.badge-red{background:#fff1f2;color:#991b1b}
+.muted{color:var(--muted);font-size:13px}
+.footer-note{font-size:12px;color:var(--muted);margin-top:20px}
+
+/* responsive */
+@media(max-width:1000px){
+  .app{grid-template-columns:1fr;grid-template-rows:64px auto 1fr;grid-template-areas:"header" "sidebar" "main"}
+  .sidebar{position:fixed;left:-320px;top:64px;height:calc(100vh - 64px);width:260px;transition:left .2s;z-index:40}
+  .sidebar.show{left:0}
+  .hamb{display:inline-block}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+}
+.toast-wrap{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:#111;color:#fff;padding:8px 12px;border-radius:8px}
+.login-box{max-width:480px;margin:40px auto}
+.center{display:grid;place-items:center}
+
+/* visuals close to image: right column cards */
+.dashboard-layout{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.left-stack{display:grid;gap:14px}
+.right-stack{display:grid;gap:14px}
+.small-card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(15,23,42,0.04)}
 </style>
 </head>
 <body>
-<header>
-  <button class="hamb" id="hambBtn" aria-label="menu">☰</button>
-  <h1>ISP Manager — Starnet 💫</h1>
-  <div class="right">
-    <div id="userInfo" class="muted"></div>
-    <button id="logoutBtn" class="btn hidden">Logout</button>
-  </div>
-</header>
+<div class="app">
+  <header class="header">
+    <button class="hamb" id="hambBtn">☰</button>
+    <div class="brand-title">ISP Manager — Starnet 💫</div>
+    <div class="right">
+      <div id="timeNow" class="small muted"></div>
+      <div id="userInfo" class="small muted"></div>
+      <button id="logoutBtn" class="btn" style="display:none">Logout</button>
+    </div>
+  </header>
 
-<div class="wrap">
-  <nav class="sidebar" id="sidebar">
-    <h3 style="margin:6px 12px 12px">Menu</h3>
-    <ul>
-      <li onclick="openPage('dashboard')">📊 <span>Dashboard</span></li>
-      <li onclick="openPage('gangguan')">⚠️ <span>Gangguan</span></li>
-      <li onclick="openPage('pasang')">🆕 <span>Pasang Baru</span></li>
-      <li onclick="openPage('pelanggan')">👥 <span>Pelanggan</span></li>
-      <li onclick="openPage('billing')">💳 <span>Billing</span></li>
-      <li onclick="openPage('kas')">💰 <span>Kas</span></li>
-      <li onclick="openPage('odp')">🖧 <span>ODP</span></li>
-      <li onclick="openPage('mikrotik')">🔌 <span>Mikrotik</span></li>
-      <li onclick="openPage('material')">📦 <span>Material</span></li>
-      <li onclick="openPage('paket')">📘 <span>Paket / Tarif</span></li>
-      <li onclick="openPage('karyawan')">👔 <span>Karyawan</span></li>
-      <li onclick="openPage('webhook')">⚙️ <span>Webhook</span></li>
-      <li onclick="openPage('history')">🗂️ <span>History</span></li>
-      <li onclick="openPage('portal')">🌐 <span>Portal Pelanggan</span></li>
+  <aside class="sidebar" id="sidebar">
+    <div class="logo"><div class="mark">IS</div><div style="font-weight:700">ISP Panel</div></div>
+    <ul id="navList">
+      <li id="nav-dashboard" onclick="openPage('dashboard')">📊 Dashboard</li>
+      <li id="nav-gangguan" onclick="openPage('gangguan')">⚠️ Gangguan</li>
+      <li id="nav-pasang" onclick="openPage('pasang')">🆕 Pasang Baru</li>
+      <li id="nav-pelanggan" onclick="openPage('pelanggan')">👥 Pelanggan</li>
+      <li id="nav-billing" onclick="openPage('billing')">💳 Billing</li>
+      <li id="nav-kas" onclick="openPage('kas')">💰 Kas</li>
+      <li id="nav-odp" onclick="openPage('odp')">🖧 ODP</li>
+      <li id="nav-mikrotik" onclick="openPage('mikrotik')">🔌 Mikrotik</li>
+      <li id="nav-material" onclick="openPage('material')">📦 Material</li>
+      <li id="nav-paket" onclick="openPage('paket')">📘 Paket / Tarif</li>
+      <li id="nav-karyawan" onclick="openPage('karyawan')">👔 Karyawan</li>
+      <li id="nav-webhook" onclick="openPage('webhook')">⚙️ Webhook</li>
+      <li id="nav-history" onclick="openPage('history')">🗂️ History</li>
+      <li id="nav-portal" onclick="openPage('portal')">🌐 Portal Pelanggan</li>
+      <li onclick="logout()" style="margin-top:8px;color:#ffb4b4">🚪 Logout</li>
     </ul>
-    <hr style="border-color:rgba(255,255,255,0.06);margin:12px 0">
-    <div class="muted small" style="padding:0 12px">by Dnt Grup - Starnet</div>
-  </nav>
+    <div class="footer-note">VSN4 — by Dnt Grup</div>
+  </aside>
 
-  <main class="main" id="main">
+  <main class="main">
     <!-- LOGIN SCREEN -->
-    <section id="loginScreen">
-      <div id="loginBox">
-        <h2>Login Karyawan / Pelanggan</h2>
-        <p class="muted">Gunakan default testing: <strong>12345 / admin</strong></p>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <input id="inpNik" placeholder="NIK / ID Pelanggan" />
-          <input id="inpPass" placeholder="Password" type="password" />
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary" onclick="doLogin()">Login</button>
-            <button class="btn" onclick="fillDemo()">Isi Demo</button>
-            <button class="btn" onclick="resetDataConfirm()">Reset DB</button>
-          </div>
-          <div id="loginMsg" class="muted" style="color:#b91c1c"></div>
-        </div>
+    <section id="loginScreen" class="card login-box">
+      <h2 style="margin:0 0 8px;color:var(--sidebar2)">Login Karyawan / Pelanggan</h2>
+      <div class="small muted" style="margin-bottom:8px">Default: <b>12345 / admin</b></div>
+      <div class="form">
+        <input id="inpNik" placeholder="NIK / ID Pelanggan">
+        <input id="inpPass" placeholder="Password" type="password">
+        <button class="btn btn-primary" onclick="doLogin()">Login</button>
+        <button class="btn" onclick="fillDemo()">Isi Demo</button>
+        <button class="btn" onclick="resetDataConfirm()">Reset DB</button>
       </div>
+      <div id="loginMsg" class="small" style="color:var(--danger);margin-top:8px"></div>
     </section>
 
     <!-- DASHBOARD -->
     <section id="dashboard" class="hidden">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><h2>Dashboard</h2><div class="muted small">Ringkasan sistem</div></div>
-        <div class="muted small" id="timeNow"></div>
+        <div>
+          <h2 style="margin:0 0 4px">Dashboard</h2>
+          <div class="small muted">Ringkasan & monitoring</div>
+        </div>
       </div>
 
-      <div class="grid-4" style="margin-top:12px">
-        <div class="card"><div class="muted">Pelanggan</div><div class="stat" id="statPelanggan">0</div></div>
-        <div class="card"><div class="muted">Tiket Gangguan</div><div class="stat" id="statGangguan">0</div></div>
-        <div class="card"><div class="muted">Pasang Baru</div><div class="stat" id="statPasang">0</div></div>
-        <div class="card"><div class="muted">Stok Material</div><div class="stat" id="statMaterial">0</div></div>
-      </div>
+      <div class="card dashboard-layout" style="margin-top:12px">
+        <div class="left-stack">
+          <div class="grid-4">
+            <div class="kpi card">
+              <div class="label">Jumlah Pelanggan</div>
+              <div class="value" id="kpiPelanggan">0</div>
+            </div>
+            <div class="kpi card">
+              <div class="label">Gangguan Aktif</div>
+              <div class="value" id="kpiGangguan">0</div>
+            </div>
+            <div class="kpi card">
+              <div class="label">Pendapatan</div>
+              <div class="value" id="kpiRevenue">Rp 0</div>
+            </div>
+            <div class="kpi card">
+              <div class="label">Kas</div>
+              <div class="value" id="kpiKas">Rp 0</div>
+            </div>
+          </div>
 
-      <div class="card" style="margin-top:12px">
-        <canvas id="dashChart" height="100"></canvas>
-      </div>
+          <div class="card">
+            <div class="small muted">Gangguan (per bulan)</div>
+            <canvas id="chartGangguan" height="110"></canvas>
+          </div>
 
-      <div class="card">
-        <h3>Recent Activity</h3>
-        <div id="recentList" style="max-height:220px;overflow:auto"></div>
+          <div class="card">
+            <h3 style="margin:0 0 8px">Portal Pelanggan</h3>
+            <div class="small muted">Halo, Pelanggan! <span style="float:right" class="badge badge-green">Aktif</span></div>
+
+            <div style="margin-top:12px">
+              <div class="small muted">Tagihan</div>
+              <table class="table" id="miniBillingTable"><thead><tr><th>Periode</th><th>Jumlah</th><th>Status</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <div style="margin-top:10px">
+              <div class="small muted">Tiket</div>
+              <table class="table" id="miniTiketTable"><thead><tr><th>ID</th><th>Masalah</th><th>Status</th></tr></thead><tbody></tbody></table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin:0 0 8px">Portal Pelanggan</h3>
+            <div class="small muted">Ringkasan portal & link</div>
+            <div style="margin-top:12px">Lorem ipsum, portal pelanggan ...</div>
+          </div>
+        </div>
+
+        <div class="right-stack">
+          <div class="small-card">
+            <div class="small muted">TTR Terbaru</div>
+            <div style="border:1px solid #dfe8ff;padding:10px;border-radius:8px;margin-top:8px"><b id="kpiTTR">TTR: 2 Jam</b></div>
+          </div>
+
+          <div class="small-card">
+            <div class="small muted">Billing / Revenue</div>
+            <canvas id="chartRevenue" height="120"></canvas>
+          </div>
+
+          <div class="small-card">
+            <div class="small muted">Titera Mantar</div>
+            <canvas id="chartOther" height="120"></canvas>
+          </div>
+
+          <div class="small-card">
+            <div class="small muted">Feedback</div>
+            <div id="rating" style="font-size:22px;margin:8px 0;cursor:pointer">★★★★★</div>
+            <textarea id="fb_text" placeholder="Komentar" style="width:100%;border:1px solid #eef2f7;border-radius:8px;padding:8px" rows="3"></textarea>
+            <div style="margin-top:8px;text-align:right"><button class="btn btn-primary" onclick="submitFeedback()">Kirim</button></div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- GANGGUAN -->
     <section id="gangguan" class="hidden">
       <h2>Gangguan / Tiket</h2>
-
       <div class="card">
-        <form id="formGangguan" onsubmit="return handleGangguanForm(event)">
-          <div class="form-row">
-            <input id="g_name" placeholder="Nama Pelanggan" required />
-            <input id="g_nohp" placeholder="No HP"/>
-            <input id="g_masalah" placeholder="Ringkasan Masalah" required />
-            <select id="g_prioritas"><option>Normal</option><option>Urgent</option></select>
-            <button class="btn btn-primary" type="submit">Buat Tiket</button>
-          </div>
+        <form id="formGangguan" class="form" onsubmit="return createGangguan(event)">
+          <input id="g_name" placeholder="Nama Pelanggan" required>
+          <input id="g_nohp" placeholder="No HP">
+          <input id="g_masalah" placeholder="Ringkasan Masalah" required>
+          <select id="g_prioritas"><option>Normal</option><option>Urgent</option></select>
+          <button class="btn btn-primary" type="submit">Buat Tiket</button>
         </form>
       </div>
-
       <div class="card">
-        <table>
-          <thead><tr><th>Tiket Gangguan</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th style="text-align:right">Aksi</th></tr></thead>
-          <tbody id="tblGangguan"></tbody>
-        </table>
+        <table class="table"><thead><tr><th>Tiket Gangguan</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblGangguan"></tbody></table>
       </div>
     </section>
 
     <!-- PASANG BARU -->
     <section id="pasang" class="hidden">
       <h2>Pasang Baru</h2>
-
       <div class="card">
-        <form id="formPasang" onsubmit="return handlePasangForm(event)">
-          <div class="form-row">
-            <input id="p_nama" placeholder="Nama" required />
-            <input id="p_alamat" placeholder="Alamat" required />
-            <input id="p_hp" placeholder="No HP" required />
-            <input id="p_nik" placeholder="NIK" required />
-            <input id="p_paket" placeholder="Paket" required />
-            <input id="p_odp" placeholder="ODP" />
-            <input id="p_mac" placeholder="MAC / SN ONT" />
-            <button class="btn btn-primary" type="submit">Daftar Pasang</button>
-          </div>
+        <form id="formPasang" class="form" onsubmit="return createPasang(event)">
+          <input id="p_nama" placeholder="Nama" required>
+          <input id="p_alamat" placeholder="Alamat" required>
+          <input id="p_hp" placeholder="No HP" required>
+          <input id="p_nik" placeholder="NIK" required>
+          <input id="p_paket" placeholder="Paket" required>
+          <input id="p_odp" placeholder="ODP">
+          <input id="p_mac" placeholder="MAC / SN ONT">
+          <button class="btn btn-primary" type="submit">Daftar Pasang</button>
         </form>
       </div>
-
       <div class="card">
-        <table>
-          <thead><tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>NIK</th><th>Paket</th><th>ODP</th><th>SN ONT</th><th>Status</th><th style="text-align:right">Aksi</th></tr></thead>
-          <tbody id="tblPasang"></tbody>
-        </table>
+        <table class="table"><thead><tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>NIK</th><th>Paket</th><th>ODP</th><th>SN ONT</th><th>Status</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblPasang"></tbody></table>
       </div>
     </section>
 
@@ -195,128 +255,107 @@
         <button class="btn btn-primary" onclick="openAddPelanggan()">Tambah Pelanggan</button>
       </div>
       <div class="card">
-        <table>
-          <thead><tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>Paket</th><th style="text-align:right">Aksi</th></tr></thead>
-          <tbody id="tblPelanggan"></tbody>
-        </table>
+        <table class="table"><thead><tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>Paket</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblPelanggan"></tbody></table>
       </div>
     </section>
 
     <!-- BILLING -->
     <section id="billing" class="hidden">
-      <h2>Billing (Dummy)</h2>
-      <div class="card"><button class="btn btn-primary" onclick="generateDummyBilling()">Generate Dummy Billing</button></div>
+      <h2>Billing</h2>
       <div class="card">
-        <table><thead><tr><th>No</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblBilling"></tbody></table>
+        <button class="btn btn-primary" onclick="generateDummyBilling()">Generate Dummy Billing</button>
+      </div>
+      <div class="card">
+        <table class="table"><thead><tr><th>ID</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblBilling"></tbody></table>
       </div>
     </section>
 
     <!-- KAS -->
     <section id="kas" class="hidden">
       <h2>Kas / Keuangan</h2>
-      <div class="card"><table><thead><tr><th>No</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead><tbody id="tblKas"></tbody></table></div>
+      <div class="card">
+        <table class="table"><thead><tr><th>No</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead><tbody id="tblKas"></tbody></table>
+      </div>
     </section>
 
     <!-- ODP -->
     <section id="odp" class="hidden">
       <h2>ODP</h2>
       <div class="card">
-        <form id="formODP" onsubmit="return handleODPForm(event)">
-          <div class="form-row">
-            <input id="odp_kode" placeholder="Kode ODP" required />
-            <input id="odp_lokasi" placeholder="Lokasi"/>
-            <input id="odp_port" placeholder="Port"/>
-            <button class="btn btn-primary" type="submit">Tambah ODP</button>
-          </div>
+        <form id="formODP" class="form" onsubmit="return createODP(event)">
+          <input id="odp_kode" placeholder="Kode ODP" required>
+          <input id="odp_lokasi" placeholder="Lokasi">
+          <input id="odp_port" placeholder="Port">
+          <button class="btn btn-primary" type="submit">Tambah ODP</button>
         </form>
       </div>
-      <div class="card">
-        <table><thead><tr><th>ODP</th><th>Lokasi</th><th>Port</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblODP"></tbody></table>
-      </div>
+      <div class="card"><table class="table"><thead><tr><th>ODP</th><th>Lokasi</th><th>Port</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblODP"></tbody></table></div>
     </section>
 
     <!-- MIKROTIK -->
     <section id="mikrotik" class="hidden">
       <h2>Mikrotik</h2>
       <div class="card">
-        <form id="formMT" onsubmit="return handleMTForm(event)">
-          <div class="form-row">
-            <input id="mt_name" placeholder="Nama Router" required />
-            <input id="mt_ip" placeholder="IP"/>
-            <input id="mt_user" placeholder="User"/>
-            <button class="btn btn-primary" type="submit">Tambah</button>
-          </div>
+        <form id="formMT" class="form" onsubmit="return createMT(event)">
+          <input id="mt_name" placeholder="Nama Router" required>
+          <input id="mt_ip" placeholder="IP">
+          <input id="mt_user" placeholder="User">
+          <button class="btn btn-primary" type="submit">Tambah</button>
         </form>
       </div>
-      <div class="card">
-        <table><thead><tr><th>Nama</th><th>IP</th><th>User</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblMT"></tbody></table>
-      </div>
+      <div class="card"><table class="table"><thead><tr><th>Nama</th><th>IP</th><th>User</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblMT"></tbody></table></div>
     </section>
 
     <!-- MATERIAL -->
     <section id="material" class="hidden">
       <h2>Material / Inventory</h2>
       <div class="card">
-        <form id="formMaterial" onsubmit="return handleMaterialForm(event)">
-          <div class="form-row">
-            <input id="m_name" placeholder="Nama Material" required />
-            <input id="m_stok" type="number" placeholder="Stok" min="0" required />
-            <button class="btn btn-primary" type="submit">Tambah Material</button>
-          </div>
+        <form id="formMaterial" class="form" onsubmit="return createMaterial(event)">
+          <input id="m_name" placeholder="Nama Material" required>
+          <input id="m_stok" type="number" min="0" placeholder="Stok" required>
+          <button class="btn btn-primary" type="submit">Tambah Material</button>
         </form>
       </div>
-      <div class="card">
-        <table><thead><tr><th>Material</th><th>Stok</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblMaterial"></tbody></table>
-      </div>
+      <div class="card"><table class="table"><thead><tr><th>Material</th><th>Stok</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblMaterial"></tbody></table></div>
     </section>
 
     <!-- PAKET -->
     <section id="paket" class="hidden">
       <h2>Paket / Tarif</h2>
       <div class="card">
-        <form id="formPaket" onsubmit="return handlePaketForm(event)">
-          <div class="form-row">
-            <input id="pkg_name" placeholder="Nama Paket" required />
-            <input id="pkg_price" type="number" placeholder="Harga" />
-            <input id="pkg_speed" placeholder="Kecepatan" />
-            <button class="btn btn-primary" type="submit">Tambah Paket</button>
-          </div>
+        <form id="formPaket" class="form" onsubmit="return createPaket(event)">
+          <input id="pkg_name" placeholder="Nama Paket" required>
+          <input id="pkg_price" type="number" placeholder="Harga">
+          <input id="pkg_speed" placeholder="Kecepatan">
+          <button class="btn btn-primary" type="submit">Tambah Paket</button>
         </form>
       </div>
-      <div class="card">
-        <table><thead><tr><th>Paket</th><th>Harga</th><th>Kecepatan</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblPaket"></tbody></table>
-      </div>
+      <div class="card"><table class="table"><thead><tr><th>Paket</th><th>Harga</th><th>Kecepatan</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblPaket"></tbody></table></div>
     </section>
 
     <!-- KARYAWAN -->
     <section id="karyawan" class="hidden">
-      <h2>Karyawan</h2>
+      <h2>Manajemen Karyawan</h2>
       <div class="card">
-        <form id="formUser" onsubmit="return handleUserForm(event)">
-          <div class="form-row">
-            <input id="u_nik" placeholder="NIK" required />
-            <input id="u_name" placeholder="Nama" required />
-            <input id="u_pass" placeholder="Password" required />
-            <select id="u_role"><option value="admin">admin</option><option value="teknisi">teknisi</option></select>
-            <button class="btn btn-primary" type="submit">Tambah</button>
-          </div>
+        <form id="formUser" class="form" onsubmit="return createUser(event)">
+          <input id="u_nik" placeholder="NIK" required>
+          <input id="u_name" placeholder="Nama" required>
+          <input id="u_pass" placeholder="Password" required>
+          <select id="u_role"><option value="admin">admin</option><option value="teknisi">teknisi</option></select>
+          <button class="btn btn-primary" type="submit">Tambah</button>
         </form>
       </div>
-      <div class="card">
-        <table><thead><tr><th>NIK</th><th>Nama</th><th>Role</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblUsers"></tbody></table>
-      </div>
+      <div class="card"><table class="table"><thead><tr><th>NIK</th><th>Nama</th><th>Role</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="tblUsers"></tbody></table></div>
     </section>
 
     <!-- WEBHOOK -->
     <section id="webhook" class="hidden">
-      <h2>Webhook (dummy)</h2>
+      <h2>Webhook</h2>
       <div class="card">
-        <form id="formWebhook" onsubmit="return handleWebhook(event)">
-          <div class="form-row">
-            <input id="wh_url" placeholder="URL Webhook"/>
-            <input id="wh_auth" placeholder="Auth Header"/>
-            <button class="btn btn-primary" type="submit">Simpan</button>
-          </div>
+        <form id="formWebhook" class="form" onsubmit="return saveWebhook(event)">
+          <input id="wh_url" placeholder="URL Webhook">
+          <input id="wh_auth" placeholder="Auth Header">
+          <button class="btn btn-primary" type="submit">Simpan</button>
         </form>
       </div>
     </section>
@@ -324,118 +363,77 @@
     <!-- HISTORY -->
     <section id="history" class="hidden">
       <h2>History / Arsip</h2>
-      <div class="card">
-        <table><thead><tr><th>Waktu</th><th>Jenis</th><th>Item</th><th>Deskripsi</th></tr></thead><tbody id="tblHistory"></tbody></table>
-      </div>
+      <div class="card"><table class="table"><thead><tr><th>Waktu</th><th>Jenis</th><th>Item</th><th>Deskripsi</th></tr></thead><tbody id="tblHistory"></tbody></table></div>
     </section>
 
     <!-- PORTAL -->
     <section id="portal" class="hidden">
-      <h2>Portal Pelanggan (Read-only)</h2>
-      <div class="card">
-        <table><thead><tr><th>Tiket</th><th>Pelanggan</th><th>Status</th></tr></thead><tbody id="tblPortal"></tbody></table>
-      </div>
+      <h2>Portal Pelanggan</h2>
+      <div class="card"><table class="table"><thead><tr><th>Tiket</th><th>Pelanggan</th><th>Status</th></tr></thead><tbody id="tblPortal"></tbody></table></div>
     </section>
+
   </main>
 </div>
 
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-/* -------------------------
+/* ---------------------------
    Local DB in localStorage
-   ------------------------- */
-const LS_KEY = 'isp_manager_final_v1';
-
+   --------------------------- */
+const LS_KEY = 'isp_manager_final_local';
 function defaultDB(){
   return {
     users: { '12345': { nik:'12345', nama:'Admin Demo', password:'admin', role:'admin' } },
-    pelanggan: {}, // id -> {}
-    pasang: {}, // id -> {}
-    gangguan: {}, // tiket -> {}
-    material: {}, // id -> {}
-    odp: {}, mikrotik: {}, paket: {}, billing: {}, kas:{}, webhook:{}, history:[]
+    pelanggan: {}, pasang: {}, gangguan: {}, material: {}, odp: {}, mikrotik: {}, paket: {}, billing: {}, kas: {}, webhook:{}, history: [], feedback: []
   };
 }
 function loadDB(){
   const raw = localStorage.getItem(LS_KEY);
   if(!raw){ const d = defaultDB(); saveDB(d); return d; }
-  try{ return JSON.parse(raw); }catch(e){ const d=defaultDB(); saveDB(d); return d; }
+  try{ return JSON.parse(raw); } catch(e){ const d = defaultDB(); saveDB(d); return d; }
 }
 function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); DB = db; }
 
 let DB = loadDB();
 
-/* create reserved TC0000 if missing */
+/* ensure reserved TC0000 */
 if(!DB.gangguan['TC0000']){
-  DB.gangguan['TC0000'] = { tiket:'TC0000', pelanggan:'RESERVED', masalah:'Reserved - do not change', status:'Reserved', ttr:'--', createdAt:new Date().toISOString() };
+  DB.gangguan['TC0000'] = { tiket:'TC0000', pelanggan:'RESERVED', masalah:'Reserved - Do Not Change', status:'Reserved', ttr:'--', createdAt:new Date().toISOString() };
   saveDB(DB);
 }
 
 /* helpers */
 function uid(prefix='id'){ return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function now(){ return new Date().toISOString(); }
-function toast(msg, t=2200){ const wrap=document.getElementById('toastWrap'); const el=document.createElement('div'); el.className='toast'; el.innerText=msg; wrap.appendChild(el); setTimeout(()=> el.style.opacity='0', t-400); setTimeout(()=> wrap.removeChild(el), t); }
 function hist(type,item,desc){ DB.history.unshift({ ts: now(), type, item, desc }); if(DB.history.length>800) DB.history.length=800; saveDB(DB); }
+function toast(msg, t=2200){ const w=document.getElementById('toastWrap'); const el=document.createElement('div'); el.className='toast'; el.innerText = msg; w.appendChild(el); setTimeout(()=> el.style.opacity='0', t-300); setTimeout(()=> { try{ w.removeChild(el);}catch{} }, t); }
+function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-/* ticket & internet generation */
 function nextTicketCode(){
-  const keys = Object.keys(DB.gangguan).filter(k=>/^TC\d{4}$/.test(k) && k !== 'TC0000');
-  let max = 0; keys.forEach(k=>{ const n = parseInt(k.slice(2),10); if(!isNaN(n)&&n>max) max=n; });
+  const keys = Object.keys(DB.gangguan).filter(k=>/^TC\d{4}$/.test(k) && k!=='TC0000');
+  let max = 0; keys.forEach(k=>{ const n = parseInt(k.slice(2),10); if(!isNaN(n) && n>max) max = n; });
   return 'TC' + String(max + 1).padStart(4,'0');
 }
 function nextInternetNo(){
   const vals = Object.values(DB.pasang).map(p=>p.no_inet).filter(Boolean);
-  if(vals.length === 0) return '1906140000';
+  if(vals.length===0) return '1906140000';
   let max = 0; vals.forEach(v=>{ const n = parseInt(String(v).replace(/\D/g,''),10); if(!isNaN(n) && n>max) max=n; });
   return String(max + 1);
 }
 
-/* --------------------
+/* -------------------------
    Auth & Navigation
-   -------------------- */
+   ------------------------- */
 let currentUser = null;
-document.getElementById('hambBtn').addEventListener('click', ()=>{
-  const sb = document.getElementById('sidebar');
-  if(window.innerWidth <= 900) sb.classList.toggle('show'); else sb.classList.toggle('collapsed');
-});
-setInterval(()=> document.getElementById('timeNow').innerText = new Date().toLocaleString(),1000);
+const pages = ['dashboard','gangguan','pasang','pelanggan','billing','kas','odp','mikrotik','material','paket','karyawan','webhook','history','portal'];
 
-function fillDemo(){ document.getElementById('inpNik').value='12345'; document.getElementById('inpPass').value='admin'; }
-
-function doLogin(){
-  const nik = document.getElementById('inpNik').value.trim();
-  const pass = document.getElementById('inpPass').value;
-  const msg = document.getElementById('loginMsg'); msg.innerText='';
-  if(!nik || !pass){ msg.innerText='Isi NIK & Password'; return; }
-  if(DB.users[nik] && DB.users[nik].password === pass){
-    currentUser = { ...DB.users[nik] };
-    onLogin();
-  } else {
-    msg.innerText = 'ID tidak ditemukan atau password salah';
-  }
-}
-function onLogin(){
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('logoutBtn').classList.remove('hidden');
-  document.getElementById('userInfo').innerText = `${currentUser.nama || currentUser.nik} (${currentUser.role||'-'})`;
-  openPage('dashboard');
-  toast('Login sukses: ' + (currentUser.nama||currentUser.nik));
-}
-document.getElementById('logoutBtn').addEventListener('click', ()=>{
-  currentUser = null;
-  document.getElementById('loginScreen').classList.remove('hidden');
-  hideAllPages();
-  document.getElementById('userInfo').innerText='';
-  document.getElementById('logoutBtn').classList.add('hidden');
-});
-
-function hideAllPages(){ ['dashboard','gangguan','pasang','pelanggan','billing','kas','odp','mikrotik','material','paket','karyawan','webhook','history','portal'].forEach(id=>document.getElementById(id).classList.add('hidden')); }
+function hideAll(){ pages.forEach(p=> document.getElementById(p).classList.add('hidden')); document.querySelectorAll('#navList li').forEach(li=>li.classList.remove('active')); }
 function openPage(page){
-  if(!currentUser){ alert('Login terlebih dahulu'); return; }
-  hideAllPages();
-  document.getElementById(page).classList.remove('hidden');
-  // render relevant
+  if(!currentUser){ alert('Silakan login terlebih dahulu'); return; }
+  hideAll(); document.getElementById(page).classList.remove('hidden');
+  document.getElementById('nav-'+page)?.classList.add('active');
+  // render each page on open
   switch(page){
     case 'dashboard': renderDashboard(); break;
     case 'gangguan': renderGangguan(); break;
@@ -451,134 +449,149 @@ function openPage(page){
     case 'portal': renderPortal(); break;
     case 'kas': renderKas(); break;
   }
-  // hide sidebar on mobile
   document.getElementById('sidebar').classList.remove('show');
 }
 
-/* --------------------
-   Dashboard
-   -------------------- */
-let dashChart = null;
+document.getElementById('hambBtn').addEventListener('click', ()=> {
+  const sb = document.getElementById('sidebar');
+  if(window.innerWidth <= 1000) sb.classList.toggle('show'); else sb.classList.toggle('collapsed');
+});
+
+function fillDemo(){ document.getElementById('inpNik').value='12345'; document.getElementById('inpPass').value='admin'; }
+
+function doLogin(){
+  const nik = document.getElementById('inpNik').value.trim();
+  const pass = document.getElementById('inpPass').value;
+  const msg = document.getElementById('loginMsg'); msg.innerText = '';
+  if(!nik || !pass){ msg.innerText = 'Isi NIK & password'; return; }
+  if(DB.users[nik] && DB.users[nik].password === pass){
+    currentUser = { ...DB.users[nik] };
+    afterLogin();
+  } else { msg.innerText = 'ID tidak ditemukan atau password salah'; }
+}
+function afterLogin(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+  document.getElementById('userInfo').innerText = `${currentUser.nama || currentUser.nik} (${currentUser.role||'-'})`;
+  openPage('dashboard');
+  toast('Login sukses: ' + (currentUser.nama||currentUser.nik));
+}
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  currentUser = null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  hideAll();
+  document.getElementById('userInfo').innerText = '';
+  document.getElementById('logoutBtn').style.display = 'none';
+});
+
+/* update time */
+setInterval(()=> document.getElementById('timeNow').innerText = new Date().toLocaleString(), 1000);
+
+/* -------------------------
+   Dashboard rendering + charts
+   ------------------------- */
+let chGang=null, chRev=null, chOther=null;
 function renderDashboard(){
-  const cP = Object.keys(DB.pelanggan).length;
-  const cG = Object.values(DB.gangguan).filter(g=>g.tiket!=='TC0000' && g.status !== 'Selesai').length;
-  const cPB = Object.keys(DB.pasang).length;
-  const cM = Object.values(DB.material).reduce((s,m)=>s + (Number(m.stok)||0),0);
+  document.getElementById('kpiPelanggan').innerText = Object.keys(DB.pelanggan).length;
+  document.getElementById('kpiGangguan').innerText = Object.values(DB.gangguan).filter(g=>g.tiket!=='TC0000' && g.status!=='Selesai').length;
+  const revenue = Object.values(DB.billing).reduce((s,b)=>s + (Number(b.jumlah)||0),0);
+  const kasVal = Object.values(DB.kas).reduce((s,k)=>s + (Number(k.masuk)||0) - (Number(k.keluar)||0),0);
+  document.getElementById('kpiRevenue').innerText = 'Rp ' + formatNum(revenue);
+  document.getElementById('kpiKas').innerText = 'Rp ' + formatNum(kasVal);
+  const latestTTR = Object.values(DB.gangguan).filter(g=>g.ttr && g.tiket!=='TC0000').sort((a,b)=>(b.closedAt||'').localeCompare(a.closedAt||''))[0];
+  document.getElementById('kpiTTR').innerText = 'TTR: ' + (latestTTR ? latestTTR.ttr : '0 Jam');
 
-  document.getElementById('statPelanggan').innerText = cP;
-  document.getElementById('statGangguan').innerText = cG;
-  document.getElementById('statPasang').innerText = cPB;
-  document.getElementById('statMaterial').innerText = cM;
-
-  const ctx = document.getElementById('dashChart').getContext('2d');
-  if(dashChart) dashChart.destroy();
-  dashChart = new Chart(ctx, {
-    type:'bar',
-    data:{ labels:['Pelanggan','Gangguan','Pasang','Material'], datasets:[{ label:'Jumlah', data:[cP, Object.keys(DB.gangguan).length - 1, cPB, cM], backgroundColor:['rgba(124,58,237,0.7)'] }]},
-    options:{responsive:true,plugins:{legend:{display:false}}}
+  // mini tables
+  const mb = document.querySelector('#miniBillingTable tbody'); mb.innerHTML='';
+  Object.values(DB.billing).slice(0,3).forEach(b=>{
+    const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(b.periode||'-')}</td><td>Rp ${formatNum(b.jumlah||0)}</td><td>${b.status||'-'}</td>`; mb.appendChild(tr);
+  });
+  const mt = document.querySelector('#miniTiketTable tbody'); mt.innerHTML='';
+  Object.values(DB.gangguan).filter(g=>g.tiket!=='TC0000').slice(0,3).forEach(g=>{
+    const tr=document.createElement('tr'); tr.innerHTML=`<td>${g.tiket}</td><td>${escapeHtml(g.masalah)}</td><td>${escapeHtml(g.status)}</td>`; mt.appendChild(tr);
   });
 
-  // recent
-  const recent = document.getElementById('recentList'); recent.innerHTML='';
-  DB.history.slice(0,30).forEach(h=>{
-    const d = document.createElement('div'); d.className='muted small'; d.style.marginBottom='6px';
-    d.innerText = `${new Date(h.ts).toLocaleString()} • ${h.type} • ${h.item} • ${h.desc}`;
-    recent.appendChild(d);
-  });
+  // charts (dummy data but update values)
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const rand = (n)=> months.map(()=> Math.floor(Math.random()*n));
+  const ctxG = document.getElementById('chartGangguan').getContext('2d');
+  const ctxR = document.getElementById('chartRevenue').getContext('2d');
+  const ctxO = document.getElementById('chartOther').getContext('2d');
+  if(chGang) chGang.destroy(); if(chRev) chRev.destroy(); if(chOther) chOther.destroy();
+  chGang = new Chart(ctxG, { type:'bar', data:{labels:months,datasets:[{label:'Gangguan',data:rand(10),backgroundColor:'rgba(59,130,246,0.9)'}]}, options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  chRev = new Chart(ctxR, { type:'line', data:{labels:months,datasets:[{label:'Revenue',data:rand(400),borderColor:'rgba(59,130,246,0.9)',tension:0.3,fill:true,backgroundColor:'rgba(59,130,246,0.08)'}]}, options:{plugins:{legend:{display:false}}}});
+  chOther = new Chart(ctxO, { type:'line', data:{labels:months,datasets:[{label:'Other',data:rand(30),borderColor:'rgba(99,102,241,0.9)',tension:0.3,fill:true,backgroundColor:'rgba(99,102,241,0.06)'}]}, options:{plugins:{legend:{display:false}}}});
 }
 
-/* --------------------
-   Gangguan (CRUD + simulation)
-   -------------------- */
-function handleGangguanForm(e){
+/* -------------------------
+   Gangguan: create, assign, simulate, CRUD
+   ------------------------- */
+function createGangguan(e){
   e.preventDefault();
   const pelanggan = document.getElementById('g_name').value.trim();
   const nohp = document.getElementById('g_nohp').value.trim();
   const masalah = document.getElementById('g_masalah').value.trim();
-  const prioritas = document.getElementById('g_prioritas').value;
+  const prior = document.getElementById('g_prioritas').value;
   if(!pelanggan || !masalah) return alert('Lengkapi field');
   const tiket = nextTicketCode();
-  DB.gangguan[tiket] = { tiket, pelanggan, nohp, masalah, prioritas, status:'Menunggu', ttr:'--', createdAt:now() };
-  hist('gangguan.create', tiket, `Dibuat oleh ${currentUser?currentUser.nik:'unknown'}`);
+  DB.gangguan[tiket] = { tiket, pelanggan, nohp, masalah, prioritas:prior, status:'Menunggu', ttr:'--', createdAt: now() };
+  hist('gangguan.create', tiket, `Dibuat oleh ${currentUser?currentUser.nik:'-'} `);
   saveDB(DB);
-  e.target.reset();
-  renderGangguan();
-  toast('Tiket dibuat: ' + tiket);
+  e.target.reset(); renderGangguan(); toast('Tiket dibuat: '+tiket);
 }
 function renderGangguan(){
-  const tbody = document.getElementById('tblGangguan'); tbody.innerHTML='';
-  const arr = Object.values(DB.gangguan).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+  const tb = document.getElementById('tblGangguan'); tb.innerHTML='';
+  const arr = Object.values(DB.gangguan).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
   arr.forEach(g=>{
     const tr = document.createElement('tr');
-    const actions = document.createElement('td');
-    actions.style.textAlign='right';
-    if(g.tiket !== 'TC0000'){
-      if(g.status === 'Menunggu'){
-        const btnAssign = createBtn('Kirim ke Teknisi','btn btn-success',()=>assignTicket(g.tiket));
-        actions.appendChild(btnAssign);
-      }
-      if(g.status === 'Progres' || g.status === 'Material Dicek'){
-        const btnClose = createBtn('Tutup','btn btn-primary',()=>closeTicket(g.tiket));
-        actions.appendChild(btnClose);
-      }
-      const btnDel = createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus tiket '+g.tiket+' ?')){ delete DB.gangguan[g.tiket]; hist('gangguan.delete', g.tiket, 'Deleted'); saveDB(DB); renderGangguan(); }});
-      actions.appendChild(btnDel);
-    } else {
-      actions.innerHTML = '<small class="muted">Reserved</small>';
+    tr.innerHTML = `<td>${g.tiket}</td><td>${escapeHtml(g.pelanggan)}</td><td>${escapeHtml(g.masalah)}</td><td>${escapeHtml(g.status)}</td><td>${escapeHtml(g.ttr||'--')}</td>`;
+    const td = document.createElement('td'); td.style.textAlign='right';
+    if(g.tiket==='TC0000'){ td.innerHTML = '<small class="muted">Reserved</small>'; }
+    else {
+      if(g.status === 'Menunggu') td.appendChild(createAction('Kirim ke Teknisi', 'btn-success', ()=> assignTicket(g.tiket)));
+      if(g.status === 'Progres' || g.status === 'Material Dicek') td.appendChild(createAction('Tutup', 'btn-primary', ()=> closeTicket(g.tiket)));
+      td.appendChild(createAction('Hapus', 'btn-danger', ()=> { if(confirm('Hapus tiket '+g.tiket+'?')){ delete DB.gangguan[g.tiket]; hist('gangguan.delete', g.tiket, 'Deleted'); saveDB(DB); renderGangguan(); } }));
     }
-    tr.innerHTML = `<td>${g.tiket}</td><td>${escapeHtml(g.pelanggan)}</td><td>${escapeHtml(g.masalah)}</td><td>${g.status||'-'}</td><td>${g.ttr||'--'}</td>`;
-    tr.appendChild(actions);
-    tbody.appendChild(tr);
+    tr.appendChild(td); tb.appendChild(tr);
   });
 }
-
 function assignTicket(tiket){
   if(!confirm('Kirim tiket '+tiket+' ke teknisi?')) return;
-  DB.gangguan[tiket].status = 'Progres';
-  DB.gangguan[tiket].assignedAt = now();
-  hist('gangguan.assign', tiket, `Assigned by ${currentUser?currentUser.nik:'unknown'}`);
+  DB.gangguan[tiket].status = 'Progres'; DB.gangguan[tiket].assignedAt = now();
+  hist('gangguan.assign', tiket, 'Assigned to teknisi');
   saveDB(DB); renderGangguan(); toast('WA sim: tiket dikirim ke teknisi');
   setTimeout(()=> technicianProcess(tiket), 1000);
 }
-
 function technicianProcess(tiket){
-  try{
-    DB.gangguan[tiket].status = 'Material Dicek';
-    saveDB(DB); renderGangguan(); hist('gangguan.verify', tiket, 'Teknisi verifikasi');
-    // find first material with stok>0
-    const mats = Object.values(DB.material);
-    let reduced = false;
-    for(const m of mats){
-      if(Number(m.stok) > 0){
-        DB.material[m.id].stok = Number(DB.material[m.id].stok) - 1;
-        saveDB(DB);
-        hist('material.update', m.id, `Stok -1 for ${tiket}`);
-        reduced = true;
-        break;
-      }
+  const g = DB.gangguan[tiket]; if(!g) return;
+  g.status = 'Material Dicek'; saveDB(DB); renderGangguan(); hist('gangguan.verify', tiket, 'Teknisi verifikasi');
+  // reduce one material if available
+  const mats = Object.values(DB.material);
+  for(const m of mats){
+    if(Number(m.stok) > 0){
+      DB.material[m.id].stok = Number(DB.material[m.id].stok) - 1;
+      hist('material.update', m.id, `Stok -1 for ${tiket}`);
+      break;
     }
-    setTimeout(()=>{
-      DB.gangguan[tiket].status = 'Selesai';
-      DB.gangguan[tiket].ttr = '1 jam (sim)';
-      DB.gangguan[tiket].closedAt = now();
-      hist('gangguan.close', tiket, 'Closed by technician');
-      saveDB(DB); renderGangguan(); renderMaterial(); toast('Teknisi: tiket '+tiket+' selesai (sim)');
-    }, 1200);
-  }catch(e){ console.error(e); }
+  }
+  saveDB(DB); renderMaterial();
+  setTimeout(()=>{
+    g.status = 'Selesai'; g.ttr = '2 Jam (sim)'; g.closedAt = now();
+    hist('gangguan.close', tiket, 'Closed by teknisi');
+    saveDB(DB); renderGangguan(); toast('Tiket '+tiket+' selesai (sim)');
+  }, 1200);
 }
-
 function closeTicket(tiket){
   if(!confirm('Tutup tiket '+tiket+' ?')) return;
-  DB.gangguan[tiket].status = 'Selesai';
-  DB.gangguan[tiket].closedAt = now();
+  DB.gangguan[tiket].status = 'Selesai'; DB.gangguan[tiket].closedAt = now();
   hist('gangguan.close', tiket, 'Closed manually');
   saveDB(DB); renderGangguan(); toast('Tiket ditutup');
 }
 
-/* --------------------
-   Pasang Baru (full fields + CRUD)
-   -------------------- */
-function handlePasangForm(e){
+/* -------------------------
+   Pasang Baru: full fields + CRUD
+   ------------------------- */
+function createPasang(e){
   e.preventDefault();
   const nama = document.getElementById('p_nama').value.trim();
   const alamat = document.getElementById('p_alamat').value.trim();
@@ -591,260 +604,193 @@ function handlePasangForm(e){
   const id = uid('pasang_');
   const no_inet = nextInternetNo();
   DB.pasang[id] = { id, no_inet, nama, alamat, hp, nik, paket, odp, mac, status:'Menunggu', createdAt: now() };
-  hist('pasang.create', id, `Pasang ${no_inet} oleh ${currentUser?currentUser.nik:'unknown'}`);
-  saveDB(DB); renderPasang(); e.target.reset(); toast('Pasang baru terdaftar: ' + no_inet);
+  hist('pasang.create', id, `Pasang ${no_inet}`);
+  saveDB(DB); e.target.reset(); renderPasang(); toast('Pasang baru terdaftar: '+no_inet);
 }
 function renderPasang(){
-  const tbody = document.getElementById('tblPasang'); tbody.innerHTML='';
-  const arr = Object.values(DB.pasang).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
-  arr.forEach(p=>{
+  const tb = document.getElementById('tblPasang'); tb.innerHTML='';
+  Object.values(DB.pasang).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).forEach(p=>{
     const tr = document.createElement('tr');
-    const actions = document.createElement('td'); actions.style.textAlign='right';
-    const btnActivate = createBtn('Aktifkan','btn btn-success',()=>{ activatePasang(p.id); });
-    const btnEdit = createBtn('Edit','btn btn-primary',()=>{ editPasang(p.id); });
-    const btnDel = createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus pasang '+p.no_inet+' ?')){ delete DB.pasang[p.id]; hist('pasang.delete', p.id, 'Deleted'); saveDB(DB); renderPasang(); }});
-    actions.appendChild(btnActivate); actions.appendChild(btnEdit); actions.appendChild(btnDel);
-
     tr.innerHTML = `<td>${p.no_inet}</td><td>${escapeHtml(p.nama)}</td><td>${escapeHtml(p.hp)}</td><td>${escapeHtml(p.nik)}</td><td>${escapeHtml(p.paket)}</td><td>${escapeHtml(p.odp||'-')}</td><td>${escapeHtml(p.mac||'-')}</td><td>${p.status||'-'}</td>`;
-    tr.appendChild(actions);
-    tbody.appendChild(tr);
+    const td = document.createElement('td'); td.style.textAlign='right';
+    td.appendChild(createAction('Aktifkan','btn-success',()=> activatePasang(p.id)));
+    td.appendChild(createAction('Edit','',()=> editPasang(p.id)));
+    td.appendChild(createAction('Hapus','btn-danger',()=> { if(confirm('Hapus pasang ini?')){ delete DB.pasang[p.id]; hist('pasang.delete', p.id, 'Deleted'); saveDB(DB); renderPasang(); }}));
+    tr.appendChild(td); tb.appendChild(tr);
   });
 }
 function activatePasang(id){
   DB.pasang[id].status = 'Active';
-  const customerId = uid('pel_');
-  DB.pelanggan[customerId] = { id: customerId, no: DB.pasang[id].no_inet, nama: DB.pasang[id].nama, hp: DB.pasang[id].hp, alamat: DB.pasang[id].alamat, paket: DB.pasang[id].paket };
-  hist('pasang.activate', id, `Activated and created pelanggan ${customerId}`);
+  const pid = uid('pel_');
+  DB.pelanggan[pid] = { id: pid, no: DB.pasang[id].no_inet, nama: DB.pasang[id].nama, hp: DB.pasang[id].hp, alamat: DB.pasang[id].alamat, paket: DB.pasang[id].paket };
+  hist('pasang.activate', id, 'Activated & pelanggan created');
   saveDB(DB); renderPasang(); renderPelanggan(); toast('Pasang diaktifkan & pelanggan dibuat');
 }
 function editPasang(id){
   const p = DB.pasang[id]; if(!p) return alert('Data tidak ditemukan');
-  const nama = prompt('Nama', p.nama) || p.nama;
-  const alamat = prompt('Alamat', p.alamat) || p.alamat;
-  const hp = prompt('No HP', p.hp) || p.hp;
-  const paket = prompt('Paket', p.paket) || p.paket;
-  DB.pasang[id] = {...p, nama, alamat, hp, paket};
-  hist('pasang.update', id, 'Updated');
-  saveDB(DB); renderPasang(); toast('Pasang diperbarui');
+  p.nama = prompt('Nama', p.nama) || p.nama;
+  p.alamat = prompt('Alamat', p.alamat) || p.alamat;
+  p.hp = prompt('No HP', p.hp) || p.hp;
+  p.paket = prompt('Paket', p.paket) || p.paket;
+  saveDB(DB); hist('pasang.update', id, 'Updated'); renderPasang(); toast('Pasang diperbarui');
 }
 
-/* --------------------
+/* -------------------------
    Pelanggan CRUD
-   -------------------- */
+   ------------------------- */
 function openAddPelanggan(){
   const nama = prompt('Nama pelanggan'); if(!nama) return;
-  const hp = prompt('No HP'); const alamat = prompt('Alamat'); const paket = prompt('Paket');
+  const hp = prompt('No HP') || ''; const alamat = prompt('Alamat') || ''; const paket = prompt('Paket') || '';
   const id = uid('pel_');
   DB.pelanggan[id] = { id, no:'', nama, hp, alamat, paket };
   hist('pelanggan.create', id, 'Created');
   saveDB(DB); renderPelanggan(); toast('Pelanggan ditambahkan');
 }
 function renderPelanggan(){
-  const tbody = document.getElementById('tblPelanggan'); tbody.innerHTML='';
-  Object.values(DB.pelanggan).sort((a,b)=> (a.nama||'').localeCompare(b.nama||'')).forEach(p=>{
-    const tr = document.createElement('tr'); 
-    tr.innerHTML = `<td>${p.no||'-'}</td><td>${escapeHtml(p.nama)}</td><td>${escapeHtml(p.hp)}</td><td>${escapeHtml(p.paket)}</td>`;
+  const tb = document.getElementById('tblPelanggan'); tb.innerHTML='';
+  Object.values(DB.pelanggan).sort((a,b)=>(a.nama||'').localeCompare(b.nama||'')).forEach(p=>{
+    const tr = document.createElement('tr'); tr.innerHTML = `<td>${p.no||'-'}</td><td>${escapeHtml(p.nama)}</td><td>${escapeHtml(p.hp)}</td><td>${escapeHtml(p.paket||'-')}</td>`;
     const td = document.createElement('td'); td.style.textAlign='right';
-    td.appendChild(createBtn('Edit','btn btn-primary',()=>editPelanggan(p.id)));
-    td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus pelanggan?')){ delete DB.pelanggan[p.id]; hist('pelanggan.delete', p.id, 'Deleted'); saveDB(DB); renderPelanggan(); }}));
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+    td.appendChild(createAction('Edit','',()=> editPelanggan(p.id)));
+    td.appendChild(createAction('Hapus','btn-danger',()=> { if(confirm('Hapus pelanggan?')){ delete DB.pelanggan[p.id]; hist('pelanggan.delete', p.id, 'Deleted'); saveDB(DB); renderPelanggan(); }}));
+    tr.appendChild(td); tb.appendChild(tr);
   });
 }
 function editPelanggan(id){
   const p = DB.pelanggan[id]; if(!p) return alert('ID tidak ditemukan');
-  const nama = prompt('Nama', p.nama) || p.nama;
-  const hp = prompt('No HP', p.hp) || p.hp;
-  const alamat = prompt('Alamat', p.alamat) || p.alamat;
-  const paket = prompt('Paket', p.paket) || p.paket;
-  DB.pelanggan[id] = {...p, nama, hp, alamat, paket};
-  hist('pelanggan.update', id, 'Updated');
-  saveDB(DB); renderPelanggan(); toast('Pelanggan diperbarui');
+  p.nama = prompt('Nama', p.nama) || p.nama; p.hp = prompt('No HP', p.hp) || p.hp; p.alamat = prompt('Alamat', p.alamat) || p.alamat; p.paket = prompt('Paket', p.paket) || p.paket;
+  saveDB(DB); hist('pelanggan.update', id, 'Updated'); renderPelanggan(); toast('Pelanggan diperbarui');
 }
 
-/* --------------------
-   Billing dummy
-   -------------------- */
+/* -------------------------
+   Billing (dummy) CRUD
+   ------------------------- */
 function generateDummyBilling(){
-  for(let i=1;i<=5;i++){
-    const id = uid('bill_');
-    DB.billing[id] = { id, pelanggan:'Pelanggan'+i, periode:'2025-08', jumlah:100000, status:'Belum Lunas' };
+  for(let i=1;i<=6;i++){
+    const id = uid('bill_'); DB.billing[id] = { id, pelanggan: 'Pelanggan '+i, periode: '2025-'+String(i).padStart(2,'0'), jumlah: 150000*(i%3+1), status: (i%2? 'Belum Bayar':'Lunas') };
   }
-  hist('billing.generate','dummy','Generated 5 dummy billing');
-  saveDB(DB); renderBilling(); toast('Dummy billing dibuat');
+  hist('billing.generate','dummy','Generated 6 dummy billing'); saveDB(DB); renderBilling(); renderDashboard(); toast('Dummy billing dibuat');
 }
 function renderBilling(){
-  const tbody = document.getElementById('tblBilling'); tbody.innerHTML='';
+  const tb = document.getElementById('tblBilling'); tb.innerHTML='';
   Object.values(DB.billing).forEach(b=>{
-    const tr = document.createElement('tr'); tr.innerHTML = `<td>${b.id}</td><td>${escapeHtml(b.pelanggan)}</td><td>${b.periode}</td><td>${b.jumlah}</td>`;
-    const td = document.createElement('td'); td.style.textAlign='right';
-    td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus billing?')){ delete DB.billing[b.id]; hist('billing.delete', b.id, 'Deleted'); saveDB(DB); renderBilling(); }}));
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+    const tr = document.createElement('tr'); tr.innerHTML = `<td>${b.id}</td><td>${escapeHtml(b.pelanggan)}</td><td>${b.periode}</td><td>Rp ${formatNum(b.jumlah)}</td>`; const td = document.createElement('td'); td.style.textAlign='right';
+    td.appendChild(createAction('Hapus','btn-danger',()=>{ if(confirm('Hapus billing?')){ delete DB.billing[b.id]; hist('billing.delete', b.id, 'Deleted'); saveDB(DB); renderBilling(); renderDashboard(); }}));
+    tr.appendChild(td); tb.appendChild(tr);
   });
 }
 
-/* --------------------
+/* -------------------------
    ODP CRUD
-   -------------------- */
-function handleODPForm(e){ e.preventDefault(); const kode = document.getElementById('odp_kode').value.trim(); const lokasi = document.getElementById('odp_lokasi').value.trim(); const port = document.getElementById('odp_port').value.trim(); if(!kode) return alert('Kode ODP wajib'); const id = uid('odp_'); DB.odp[id] = { id, kode, lokasi, port }; hist('odp.create', id, `ODP ${kode}`); saveDB(DB); e.target.reset(); renderODP(); toast('ODP ditambahkan'); }
-function renderODP(){ const tbody = document.getElementById('tblODP'); tbody.innerHTML=''; Object.values(DB.odp).forEach(o=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(o.kode)}</td><td>${escapeHtml(o.lokasi)}</td><td>${escapeHtml(o.port)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus ODP?')){ delete DB.odp[o.id]; hist('odp.delete', o.id, 'Deleted'); saveDB(DB); renderODP(); }})); tr.appendChild(td); tbody.appendChild(tr); }); }
+   ------------------------- */
+function createODP(e){ e.preventDefault(); const kode=odp_kode.value.trim(); const lokasi=odp_lokasi.value.trim(); const port=odp_port.value.trim(); if(!kode) return alert('Kode ODP wajib'); const id = uid('odp_'); DB.odp[id] = { id, kode, lokasi, port }; hist('odp.create', id, `ODP ${kode}`); saveDB(DB); e.target.reset(); renderODP(); toast('ODP ditambahkan'); }
+function renderODP(){ const tb = document.getElementById('tblODP'); tb.innerHTML=''; Object.values(DB.odp).forEach(o=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${escapeHtml(o.kode)}</td><td>${escapeHtml(o.lokasi)}</td><td>${escapeHtml(o.port)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createAction('Hapus','btn-danger',()=>{ if(confirm('Hapus ODP?')){ delete DB.odp[o.id]; hist('odp.delete', o.id, 'Deleted'); saveDB(DB); renderODP(); }})); tr.appendChild(td); tb.appendChild(tr); }); }
 
-/* --------------------
+/* -------------------------
    Mikrotik CRUD
-   -------------------- */
-function handleMTForm(e){ e.preventDefault(); const name=document.getElementById('mt_name').value.trim(); const ip=document.getElementById('mt_ip').value.trim(); const user=document.getElementById('mt_user').value.trim(); if(!name) return alert('Nama router wajib'); const id = uid('mt_'); DB.mikrotik[id] = { id, name, ip, user }; hist('mikrotik.create', id, 'Added router'); saveDB(DB); e.target.reset(); renderMT(); toast('Mikrotik ditambahkan'); }
-function renderMT(){ const tbody=document.getElementById('tblMT'); tbody.innerHTML=''; Object.values(DB.mikrotik).forEach(m=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.ip)}</td><td>${escapeHtml(m.user)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus mikrotik?')){ delete DB.mikrotik[m.id]; hist('mikrotik.delete', m.id, 'Deleted'); saveDB(DB); renderMT(); }})); tr.appendChild(td); tbody.appendChild(tr); }); }
+   ------------------------- */
+function createMT(e){ e.preventDefault(); const name=mt_name.value.trim(); const ip=mt_ip.value.trim(); const user=mt_user.value.trim(); if(!name) return alert('Nama router wajib'); const id = uid('mt_'); DB.mikrotik[id] = { id, name, ip, user }; hist('mikrotik.create', id, 'Added router'); saveDB(DB); e.target.reset(); renderMT(); toast('Mikrotik ditambahkan'); }
+function renderMT(){ const tb=document.getElementById('tblMT'); tb.innerHTML=''; Object.values(DB.mikrotik).forEach(m=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.ip)}</td><td>${escapeHtml(m.user)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createAction('Hapus','btn-danger',()=>{ if(confirm('Hapus router?')){ delete DB.mikrotik[m.id]; hist('mikrotik.delete', m.id, 'Deleted'); saveDB(DB); renderMT(); }})); tr.appendChild(td); tb.appendChild(tr); }); }
 
-/* --------------------
-   Material CRUD
-   -------------------- */
-function handleMaterialForm(e){ e.preventDefault(); const name=document.getElementById('m_name').value.trim(); const stok=Number(document.getElementById('m_stok').value); if(!name) return alert('Material wajib'); const id = uid('mat_'); DB.material[id] = { id, name, stok }; hist('material.create', id, `Added ${name}`); saveDB(DB); e.target.reset(); renderMaterial(); toast('Material ditambahkan'); }
-function renderMaterial(){ const tbody=document.getElementById('tblMaterial'); tbody.innerHTML=''; Object.values(DB.material).forEach(m=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(m.name)}</td><td>${m.stok}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Edit','btn btn-primary',()=>editMaterial(m.id))); td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus material?')){ delete DB.material[m.id]; hist('material.delete', m.id, 'Deleted'); saveDB(DB); renderMaterial(); }})); tr.appendChild(td); tbody.appendChild(tr); }); document.getElementById('statMaterial').innerText = Object.values(DB.material).reduce((s,m)=>s + (Number(m.stok)||0),0); }
-function editMaterial(id){
-  const m = DB.material[id]; if(!m) return alert('Not found');
-  const name = prompt('Nama', m.name) || m.name;
-  const stok = Number(prompt('Stok', m.stok) || m.stok);
-  DB.material[id] = {...m, name, stok};
-  hist('material.update', id, 'Updated');
-  saveDB(DB); renderMaterial(); toast('Material diperbarui');
-}
+/* -------------------------
+   Material CRUD + stock update
+   ------------------------- */
+function createMaterial(e){ e.preventDefault(); const name = m_name.value.trim(); const stok = Number(m_stok.value) || 0; if(!name) return alert('Nama material wajib'); const id = uid('mat_'); DB.material[id] = { id, name, stok }; hist('material.create', id, `Added ${name}`); saveDB(DB); e.target.reset(); renderMaterial(); toast('Material ditambahkan'); }
+function renderMaterial(){ const tb=document.getElementById('tblMaterial'); tb.innerHTML=''; Object.values(DB.material).forEach(m=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${escapeHtml(m.name)}</td><td>${m.stok}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createAction('Edit','',()=> editMaterial(m.id))); td.appendChild(createAction('Hapus','btn-danger',()=>{ if(confirm('Hapus material?')){ delete DB.material[m.id]; hist('material.delete', m.id, 'Deleted'); saveDB(DB); renderMaterial(); }})); tr.appendChild(td); tb.appendChild(tr); }); document.getElementById('kpiMaterial')?.innerText = Object.values(DB.material).reduce((s,m)=>s + (Number(m.stok)||0),0); }
+function editMaterial(id){ const m = DB.material[id]; if(!m) return alert('Not found'); const name = prompt('Nama', m.name)||m.name; const stok = Number(prompt('Stok', m.stok)||m.stok); DB.material[id] = {...m, name, stok}; hist('material.update', id, 'Updated'); saveDB(DB); renderMaterial(); toast('Material diperbarui'); }
 
-/* --------------------
+/* -------------------------
    Paket CRUD
-   -------------------- */
-function handlePaketForm(e){ e.preventDefault(); const name=document.getElementById('pkg_name').value.trim(); const price=Number(document.getElementById('pkg_price').value)||0; const speed=document.getElementById('pkg_speed').value.trim(); if(!name) return alert('Nama paket wajib'); const id = uid('pkg_'); DB.paket[id] = { id, name, price, speed }; hist('paket.create', id, 'Added paket'); saveDB(DB); e.target.reset(); renderPaket(); toast('Paket ditambahkan'); }
-function renderPaket(){ const tbody=document.getElementById('tblPaket'); tbody.innerHTML=''; Object.values(DB.paket).forEach(p=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(p.name)}</td><td>${p.price}</td><td>${escapeHtml(p.speed)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus paket?')){ delete DB.paket[p.id]; hist('paket.delete', p.id, 'Deleted'); saveDB(DB); renderPaket(); }})); tr.appendChild(td); tbody.appendChild(tr); }); }
+   ------------------------- */
+function createPaket(e){ e.preventDefault(); const name = pkg_name.value.trim(); const price = Number(pkg_price.value) || 0; const speed = pkg_speed.value.trim(); if(!name) return alert('Nama paket wajib'); const id = uid('pkg_'); DB.paket[id] = { id, name, price, speed }; hist('paket.create', id, 'Added paket'); saveDB(DB); e.target.reset(); renderPaket(); toast('Paket ditambahkan'); }
+function renderPaket(){ const tb=document.getElementById('tblPaket'); tb.innerHTML=''; Object.values(DB.paket).forEach(p=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${escapeHtml(p.name)}</td><td>Rp ${formatNum(p.price)}</td><td>${escapeHtml(p.speed)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createAction('Hapus','btn-danger',()=>{ if(confirm('Hapus paket?')){ delete DB.paket[p.id]; hist('paket.delete', p.id, 'Deleted'); saveDB(DB); renderPaket(); }})); tr.appendChild(td); tb.appendChild(tr); }); }
 
-/* --------------------
+/* -------------------------
    Karyawan CRUD
-   -------------------- */
-function handleUserForm(e){ e.preventDefault(); const nik=document.getElementById('u_nik').value.trim(); const name=document.getElementById('u_name').value.trim(); const pass=document.getElementById('u_pass').value.trim(); const role=document.getElementById('u_role').value; if(!nik||!name||!pass) return alert('Lengkapi data'); DB.users[nik] = { nik, nama:name, password:pass, role }; hist('user.create', nik, 'Created'); saveDB(DB); e.target.reset(); renderUsers(); toast('User ditambahkan'); }
-function renderUsers(){ const tbody=document.getElementById('tblUsers'); tbody.innerHTML=''; Object.values(DB.users).forEach(u=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(u.nik)}</td><td>${escapeHtml(u.nama)}</td><td>${escapeHtml(u.role)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus user '+u.nik+' ?')){ if(currentUser && currentUser.nik === u.nik){ alert('Tidak bisa hapus diri sendiri'); return; } delete DB.users[u.nik]; hist('user.delete', u.nik, 'Deleted'); saveDB(DB); renderUsers(); }})); tr.appendChild(td); tbody.appendChild(tr); }); }
+   ------------------------- */
+function createUser(e){ e.preventDefault(); const nik = u_nik.value.trim(); const nama = u_name.value.trim(); const pass = u_pass.value.trim(); const role = u_role.value; if(!nik || !nama || !pass) return alert('Lengkapi data'); DB.users[nik] = { nik, nama, password: pass, role }; hist('user.create', nik, 'Created'); saveDB(DB); e.target.reset(); renderUsers(); toast('User ditambahkan'); }
+function renderUsers(){ const tb=document.getElementById('tblUsers'); tb.innerHTML=''; Object.values(DB.users).forEach(u=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${escapeHtml(u.nik)}</td><td>${escapeHtml(u.nama)}</td><td>${escapeHtml(u.role)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createAction('Hapus','btn-danger',()=>{ if(currentUser && currentUser.nik === u.nik){ alert('Tidak bisa hapus diri sendiri'); return; } if(confirm('Hapus user?')){ delete DB.users[u.nik]; hist('user.delete', u.nik, 'Deleted'); saveDB(DB); renderUsers(); }})); tr.appendChild(td); tb.appendChild(tr); }); }
 
-/* --------------------
+/* -------------------------
    Webhook dummy
-   -------------------- */
-function handleWebhook(e){ e.preventDefault(); DB.webhook.url = document.getElementById('wh_url').value.trim(); DB.webhook.auth = document.getElementById('wh_auth').value.trim(); hist('webhook.update','wa','Webhook updated'); saveDB(DB); toast('Webhook saved (dummy)'); }
+   ------------------------- */
+function saveWebhook(e){ e.preventDefault(); DB.webhook.url = wh_url.value.trim(); DB.webhook.auth = wh_auth.value.trim(); hist('webhook.update','wa','Webhook updated'); saveDB(DB); toast('Webhook disimpan (dummy)'); }
 
-/* --------------------
+/* -------------------------
    History & Portal
-   -------------------- */
-function renderHistory(){ const tbody=document.getElementById('tblHistory'); tbody.innerHTML=''; DB.history.forEach(h=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${new Date(h.ts).toLocaleString()}</td><td>${escapeHtml(h.type)}</td><td>${escapeHtml(h.item)}</td><td>${escapeHtml(h.desc)}</td>`; tbody.appendChild(tr); }); }
-function renderPortal(){ const tbody=document.getElementById('tblPortal'); tbody.innerHTML=''; Object.values(DB.gangguan).filter(g=>g.tiket!=='TC0000').slice(0,100).forEach(g=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${g.tiket}</td><td>${escapeHtml(g.pelanggan)}</td><td>${g.status}</td>`; tbody.appendChild(tr); }); }
+   ------------------------- */
+function renderHistory(){ const tb=document.getElementById('tblHistory'); tb.innerHTML=''; DB.history.forEach(h=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${new Date(h.ts).toLocaleString()}</td><td>${escapeHtml(h.type)}</td><td>${escapeHtml(h.item)}</td><td>${escapeHtml(h.desc)}</td>`; tb.appendChild(tr); }); }
+function renderPortal(){ const tb=document.getElementById('tblPortal'); tb.innerHTML=''; Object.values(DB.gangguan).filter(g=>g.tiket!=='TC0000').forEach(g=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${g.tiket}</td><td>${escapeHtml(g.pelanggan)}</td><td>${escapeHtml(g.status)}</td>`; tb.appendChild(tr); }); }
 
-/* --------------------
+/* -------------------------
    Kas (simple)
-   -------------------- */
-function renderKas(){ const tbody=document.getElementById('tblKas'); tbody.innerHTML=''; Object.values(DB.kas).forEach(k=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${k.id}</td><td>${escapeHtml(k.desc)}</td><td>${k.masuk||0}</td><td>${k.keluar||0}</td><td>${k.saldo||0}</td>`; tbody.appendChild(tr); }); }
+   ------------------------- */
+function renderKas(){ const tb=document.getElementById('tblKas'); tb.innerHTML=''; Object.values(DB.kas).forEach(k=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${escapeHtml(k.id)}</td><td>${escapeHtml(k.desc)}</td><td>${k.masuk||0}</td><td>${k.keluar||0}</td><td>${k.saldo||0}</td>`; tb.appendChild(tr); }); }
 
-/* --------------------
-   Render wrappers
-   -------------------- */
-function renderAll(){
-  renderDashboard(); renderGangguan(); renderPasang(); renderPelanggan(); renderBilling();
-  renderODP(); renderMT(); renderMaterial(); renderPaket(); renderUsers(); renderHistory(); renderPortal(); renderKas();
+/* -------------------------
+   Render wrappers & utilities
+   ------------------------- */
+function renderAll(){ renderDashboard(); renderGangguan(); renderPasang(); renderPelanggan(); renderBilling(); renderODP(); renderMT(); renderMaterial(); renderPaket(); renderUsers(); renderHistory(); renderPortal(); renderKas(); }
+function renderGangguan(){ renderGangguan = typeof renderGangguan === 'function' ? renderGangguan : function(){}; /* actual function exists above */ renderGangguan = window.renderGangguan || window.renderGangguan; /* noop fallback */ /* call real */ /* but here simply call existing function declared earlier */ renderGangguan(); }
+function formatNum(n){ return (n||0).toLocaleString('id-ID'); }
+function createAction(text, cls, cb){
+  const b = document.createElement('button'); b.className = 'btn ' + (cls||'btn-primary'); b.style.marginLeft='6px'; b.style.fontSize='13px'; b.innerText = text; b.onclick = cb; return b;
 }
 
-/* --------------------
-   Utility helpers
-   -------------------- */
-function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function createBtn(text, className, cb){
-  const b = document.createElement('button'); b.className = className + ' small'; b.style.marginLeft='6px'; b.innerText = text; b.onclick = cb; return b;
-}
-
-/* --------------------
-   Misc: delete/activate wrapper previously referenced
-   -------------------- */
-function deletePasang(id){ if(!confirm('Hapus pasang?')) return; delete DB.pasang[id]; hist('pasang.delete', id, 'Deleted'); saveDB(DB); renderPasang(); }
-function deleteODP(id){ if(confirm('Hapus ODP?')){ delete DB.odp[id]; hist('odp.delete', id, 'Deleted'); saveDB(DB); renderODP(); } }
-function deleteMT(id){ if(confirm('Hapus Mikrotik?')){ delete DB.mikrotik[id]; hist('mikrotik.delete', id, 'Deleted'); saveDB(DB); renderMT(); } }
-function deleteMaterial(id){ if(confirm('Hapus material?')){ delete DB.material[id]; hist('material.delete', id, 'Deleted'); saveDB(DB); renderMaterial(); } }
-function deletePelanggan(id){ if(confirm('Hapus pelanggan?')){ delete DB.pelanggan[id]; hist('pelanggan.delete', id, 'Deleted'); saveDB(DB); renderPelanggan(); } }
-function deleteBilling(id){ if(confirm('Hapus billing?')){ delete DB.billing[id]; hist('billing.delete', id, 'Deleted'); saveDB(DB); renderBilling(); } }
-function deletePaket(id){ if(confirm('Hapus paket?')){ delete DB.paket[id]; hist('paket.delete', id, 'Deleted'); saveDB(DB); renderPaket(); } }
-function deleteUser(nik){ if(confirm('Hapus user?')){ if(currentUser && currentUser.nik === nik){ alert('Tidak bisa hapus diri sendiri'); return; } delete DB.users[nik]; hist('user.delete', nik, 'Deleted'); saveDB(DB); renderUsers(); } }
-
-/* --------------------
-   INITIAL RENDER & helpers
-   -------------------- */
-function renderGangguan(){ /* already declared above in section but needed here if called */ /* function defined earlier */ }
-function renderPasang(){ /* defined earlier */ const tbody=document.getElementById('tblPasang'); tbody.innerHTML=''; Object.values(DB.pasang).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||'')).forEach(p=>{ const tr=document.createElement('tr'); const tdAction=document.createElement('td'); tdAction.style.textAlign='right'; tdAction.appendChild(createBtn('Aktifkan','btn btn-success',()=>activatePasang(p.id))); tdAction.appendChild(createBtn('Edit','btn btn-primary',()=>editPasang(p.id))); tdAction.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus pasang?')){ delete DB.pasang[p.id]; hist('pasang.delete', p.id, 'Deleted'); saveDB(DB); renderPasang(); } })); tr.innerHTML = `<td>${p.no_inet}</td><td>${escapeHtml(p.nama)}</td><td>${escapeHtml(p.hp)}</td><td>${escapeHtml(p.nik)}</td><td>${escapeHtml(p.paket)}</td><td>${escapeHtml(p.odp||'-')}</td><td>${escapeHtml(p.mac||'-')}</td><td>${p.status||'-'}</td>`; tr.appendChild(tdAction); tbody.appendChild(tr); }); }
-
-function activatePasang(id){ DB.pasang[id].status = 'Active'; const pid = uid('pel_'); DB.pelanggan[pid] = { id: pid, no: DB.pasang[id].no_inet, nama: DB.pasang[id].nama, hp: DB.pasang[id].hp, alamat: DB.pasang[id].alamat, paket: DB.pasang[id].paket }; hist('pasang.activate', id, 'Activated & created pelanggan'); saveDB(DB); renderPasang(); renderPelanggan(); toast('Pasang diaktifkan'); }
-
-function editPasang(id){
-  const p = DB.pasang[id]; if(!p) return alert('Data tidak ditemukan');
-  const nama = prompt('Nama', p.nama) || p.nama;
-  const alamat = prompt('Alamat', p.alamat) || p.alamat;
-  const hp = prompt('No HP', p.hp) || p.hp;
-  const paket = prompt('Paket', p.paket) || p.paket;
-  DB.pasang[id] = {...p, nama, alamat, hp, paket};
-  hist('pasang.update', id, 'Updated');
-  saveDB(DB); renderPasang(); toast('Pasang diperbarui');
-}
-
-/* Need to ensure functions referenced earlier are defined (some duplicates were used) */
-/* But main render functions are already defined above. To be safe, re-declare render functions stubs if missing: */
-
-if(typeof renderGangguan !== 'function'){
-  function renderGangguan(){ const tbody=document.getElementById('tblGangguan'); tbody.innerHTML=''; Object.values(DB.gangguan).forEach(g=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${g.tiket}</td><td>${escapeHtml(g.pelanggan)}</td><td>${escapeHtml(g.masalah)}</td><td>${g.status||'-'}</td><td>${g.ttr||'--'}</td><td style="text-align:right"></td>`; tbody.appendChild(tr); }); }
-}
-
-/* re-render helpers already defined earlier will be invoked by renderAll */
-function renderMaterial(){ const tbody=document.getElementById('tblMaterial'); tbody.innerHTML=''; Object.values(DB.material).forEach(m=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(m.name)}</td><td>${m.stok}</td><td style="text-align:right"></td>`; const td=tr.querySelector('td:last-child'); td.appendChild(createBtn('Edit','btn btn-primary',()=>editMaterial(m.id))); td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus material?')){ delete DB.material[m.id]; hist('material.delete', m.id, 'Deleted'); saveDB(DB); renderMaterial(); } })); tbody.appendChild(tr); }); document.getElementById('statMaterial').innerText = Object.values(DB.material).reduce((s,m)=>s + (Number(m.stok)||0),0); }
-
-function renderPelanggan(){ const tbody=document.getElementById('tblPelanggan'); tbody.innerHTML=''; Object.values(DB.pelanggan).forEach(p=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${p.no||'-'}</td><td>${escapeHtml(p.nama)}</td><td>${escapeHtml(p.hp)}</td><td>${escapeHtml(p.paket||'-')}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Edit','btn btn-primary',()=>editPelanggan(p.id))); td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(confirm('Hapus pelanggan?')){ delete DB.pelanggan[p.id]; hist('pelanggan.delete', p.id, 'Deleted'); saveDB(DB); renderPelanggan(); } })); tr.appendChild(td); tbody.appendChild(tr); }); }
-
-function renderUsers(){ const tbody=document.getElementById('tblUsers'); tbody.innerHTML=''; Object.values(DB.users).forEach(u=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(u.nik)}</td><td>${escapeHtml(u.nama)}</td><td>${escapeHtml(u.role)}</td>`; const td=document.createElement('td'); td.style.textAlign='right'; td.appendChild(createBtn('Hapus','btn btn-danger',()=>{ if(currentUser && currentUser.nik === u.nik){ alert('Cannot delete yourself'); return; } if(confirm('Hapus user?')){ delete DB.users[u.nik]; hist('user.delete', u.nik, 'Deleted'); saveDB(DB); renderUsers(); } })); tr.appendChild(td); tbody.appendChild(tr); }); }
-
-/* --------------------
-   Reset / seed helpers
-   -------------------- */
-function resetDataConfirm(){
-  if(!confirm('Reset semua data ke default? Semua data akan hilang.')) return;
-  localStorage.removeItem(LS_KEY);
-  DB = loadDB();
-  toast('Database reset. Silakan login ulang.');
-  location.reload();
-}
-
-/* --------------------
-   Utility: saveDB wrapper already exists
-   -------------------- */
-
-/* --------------------
-   Initial boot
-   -------------------- */
-renderAll();
-
-/* On load, show login screen (we require login) */
-hideAllPages();
-document.getElementById('loginScreen').classList.remove('hidden');
-
-/* expose some functions globally that inline code may call */
-window.openPage = openPage;
-window.renderAll = renderAll;
+/* some function double-defined safe-guards and exposure for inline callbacks */
 window.assignTicket = assignTicket;
 window.technicianProcess = technicianProcess;
 window.closeTicket = closeTicket;
 window.activatePasang = activatePasang;
-window.deletePasang = deletePasang;
-window.deleteODP = deleteODP;
-window.deleteMT = deleteMT;
-window.deleteMaterial = deleteMaterial;
-window.deletePelanggan = deletePelanggan;
-window.deleteBilling = deleteBilling;
-window.deletePaket = deletePaket;
-window.deleteUser = deleteUser;
-window.generateDummyBilling = generateDummyBilling;
-window.editMaterial = editMaterial;
-window.editPelanggan = editPelanggan;
-window.fillDemo = fillDemo;
-window.resetDataConfirm = resetDataConfirm;
+window.editPasang = editPasang;
+window.openAddPelanggan = openAddPelanggan;
 
-/* Done */
+/* -------------------------
+   Mini utilities
+   ------------------------- */
+function formatCurrency(n){ return 'Rp ' + formatNum(n); }
+
+/* -------------------------
+   Feedback
+   ------------------------- */
+(function ratingInit(){
+  const r=document.getElementById('rating');
+  const set=(n)=>{ r.dataset.value=n; r.textContent='★★★★★'.split('').map((s,i)=> i < n ? '★':'☆').join(''); };
+  r.addEventListener('mousemove', e=>{ const rect=r.getBoundingClientRect(); const n = Math.min(5, Math.max(1, Math.ceil((e.clientX-rect.left)/(rect.width/5)))); set(n); });
+  r.addEventListener('mouseleave', ()=> set(Number(r.dataset.value)||5));
+  r.addEventListener('click', ()=> toast('Rating: '+(r.dataset.value||5)));
+  set(4);
+})();
+function submitFeedback(){ const stars = Number(document.getElementById('rating').dataset.value || 5); const txt = document.getElementById('fb_text').value.trim(); DB.feedback.push({ stars, text: txt, by: currentUser?currentUser.nik:'-', ts: now() }); saveDB(DB); hist('feedback.create', currentUser?currentUser.nik:'-', `★${stars}`); document.getElementById('fb_text').value=''; toast('Terima kasih atas feedback!'); }
+
+/* -------------------------
+   Misc: reset DB
+   ------------------------- */
+function resetDataConfirm(){ if(!confirm('Reset semua data ke default? Semua data akan hilang.')) return; localStorage.removeItem(LS_KEY); DB = loadDB(); toast('Database reset. Silakan login ulang.'); location.reload(); }
+
+/* -------------------------
+   Initial boot
+   ------------------------- */
+hideAll(); document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('logoutBtn').style.display='none'; document.getElementById('userInfo').innerText=''; // no user
+
+// render functions call wrappers: ensure functions are available
+renderGangguan = renderGangguan.bind(this);
+renderPasang = renderPasang.bind(this);
+
+// Make sure chart elements exist before call
+// Expose saveDB etc for debugging
+window.saveDB = saveDB;
+window.DB = DB;
+window.renderAll = renderAll;
+window.createAction = createAction;
+window.formatNum = formatNum;
+window.nextTicketCode = nextTicketCode;
+window.nextInternetNo = nextInternetNo;
+window.resetDataConfirm = resetDataConfirm;
+window.fillDemo = fillDemo;
+
+/* update small KPI/material stat on load from DB */
+renderAll();
 </script>
 </body>
 </html>
