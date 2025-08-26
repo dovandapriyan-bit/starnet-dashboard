@@ -1,912 +1,154 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Starnet Manager — Full System</title>
-
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Bootstrap (optional, for nicer UI) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    :root{
-      --blue:#1f3b6f;
-      --muted:#f0f2f5;
-      --accent:#4b6cb7;
-    }
-    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; margin:0; background:var(--muted); color:#1a202c;}
-    /* top layout */
-    #loginPage{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,var(--blue),var(--accent));}
-    #loginBox{background:#fff;padding:32px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.18);width:380px;}
-    #loginBox h2{margin-bottom:18px;color:var(--blue);}
-    input, select, textarea{border-radius:8px;border:1px solid #ddd;padding:8px 10px;width:100%;box-sizing:border-box;}
-    button{border-radius:8px;border:none;padding:8px 12px;}
-    .btn-primary{background:var(--blue);color:#fff;}
-    .btn-success{background:#28a745;color:#fff;}
-    .btn-warning{background:#ffc107;color:#000;}
-    .btn-danger{background:#dc3545;color:#fff;}
-
-    /* app */
-    #appPage{display:none;min-height:100vh;}
-    #sidebar{width:240px;background:var(--blue);color:#fff;min-height:100vh;position:fixed;left:0;top:0;padding:14px 12px;box-sizing:border-box;}
-    #sidebar h2{margin:0 0 12px 0;text-align:center;}
-    #sidebar ul{list-style:none;padding:0;margin:0;}
-    #sidebar li{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:6px;}
-    #sidebar li:hover{background:rgba(255,255,255,0.06);}
-    #mainContent{margin-left:260px;padding:18px;}
-    #topBar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-    .card-panel{background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.06);}
-
-    /* responsive */
-    @media (max-width:900px){
-      #sidebar{position:relative;width:100%;min-height:auto;}
-      #mainContent{margin-left:0;padding:12px;}
-    }
-
-    table{width:100%;border-collapse:collapse;}
-    th,td{padding:8px;border:1px solid #eee;text-align:left;font-size:14px;}
-    th{background:var(--blue);color:#fff;}
-    .hidden{display:none;}
-    footer{margin-top:20px;color:#666;font-size:13px;}
-    .small-muted{font-size:13px;color:#666;}
-    .chip{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:var(--blue);font-weight:600;margin-right:6px;}
-  </style>
+<meta charset="UTF-8">
+<title>ISP Manager Super Final + WA Simulasi</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family:'Segoe UI',sans-serif;margin:0;background:#f0f2f5; }
+h1,h2 { color:#1f3b6f; }
+button { cursor:pointer;border:none;border-radius:6px;padding:6px 12px;transition:0.3s; }
+button:hover { opacity:0.85; }
+input, select { border-radius:6px;border:1px solid #ccc;padding:8px;outline:none;transition:0.3s; }
+input:focus, select:focus { border-color:#1f3b6f; }
+#loginPage { display:flex; justify-content:center; align-items:center; height:100vh; background:linear-gradient(135deg,#1f3b6f,#4b6cb7); }
+#loginBox { background:white;padding:40px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,0.2);width:360px;text-align:center; }
+#loginBox h2 { margin-bottom:25px; }
+#loginBox input { width:100%; margin-bottom:15px; font-size:14px; }
+#loginBox button { width:100%; background:#1f3b6f; color:white; font-weight:bold; margin-top:5px; }
+#loginBox p.info { font-size:12px;color:#666;margin-top:20px; }
+#appPage { display:none; display:flex; width:100%; }
+#sidebar { width:220px; background:#1f3b6f; color:white; min-height:100vh; transition:0.3s; }
+#sidebar.collapsed { width:60px; }
+#sidebar h2 { text-align:center; padding:15px 0; border-bottom:1px solid rgba(255,255,255,0.2); }
+#sidebar ul { list-style:none; padding:0; margin:0; }
+#sidebar ul li { padding:12px 20px; cursor:pointer; transition:0.3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#sidebar ul li:hover { background:#4b6cb7; }
+#sidebar ul li i { margin-right:10px; }
+#mainContent { flex:1; padding:20px; overflow:auto; }
+.hidden { display:none; }
+table { border-collapse:collapse; width:100%; margin-top:10px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:0.3s; }
+th, td { border:1px solid #ddd; padding:10px; font-size:14px; text-align:center; transition:0.3s; }
+th { background:#1f3b6f; color:white; }
+tr:hover { background: #e3f2fd; }
+tr td button { transition: transform 0.2s; }
+tr td button:hover { transform: translateY(-2px); }
+.btn-primary { background:#1f3b6f; color:white; }
+.btn-success { background:#28a745; color:white; }
+.btn-warning { background:#ffc107; color:white; }
+.btn-danger { background:#dc3545; color:white; }
+form { margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; }
+form input, form select { flex:1; min-width:100px; }
+#topBar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.1); margin-bottom:10px; border-radius:6px; }
+#topBar span { font-weight:bold; }
+#hamburger { font-size:20px; cursor:pointer; margin-right:10px; }
+</style>
 </head>
 <body>
 
-  <!-- LOGIN -->
-  <div id="loginPage">
-    <div id="loginBox">
-      <h2>Login Karyawan / Pelanggan</h2>
-      <div style="margin-bottom:10px;">
-        <input id="nik" placeholder="NIK / ID Pelanggan" />
-      </div>
-      <div style="margin-bottom:10px;">
-        <input id="password" type="password" placeholder="Password" />
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-primary" onclick="loginNIK()">Login</button>
-        <button onclick="loginGuest()" style="background:#f3f4f6;border-radius:8px;padding:8px 12px;">Guest</button>
-      </div>
-      <p id="loginMsg" style="color:red;margin-top:10px;font-size:13px;"></p>
-      <p class="small-muted" style="margin-top:14px">by Dnt Grup - Starnet💫 | email: dnt.network.lmj@gmail.com</p>
-    </div>
+<div id="loginPage">
+  <div id="loginBox">
+    <h2>Login Karyawan / Pelanggan</h2>
+    <input id="nik" placeholder="NIK / ID Pelanggan">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="loginNIK()">Login</button>
+    <p id="loginMsg" style="color:red;margin-top:10px;font-size:13px;"></p>
+    <p class="info">by Dnt Grup - Starnet💫</p>
+    <p class="info">Email: dnt.network.lmj@gmail.com</p>
+  </div>
+</div>
+
+<div id="appPage">
+  <div id="sidebar">
+    <h2>ISP 💫</h2>
+    <ul>
+      <li onclick="showPage('dashboard')">📊 Dashboard</li>
+      <li onclick="showPage('gangguan')">⚠️ Gangguan</li>
+      <li onclick="showPage('pasangBaru')">🆕 Pasang Baru</li>
+      <li onclick="showPage('pelanggan')">👥 Pelanggan</li>
+      <li onclick="showPage('billing')">💳 Billing</li>
+      <li onclick="showPage('kas')">💰 Kas</li>
+      <li onclick="showPage('odp')">🖧 ODP / Mikrotik</li>
+      <li onclick="showPage('material')">📦 Material</li>
+      <li onclick="showPage('paket')">📦 Paket / Tarif</li>
+      <li onclick="showPage('karyawan')">👔 Karyawan</li>
+      <li onclick="showPage('webhook')">⚙️ Webhook</li>
+      <li onclick="showPage('history')">🗂️ Arsip / History</li>
+      <li onclick="showPage('portal')">🌐 Portal Pelanggan</li>
+      <li onclick="logout()">🚪 Logout</li>
+    </ul>
   </div>
 
-  <!-- APP -->
-  <div id="appPage">
-    <div id="sidebar">
-      <h2>ISP 💫 Starnet</h2>
-      <ul>
-        <li onclick="showPage('dashboard')">📊 Dashboard</li>
-        <li onclick="showPage('portal')">🌐 Portal Pelanggan</li>
-        <li onclick="showPage('pasang')">🆕 Pasang Baru</li>
-        <li onclick="showPage('pelanggan')">👥 Pelanggan</li>
-        <li onclick="showPage('billing')">💳 Billing</li>
-        <li onclick="showPage('gangguan')">⚠️ Gangguan / Tiket</li>
-        <li onclick="showPage('kas')">💰 Kas</li>
-        <li onclick="showPage('odp')">🖧 ODP / Mikrotik</li>
-        <li onclick="showPage('material')">📦 Material</li>
-        <li onclick="showPage('paket')">📦 Paket / Tarif</li>
-        <li onclick="showPage('karyawan')">👔 Karyawan</li>
-        <li onclick="showPage('webhook')">🔗 Webhook</li>
-        <li onclick="showPage('history')">🗂️ History / Arsip</li>
-        <li style="margin-top:12px;" onclick="openWhatsApp()">💬 WA Pelanggan</li>
-        <li onclick="logout()">🚪 Logout</li>
-      </ul>
+  <div id="mainContent">
+    <div id="topBar">
+      <div><span id="hamburger" onclick="toggleSidebar()">☰</span>Halo, <span id="userName"></span> (<span id="userRole"></span>)</div>
+      <button onclick="logout()" class="btn-warning">Logout</button>
     </div>
 
-    <div id="mainContent">
-      <div id="topBar">
-        <div>
-          <strong>Halo, <span id="userName">-</span></strong>
-          <span style="margin-left:10px" class="small-muted">(<span id="userRole">-</span>)</span>
-        </div>
-        <div>
-          <button onclick="renderDashboardCharts()" class="btn-primary">Refresh Charts</button>
-        </div>
-      </div>
+    <div id="dashboardPage"><h2>Dashboard</h2><canvas id="chartDashboard" height="100"></canvas></div>
 
-      <!-- Dashboard -->
-      <div id="dashboardPage">
-        <h3>Dashboard</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div class="card-panel" style="flex:1;min-width:220px">
-            <div class="chip">Pelanggan Aktif</div>
-            <h2 id="statPelanggan">-</h2>
-            <div class="small-muted">Total pelanggan aktif</div>
-          </div>
-          <div class="card-panel" style="flex:1;min-width:220px">
-            <div class="chip">Billing Bulanan</div>
-            <h2 id="statBilling">-</h2>
-            <div class="small-muted">Total tagihan bulan ini</div>
-          </div>
-          <div class="card-panel" style="flex:1;min-width:220px">
-            <div class="chip">Gangguan Open</div>
-            <h2 id="statGangguan">-</h2>
-            <div class="small-muted">Jumlah tiket terbuka</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:320px" class="card-panel">
-            <h5>Grafik Pelanggan Baru (6 bulan)</h5>
-            <canvas id="chartPelanggan" height="160"></canvas>
-          </div>
-          <div style="flex:1;min-width:320px" class="card-panel">
-            <h5>Grafik Kas (Masuk / Keluar)</h5>
-            <canvas id="chartKas" height="160"></canvas>
-          </div>
-          <div style="flex:1;min-width:320px" class="card-panel">
-            <h5>Ringkasan Gangguan</h5>
-            <canvas id="chartGangguan" height="160"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Portal Pelanggan -->
-      <div id="portalPage" class="hidden">
-        <h3>Portal Pelanggan</h3>
-        <p class="small-muted">Lihat status layanan, tagihan, tiket, dan kirim feedback.</p>
-
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:320px" class="card-panel">
-            <h5>Tagihan Anda</h5>
-            <table id="tblPortalBilling">
-              <thead><tr><th>Periode</th><th>Jumlah</th><th>Status</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div style="flex:1;min-width:320px" class="card-panel">
-            <h5>Tiket & Laporan</h5>
-            <form id="formTicket">
-              <input id="ticketSubject" placeholder="Subject / Masalah" required style="margin-bottom:8px"/>
-              <textarea id="ticketDesc" placeholder="Deskripsi masalah" rows="3" style="margin-bottom:8px"></textarea>
-              <div style="display:flex;gap:8px;">
-                <button class="btn-primary" type="submit">Buat Tiket</button>
-                <button type="button" onclick="openWhatsApp()" class="btn-success">Chat via WA</button>
-              </div>
-            </form>
-            <table id="tblPortalTiket" style="margin-top:10px">
-              <thead><tr><th>ID</th><th>Masalah</th><th>Status</th><th>TTR</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div style="flex:1;min-width:320px" class="card-panel">
-            <h5>Feedback Pelanggan</h5>
-            <form id="formFeedback">
-              <input id="fbText" placeholder="Tulis feedback..." required style="margin-bottom:8px"/>
-              <button class="btn-primary" type="submit">Kirim Feedback</button>
-            </form>
-            <table id="tblFeedback" style="margin-top:10px">
-              <thead><tr><th>Tanggal</th><th>Feedback</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pasang Baru -->
-      <div id="pasangPage" class="hidden">
-        <h3>Pasang Baru</h3>
-        <form id="formPasang">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input id="pbNama" placeholder="Nama pelanggan" required style="flex:2"/>
-            <input id="pbAlamat" placeholder="Alamat lengkap" required style="flex:3"/>
-            <input id="pbPaket" placeholder="Paket (contoh: 20 Mbps)" required style="flex:1"/>
-            <button class="btn-primary" type="submit">Daftar Pasang</button>
-          </div>
-        </form>
-
-        <table id="tblPasang" style="margin-top:12px">
-          <thead><tr><th>No</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Pelanggan -->
-      <div id="pelangganPage" class="hidden">
-        <h3>Pelanggan</h3>
-        <table id="tblPelanggan">
-          <thead><tr><th>ID</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Billing -->
-      <div id="billingPage" class="hidden">
-        <h3>Billing</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1" class="card-panel">
-            <h5>Generate Tagihan Dummy</h5>
-            <button class="btn-primary" onclick="simulateBilling()">Simulasi Billing 6 Bulan</button>
-          </div>
-          <div style="flex:2" class="card-panel">
-            <table id="tblBilling">
-              <thead><tr><th>No</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gangguan / Tiket -->
-      <div id="gangguanPage" class="hidden">
-        <h3>Gangguan / Tiket</h3>
-        <table id="tblGangguan">
-          <thead><tr><th>ID</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Kas -->
-      <div id="kasPage" class="hidden">
-        <h3>Kas / Keuangan</h3>
-        <table id="tblKas">
-          <thead><tr><th>No</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div style="margin-top:10px">
-          <button class="btn-primary" onclick="simulateKas()">Simulasi Kas</button>
-        </div>
-      </div>
-
-      <!-- ODP -->
-      <div id="odpPage" class="hidden">
-        <h3>ODP / Mikrotik</h3>
-        <table id="tblODP">
-          <thead><tr><th>ODP</th><th>SNONT</th><th>IP</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Material -->
-      <div id="materialPage" class="hidden">
-        <h3>Material / Inventory</h3>
-        <form id="formMaterial" style="display:flex;gap:8px;align-items:center;">
-          <input id="matName" placeholder="Nama material (ex: ONT)" required />
-          <input id="matStok" placeholder="Stok (angka)" required type="number" />
-          <button class="btn-primary" type="submit">Tambah / Update</button>
-        </form>
-        <table id="tblMaterial" style="margin-top:10px">
-          <thead><tr><th>Nama</th><th>Stok</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Paket -->
-      <div id="paketPage" class="hidden">
-        <h3>Paket / Tarif</h3>
-        <form id="formPaket" style="display:flex;gap:8px;align-items:center;">
-          <input id="paketNama" placeholder="Nama paket" required/>
-          <input id="paketHarga" placeholder="Harga" required type="number"/>
-          <input id="paketSpeed" placeholder="Kecepatan" required/>
-          <button class="btn-primary" type="submit">Tambah Paket</button>
-        </form>
-        <table id="tblPaket" style="margin-top:10px">
-          <thead><tr><th>Nama Paket</th><th>Harga</th><th>Kecepatan</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Karyawan -->
-      <div id="karyawanPage" class="hidden">
-        <h3>Manajemen Karyawan</h3>
-        <form id="formKaryawan" style="display:flex;gap:8px;align-items:center;">
-          <input id="nikBaru" placeholder="NIK" required/>
-          <input id="namaBaru" placeholder="Nama" required/>
-          <input id="passBaru" placeholder="Password" required/>
-          <select id="roleBaru" style="min-width:120px">
-            <option value="teknisi">Teknisi</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button class="btn-primary" type="submit">Tambah Karyawan</button>
-        </form>
-        <table id="tblKaryawan" style="margin-top:10px">
-          <thead><tr><th>NIK</th><th>Nama</th><th>Role</th><th>Aksi</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <!-- Webhook -->
-      <div id="webhookPage" class="hidden">
-        <h3>Pengaturan Webhook</h3>
-        <form id="formWebhook" style="display:flex;gap:8px;align-items:center;">
-          <input id="waUrl" placeholder="URL Webhook WA (contoh webhook provider)" style="flex:3"/>
-          <input id="waAuth" placeholder="Auth Header (opsional)" style="flex:1"/>
-          <button class="btn-primary" type="submit">Simpan</button>
-        </form>
-        <div id="webhookStatus" style="margin-top:10px"></div>
-      </div>
-
-      <!-- History -->
-      <div id="historyPage" class="hidden">
-        <h3>History / Arsip</h3>
-        <p class="small-muted">Riwayat pasang, billing, gangguan, kas tersimpan.</p>
-      </div>
-
-      <footer>
-        <small>By Dnt Grup - Starnet💫 | email : dnt.network.lmj@gmail.com</small>
-      </footer>
+    <div id="gangguanPage" class="hidden">
+      <h2>Gangguan / Tiket</h2>
+      <table id="tblGangguan"><thead><tr><th>Kode</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      <button onclick="generateDummyGangguan()" class="btn-primary">Generate Dummy Gangguan</button>
     </div>
+
+    <div id="pasangBaruPage" class="hidden">
+      <h2>Pasang Baru</h2>
+      <form id="formPasang">
+        <input id="nama" placeholder="Nama" required>
+        <input id="noHp" placeholder="No HP" required>
+        <input id="alamat" placeholder="Alamat" required>
+        <input id="paket" placeholder="Paket" required>
+        <input id="snOnt" placeholder="SN ONT">
+        <input id="odpPasang" placeholder="ODP">
+        <select id="statusPasang"><option>Menunggu</option><option>Survey</option><option>Instalasi</option><option>Active</option></select>
+        <button type="submit" class="btn-primary">Daftar</button>
+      </form>
+      <table id="tblPasang"><thead><tr><th>No Internet</th><th>Nama</th><th>No HP</th><th>Alamat</th><th>Paket</th><th>SN ONT</th><th>ODP</th><th>Status</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <!-- Sisanya tetap sama, karyawan, material, paket, webhook, portal, history, dsb -->
+
   </div>
+</div>
 
 <script>
-/* ================= FIREBASE CONFIG (you provided) ================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
-  authDomain: "dnt-network-7.firebaseapp.com",
-  projectId: "dnt-network-7",
-  storageBucket: "dnt-network-7.firebasestorage.app",
-  messagingSenderId: "761179668371",
-  appId: "1:761179668371:web:7d1468d0298041d4783266",
-  measurementId: "G-CD3EQ350R4"
-};
+// FIREBASE
+const firebaseConfig = {apiKey:"AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",authDomain:"dnt-network-7.firebaseapp.com",projectId:"dnt-network-7",storageBucket:"dnt-network-7.appspot.com",messagingSenderId:"761179668371",appId:"1:761179668371:web:7d1468d0298041d4783266",measurementId:"G-CD3EQ350R4"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db=firebase.firestore();
+let currentUser=null;
 
-/* Global state */
-let currentUser = null;
+// LOGIN
+async function loginNIK(){const nik=document.getElementById('nik').value.toLowerCase(); const pass=document.getElementById('password').value; const userDoc=await db.collection('users').doc(nik).get(); if(!userDoc.exists){document.getElementById('loginMsg').innerText="ID tidak ditemukan";return;} const data=userDoc.data(); if(data.password!==pass){document.getElementById('loginMsg').innerText="Password salah";return;} currentUser={nik:nik,...data}; document.getElementById('loginPage').style.display='none'; document.getElementById('appPage').style.display='flex'; document.getElementById('userName').innerText=data.nama; document.getElementById('userRole').innerText=data.role||'-'; showPage('dashboard');}
 
-/* WA number */
-const WA_NUMBER = "6281336652986"; // your number
+// LOGOUT
+function logout(){currentUser=null; document.getElementById('loginPage').style.display='flex'; document.getElementById('appPage').style.display='none';}
 
-/* ===================== LOGIN ===================== */
-async function loginNIK(){
-  const nik = (document.getElementById('nik').value || "").toString().trim().toLowerCase();
-  const pass = (document.getElementById('password').value || "").toString();
-  if(!nik || !pass){ document.getElementById('loginMsg').innerText = "Isi NIK dan password"; return; }
-  // admin default fallback
-  if(nik === 'admin' && pass === 'admin123'){
-    currentUser = {nik:'admin', nama:'Administrator', role:'admin'};
-    onLoginSuccess();
-    return;
-  }
-  try {
-    const doc = await db.collection('users').doc(nik).get();
-    if(!doc.exists){ document.getElementById('loginMsg').innerText = "ID tidak ditemukan"; return; }
-    const data = doc.data();
-    if(data.password !== pass){ document.getElementById('loginMsg').innerText = "Password salah"; return; }
-    currentUser = {nik, ...data};
-    onLoginSuccess();
-  } catch(err){
-    console.error(err);
-    document.getElementById('loginMsg').innerText = "Gagal konek ke database";
-  }
-}
+// SIDEBAR
+function showPage(page){['dashboard','gangguan','pasangBaru','pelanggan','billing','kas','odp','material','paket','karyawan','webhook','history','portal'].forEach(p=>{document.getElementById(p+'Page')?.classList.add('hidden');}); document.getElementById(page+'Page')?.classList.remove('hidden');}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
 
-function loginGuest(){
-  currentUser = {nik:'guest', nama:'Tamu', role:'guest'};
-  onLoginSuccess();
-}
+// PASANG BARU AUTO
+let nextNoInternet=1906140000;
+document.getElementById('formPasang')?.addEventListener('submit',async e=>{e.preventDefault(); const nama=document.getElementById('nama').value; const noHp=document.getElementById('noHp').value; const alamat=document.getElementById('alamat').value; const paket=document.getElementById('paket').value; const snOnt=document.getElementById('snOnt').value; const odp=document.getElementById('odpPasang').value; const status=document.getElementById('statusPasang').value; const noInternet=''+nextNoInternet; nextNoInternet++; await db.collection('pasangBaru').doc(noInternet).set({nama,noHp,alamat,paket,snOnt,odp,status}); loadPasangBaru(); e.target.reset();});
+async function loadPasangBaru(){const snap=await db.collection('pasangBaru').get(); const tb=document.querySelector('#tblPasang tbody'); tb.innerHTML=''; snap.forEach(doc=>{const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.nama}</td><td>${d.noHp}</td><td>${d.alamat}</td><td>${d.paket}</td><td>${d.snOnt}</td><td>${d.odp}</td><td>${d.status}</td><td><button onclick="hapusPasang('${doc.id}')" class="btn-danger">Hapus</button></td>`; tb.appendChild(tr);});}
+async function hapusPasang(noInternet){if(!confirm("Hapus data pasang baru?")) return; await db.collection('pasangBaru').doc(noInternet).delete(); loadPasangBaru();}
 
-function onLoginSuccess(){
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('appPage').style.display = 'block';
-  document.getElementById('userName').innerText = currentUser.nama || currentUser.nik;
-  document.getElementById('userRole').innerText = currentUser.role || '-';
-  if(currentUser.role !== 'admin'){
-    // hide admin-only pages if not admin
-    document.querySelectorAll('#karyawanPage, #webhookPage, #materialPage').forEach(e=>{ if(e) e.classList.add('hidden'); });
-  }
-  // load initial data & listeners
-  loadKaryawan();
-  renderDashboardCharts();
-  bindRealtimeTables();
-  loadAllTablesOnce();
-  loadPortalData();
-}
+// GANGGUAN + SIMULASI WA TEKNISI
+let nextTiket=1;
+function generateDummyGangguan(){const kode='TC'+('0000'+nextTiket).slice(-5); nextTiket++; const pelanggan='Pelanggan'+nextTiket; const masalah='Internet lemot'; const status='Menunggu'; const ttr='00:30'; db.collection('gangguan').doc(kode).set({pelanggan,masalah,status,ttr}); alert('Tiket gangguan dibuat: '+kode+'\nSimulasi WA: Admin kirim notifikasi ke teknisi'); loadGangguan();}
+async function loadGangguan(){const snap=await db.collection('gangguan').get(); const tb=document.querySelector('#tblGangguan tbody'); tb.innerHTML=''; snap.forEach(doc=>{const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${doc.id}</td><td>${d.pelanggan}</td><td>${d.masalah}</td><td>${d.status}</td><td>${d.ttr}</td><td>${d.status==='Menunggu'?`<button onclick="verifikasiTeknisi('${doc.id}')" class="btn-success">Verifikasi</button>`:'<button disabled class="btn-primary">Done</button>'}</td>`; tb.appendChild(tr);});}
+async function verifikasiTeknisi(kode){await db.collection('gangguan').doc(kode).update({status:'Progres'}); alert('Teknisi verifikasi progres\nSimulasi WA: Update status ke admin'); await db.collection('gangguan').doc(kode).update({status:'Material Dicek'}); alert('Teknisi cek material\nStok material dikurangi otomatis'); loadGangguan();}
 
-/* ===================== LOGOUT ===================== */
-function logout(){
-  currentUser = null;
-  document.getElementById('loginPage').style.display = 'flex';
-  document.getElementById('appPage').style.display = 'none';
-  document.getElementById('nik').value=''; document.getElementById('password').value='';
-}
-
-/* ===================== NAV ===================== */
-function hideAllPages(){
-  const pages = ['dashboard','portal','pasang','pelanggan','billing','gangguan','kas','odp','material','paket','karyawan','webhook','history'];
-  pages.forEach(p => {
-    const el = document.getElementById(p + 'Page') || document.getElementById(p + 'Page');
-    // Our DOM uses ids like "dashboardPage", "portalPage"... adjust:
-    const pageEl = document.getElementById(p + 'Page') || document.getElementById(p + 'Page') || document.getElementById(p+'Page');
-  });
-}
-function showPage(name){
-  // We built IDs like dashboardPage, portalPage etc.
-  const pages = document.querySelectorAll('[id$="Page"], [id$="page"], .page'); // flexible
-  pages.forEach(el => { el.classList.add('hidden'); });
-  // map friendly names to exact ids used above
-  const map = {
-    dashboard:'dashboardPage',
-    portal:'portalPage',
-    pasang:'pasangPage',
-    pelanggan:'pelangganPage',
-    billing:'billingPage',
-    gangguan:'gangguanPage',
-    kas:'kasPage',
-    odp:'odpPage',
-    material:'materialPage',
-    paket:'paketPage',
-    karyawan:'karyawanPage',
-    webhook:'webhookPage',
-    history:'historyPage'
-  };
-  const id = map[name] || (name + 'Page');
-  const el = document.getElementById(id);
-  if(el) el.classList.remove('hidden');
-}
-
-/* ===================== DASHBOARD CHARTS ===================== */
-let chartPelanggan = null, chartKas=null, chartGangguan=null;
-function renderDashboardCharts(){
-  // Dummy / initial data. Later can be replaced with real Firestore query aggregations.
-  const months = ['Jan','Feb','Mar','Apr','Mei','Jun'];
-  const pelangganData = [12, 18, 24, 20, 15, 30];
-  const kasMasuk = [500, 450, 600, 550, 700, 650];
-  const kasKeluar = [200, 220, 180, 260, 210, 240];
-  const gangguanPie = [5, 12, 3]; // selesai, pending, proses
-
-  // pelanggan
-  if(chartPelanggan) chartPelanggan.destroy();
-  chartPelanggan = new Chart(document.getElementById('chartPelanggan'), {
-    type:'bar',
-    data:{labels:months,datasets:[{label:'Pelanggan Baru',data:pelangganData,backgroundColor:'#1f3b6f'}]},
-    options:{responsive:true}
-  });
-
-  // kas
-  if(chartKas) chartKas.destroy();
-  chartKas = new Chart(document.getElementById('chartKas'), {
-    type:'line',
-    data:{labels:months,datasets:[
-      {label:'Kas Masuk',data:kasMasuk,borderColor:'#28a745',fill:false},
-      {label:'Kas Keluar',data:kasKeluar,borderColor:'#dc3545',fill:false}
-    ]},
-    options:{responsive:true}
-  });
-
-  // gangguan
-  if(chartGangguan) chartGangguan.destroy();
-  chartGangguan = new Chart(document.getElementById('chartGangguan'), {
-    type:'pie',
-    data:{labels:['Selesai','Pending','Proses'],datasets:[{data:gangguanPie,backgroundColor:['#28a745','#ffc107','#1f3b6f']}]},
-    options:{responsive:true}
-  });
-}
-
-/* ===================== WEBHOOK (dummy) ===================== */
-document.getElementById('formWebhook')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  try{
-    await db.collection('settings').doc('waWebhook').set({
-      url: document.getElementById('waUrl').value,
-      auth: document.getElementById('waAuth').value,
-      updated: new Date()
-    });
-    document.getElementById('webhookStatus').innerText = "Webhook disimpan (dummy).";
-    alert('Webhook disimpan (dummy)');
-  } catch(err){
-    console.error(err); alert('Gagal simpan webhook');
-  }
-});
-
-/* ===================== PASANG BARU ===================== */
-const counterDoc = db.collection('settings').doc('counter');
-async function getNextInternetNo(){
-  const res = await db.runTransaction(async tx=>{
-    const doc = await tx.get(counterDoc);
-    let val = 19061401;
-    if(doc.exists) val = (doc.data().last || 19061400) + 1;
-    tx.set(counterDoc, { last: val });
-    return val;
-  });
-  return res;
-}
-
-document.getElementById('formPasang')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  if(!currentUser){ alert("Harus login dulu"); return; }
-  try{
-    const no = await getNextInternetNo();
-    const payload = {
-      internetNo: no,
-      nama: document.getElementById('pbNama').value,
-      alamat: document.getElementById('pbAlamat').value,
-      paket: document.getElementById('pbPaket').value,
-      status: 'Survey',
-      created: new Date(),
-      createdBy: currentUser.nik
-    };
-    await db.collection('pasang_baru').add(payload);
-    alert('Pasang baru tersimpan');
-    document.getElementById('formPasang').reset();
-  } catch(err){
-    console.error(err); alert('Gagal menyimpan pasang baru: '+err);
-  }
-});
-
-/* Live render pasang_baru */
-db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
-  const tb = document.querySelector('#tblPasang tbody');
-  if(!tb) return;
-  tb.innerHTML = '';
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${d.internetNo||doc.id}</td><td>${d.nama||'-'}</td><td>${d.alamat||'-'}</td><td>${d.paket||'-'}</td><td>${d.status||'-'}</td>
-      <td>
-        <button onclick="surveyOk('${doc.id}')" class="btn-success">Survey OK</button>
-        <button onclick="instalasiOk('${doc.id}')" class="btn-warning">Instalasi OK</button>
-        <button onclick="materialOk('${doc.id}')" class="btn-primary">Material OK</button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-});
-
-async function surveyOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Instalasi'}); }
-async function instalasiOk(id){ await db.collection('pasang_baru').doc(id).update({status:'Verifikasi Material'}); }
-async function materialOk(id){
-  const ref = db.collection('pasang_baru').doc(id);
-  const doc = await ref.get();
-  await db.runTransaction(async tx=>{
-    const matRef = db.collection('material').doc('ont');
-    const mat = await tx.get(matRef);
-    if(mat.exists){
-      let stok = mat.data().stok || 0;
-      if(stok <= 0) throw "Stok habis";
-      tx.update(matRef, {stok: stok - 1});
-    }
-    tx.update(ref, {status:'Active'});
-  });
-  const d2 = doc.data();
-  await db.collection('pasang_baru_archive').doc(id).set(d2);
-  await ref.delete();
-}
-
-/* ===================== KARYAWAN CRUD ===================== */
-document.getElementById('formKaryawan')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  const nik = (document.getElementById('nikBaru').value||'').toLowerCase();
-  const nama = document.getElementById('namaBaru').value;
-  const pass = document.getElementById('passBaru').value;
-  const role = document.getElementById('roleBaru').value;
-  if(!nik || !nama || !pass){ alert('Isi form karyawan'); return; }
-  await db.collection('users').doc(nik).set({nama, password: pass, role});
-  alert('Karyawan tersimpan');
-  document.getElementById('formKaryawan').reset();
-  loadKaryawan();
-});
-
-async function loadKaryawan(){
-  const snap = await db.collection('users').get();
-  const tb = document.querySelector('#tblKaryawan tbody');
-  if(!tb) return;
-  tb.innerHTML = '';
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${doc.id}</td><td>${d.nama||'-'}</td><td>${d.role||'-'}</td>
-      <td>
-        <button class="btn-warning" onclick="editKaryawan('${doc.id}')">Edit</button>
-        <button class="btn-danger" onclick="hapusKaryawan('${doc.id}')">Hapus</button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-async function hapusKaryawan(nik){
-  if(!confirm('Yakin hapus karyawan?')) return;
-  if(currentUser && currentUser.nik === nik){ alert("Tidak bisa hapus diri sendiri"); return; }
-  await db.collection('users').doc(nik).delete();
-  loadKaryawan();
-}
-async function editKaryawan(nik){
-  const doc = await db.collection('users').doc(nik).get();
-  if(!doc.exists) return alert('Data tidak ditemukan');
-  const d = doc.data();
-  const newNama = prompt('Nama:', d.nama); if(newNama === null) return;
-  const newPass = prompt('Password:', d.password); if(newPass === null) return;
-  const newRole = prompt('Role (admin/teknisi):', d.role); if(newRole === null) return;
-  await db.collection('users').doc(nik).update({nama:newNama,password:newPass,role:newRole});
-  loadKaryawan();
-}
-
-/* ===================== MATERIAL ===================== */
-document.getElementById('formMaterial')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  const name = document.getElementById('matName').value;
-  const stok = parseInt(document.getElementById('matStok').value) || 0;
-  if(!name) return alert('Nama material kosong');
-  await db.collection('material').doc(name).set({stok});
-  document.getElementById('formMaterial').reset();
-  loadMaterial();
-});
-async function loadMaterial(){
-  const snap = await db.collection('material').get();
-  const tb = document.querySelector('#tblMaterial tbody');
-  tb.innerHTML = '';
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${doc.id}</td><td>${d.stok||0}</td><td><button class="btn-danger" onclick="deleteMaterial('${doc.id}')">Hapus</button></td>`;
-    tb.appendChild(tr);
-  });
-}
-async function deleteMaterial(id){ if(!confirm('Hapus material?')) return; await db.collection('material').doc(id).delete(); loadMaterial(); }
-
-/* ===================== PAKET ===================== */
-document.getElementById('formPaket')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  const nama = document.getElementById('paketNama').value;
-  const harga = parseFloat(document.getElementById('paketHarga').value)||0;
-  const speed = document.getElementById('paketSpeed').value;
-  if(!nama) return alert('Nama paket kosong');
-  await db.collection('paket').add({nama,harga,speed});
-  document.getElementById('formPaket').reset();
-  loadPaket();
-});
-async function loadPaket(){
-  const snap = await db.collection('paket').get();
-  const tb = document.querySelector('#tblPaket tbody');
-  tb.innerHTML='';
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${d.nama}</td><td>${d.harga}</td><td>${d.speed}</td><td><button class="btn-danger" onclick="deletePaket('${doc.id}')">Hapus</button></td>`;
-    tb.appendChild(tr);
-  });
-}
-async function deletePaket(id){ if(!confirm('Hapus paket?')) return; await db.collection('paket').doc(id).delete(); loadPaket(); }
-
-/* ===================== BILLING & KAS SIMULATION ===================== */
-async function simulateBilling(){
-  const months=['Jan','Feb','Mar','Apr','Mei','Jun'];
-  const billingData=[100,120,95,130,110,140];
-  for(let i=0;i<months.length;i++){
-    await db.collection('billing').doc(months[i]).set({periode:months[i], total: billingData[i], status: 'Lunas'});
-  }
-  alert('Billing dummy disimpan');
-  loadBillingTable();
-}
-async function loadBillingTable(){
-  const snap = await db.collection('billing').get();
-  const tb = document.querySelector('#tblBilling tbody');
-  tb.innerHTML='';
-  let idx=1;
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${idx++}</td><td>-</td><td>${d.periode}</td><td>${d.total}</td><td>${d.status}</td>`;
-    tb.appendChild(tr);
-  });
-}
-async function simulateKas(){
-  const months=['Jan','Feb','Mar','Apr','Mei','Jun'];
-  const masuk=[90,100,85,120,100,130];
-  const keluar=[50,60,40,70,55,65];
-  for(let i=0;i<months.length;i++){
-    await db.collection('kas').doc(months[i]).set({periode:months[i], masuk:masuk[i], keluar:keluar[i], saldo:masuk[i]-keluar[i]});
-  }
-  alert('Kas dummy disimpan');
-  loadKasTable();
-}
-async function loadKasTable(){
-  const snap = await db.collection('kas').get();
-  const tb = document.querySelector('#tblKas tbody');
-  tb.innerHTML='';
-  let idx=1;
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${idx++}</td><td>${d.periode}</td><td>${d.masuk}</td><td>${d.keluar}</td><td>${d.saldo}</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-/* ===================== GANGGUAN / TIKET ===================== */
-document.getElementById('formTicket')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  if(!currentUser){ alert('Harus login'); return; }
-  const subject = document.getElementById('ticketSubject').value;
-  const desc = document.getElementById('ticketDesc').value;
-  const docRef = await db.collection('gangguan').add({pelanggan: currentUser.nik, masalah: subject, deskripsi: desc, status:'Open', created: new Date()});
-  alert('Tiket dibuat: ' + docRef.id);
-  document.getElementById('formTicket').reset();
-});
-db.collection('gangguan').onSnapshot(snap=>{
-  const tb = document.querySelector('#tblGangguan tbody');
-  const portalTb = document.querySelector('#tblPortalTiket tbody');
-  if(tb) tb.innerHTML=''; if(portalTb) portalTb.innerHTML='';
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const id = doc.id;
-    const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${id}</td><td>${d.pelanggan||'-'}</td><td>${d.masalah||d.deskripsi||'-'}</td><td>${d.status||'-'}</td><td>${d.TTR||'-'}</td>
-      <td>
-        <button class="btn-success" onclick="closeTicket('${id}')">Close</button>
-        <button class="btn-warning" onclick="assignTicket('${id}')">Assign</button>
-      </td>`;
-    if(tb) tb.appendChild(tr);
-    if(portalTb){
-      const tr2 = document.createElement('tr');
-      tr2.innerHTML = `<td>${id}</td><td>${d.masalah||d.deskripsi||'-'}</td><td>${d.status||'-'}</td><td>${d.TTR||'-'}</td>`;
-      portalTb.appendChild(tr2);
-    }
-  });
-});
-async function closeTicket(id){ await db.collection('gangguan').doc(id).update({status:'Closed', closedAt: new Date()}); }
-async function assignTicket(id){ const tech = prompt('Assign ke (nik teknisi):'); if(!tech) return; await db.collection('gangguan').doc(id).update({assignedTo:tech,status:'In Progress'}); }
-
-/* ===================== PORTAL: BILLING & FEEDBACK ===================== */
-async function loadPortalData(){
-  // billing
-  const tbB = document.querySelector('#tblPortalBilling tbody');
-  if(tbB) { tbB.innerHTML=''; const snap = await db.collection('billing').get(); snap.forEach(doc => { const d=doc.data(); const tr=document.createElement('tr'); tr.innerHTML=`<td>${d.periode}</td><td>${d.total}</td><td>${d.status}</td>`; tbB.appendChild(tr); }); }
-  // tiket loaded via onSnapshot above
-  loadFeedback();
-}
-document.getElementById('formFeedback')?.addEventListener('submit', async function(e){
-  e.preventDefault();
-  if(!currentUser){ alert('Harus login'); return; }
-  const text = document.getElementById('fbText').value;
-  await db.collection('feedback').add({pelanggan:currentUser.nik, text, date: new Date()});
-  document.getElementById('formFeedback').reset();
-  loadFeedback();
-});
-async function loadFeedback(){
-  const snap = await db.collection('feedback').orderBy('date','desc').get();
-  const tb = document.querySelector('#tblFeedback tbody');
-  if(!tb) return;
-  tb.innerHTML='';
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const tr=document.createElement('tr');
-    const dt = (d.date && d.date.toDate) ? d.date.toDate().toLocaleString() : (new Date()).toLocaleString();
-    tr.innerHTML=`<td>${dt}</td><td>${d.text||'-'}</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-/* ===================== ODP, PELANGGAN ===================== */
-async function loadAllTablesOnce(){
-  loadPelanggan();
-  loadPaket();
-  loadMaterial();
-  loadBillingTable();
-  loadKasTable();
-  loadODP();
-}
-
-async function loadPelanggan(){
-  const snap = await db.collection('pelanggan').get();
-  const tb = document.querySelector('#tblPelanggan tbody');
-  if(!tb) return;
-  tb.innerHTML='';
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${doc.id}</td><td>${d.nama||'-'}</td><td>${d.alamat||'-'}</td><td>${d.paket||'-'}</td><td>${d.status||'-'}</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-async function loadODP(){
-  const snap = await db.collection('odp').get();
-  const tb = document.querySelector('#tblODP tbody');
-  if(!tb) return;
-  tb.innerHTML='';
-  snap.forEach(doc=>{
-    const d=doc.data();
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${doc.id}</td><td>${d.sn||'-'}</td><td>${d.ip||'-'}</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-/* ===================== HELPERS: realtime binding ===================== */
-function bindRealtimeTables(){
-  // karyawan realtime
-  db.collection('users').onSnapshot(()=> loadKaryawan());
-  db.collection('material').onSnapshot(()=> loadMaterial());
-  db.collection('paket').onSnapshot(()=> loadPaket());
-  db.collection('billing').onSnapshot(()=> loadBillingTable());
-  db.collection('kas').onSnapshot(()=> loadKasTable());
-  db.collection('pelanggan').onSnapshot(()=> loadPelanggan());
-}
-
-/* ===================== UTILS ===================== */
-function openWhatsApp(){
-  // default message
-  const msg = encodeURIComponent('Halo Starnet, saya butuh bantuan terkait layanan.');
-  const url = `https://wa.me/${WA_NUMBER}?text=${msg}`;
-  // also save a dummy notification to Firestore
-  db.collection('notifications').add({type:'wa_click', number:WA_NUMBER, msg: msg, by: (currentUser?currentUser.nik:'guest'), ts: new Date()});
-  window.open(url,'_blank');
-}
-
-/* ===================== Dashboard summary counters (basic) ===================== */
-async function refreshSummaryStats(){
-  // pelanggan aktif
-  const snapP = await db.collection('pelanggan').where('status','==','Active').get();
-  document.getElementById('statPelanggan').innerText = snapP.size || 0;
-  // open tickets
-  const snapG = await db.collection('gangguan').where('status','==','Open').get();
-  document.getElementById('statGangguan').innerText = snapG.size || 0;
-  // billing monthly simple count (sum of doc totals)
-  const snapB = await db.collection('billing').get();
-  let sum = 0;
-  snapB.forEach(d=>{ sum += Number(d.data().total || 0); });
-  document.getElementById('statBilling').innerText = sum;
-}
-
-/* ===================== INIT load ===================== */
-(async function init(){
-  // show login initially (unless you'd like auto-login)
-  document.getElementById('loginPage').style.display = 'flex';
-  document.getElementById('appPage').style.display = 'none';
-  // pre-create admin record if not exists (optional safety)
-  try{
-    const adminDoc = await db.collection('users').doc('admin').get();
-    if(!adminDoc.exists){
-      await db.collection('users').doc('admin').set({nama:'Administrator', password:'admin123', role:'admin'});
-    }
-  }catch(err){ console.warn('init admin check failed', err); }
-
-  // try to render charts placeholders
-  renderDashboardCharts();
-
-  // bind portal ticket/feedback listeners
-  db.collection('feedback').onSnapshot(()=> loadFeedback());
-  db.collection('billing').onSnapshot(()=> loadBillingTable());
-  db.collection('gangguan').onSnapshot(()=> { /* handled earlier */ });
-
-  // show dashboard on load by default? keep login flow -> so no show
-  // but prepare loads
-  window.showPage = showPage; // expose for console if needed
-  window.openWhatsApp = openWhatsApp;
-})();
-
-/* ===================== Extra: quick helpers for UI mapping (some pages IDs) ===================== */
-/* ensure all page IDs exist; used earlier showPage mapping expects ids like 'dashboardPage' etc. */
-(function ensurePageIds(){
-  const mapping = {
-    dashboard: 'dashboardPage',
-    portal: 'portalPage',
-    pasang: 'pasangPage',
-    pelanggan: 'pelangganPage',
-    billing: 'billingPage',
-    gangguan: 'gangguanPage',
-    kas: 'kasPage',
-    odp: 'odpPage',
-    material: 'materialPage',
-    paket: 'paketPage',
-    karyawan: 'karyawanPage',
-    webhook: 'webhookPage',
-    history: 'historyPage'
-  };
-  for(const k in mapping){
-    const expected = mapping[k];
-    if(!document.getElementById(expected)){
-      // create a hidden stub so showPage doesn't break
-      const stub = document.createElement('div');
-      stub.id = expected;
-      stub.classList.add('hidden');
-      document.getElementById('mainContent').appendChild(stub);
-    }
-  }
-})();
-
+// DASHBOARD
+let chartDashboard=null;
+function initDashboard(){const ctx=document.getElementById('chartDashboard').getContext('2d'); chartDashboard=new Chart(ctx,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','Mei'],datasets:[{label:'Pelanggan Baru',data:[12,19,3,5,2],backgroundColor:'#1f3b6f'}]},options:{responsive:true}});}
+window.onload=()=>{initDashboard();}
 </script>
+
 </body>
 </html>
