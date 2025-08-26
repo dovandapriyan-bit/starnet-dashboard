@@ -2,43 +2,52 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>ISP Manager + Login NIK</title>
+<title>ISP Manager Full System</title>
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <style>
-body { font-family: 'Segoe UI', sans-serif; margin:0; background:#f0f2f5; }
+body { font-family:'Segoe UI',sans-serif;margin:0;background:#f0f2f5; }
 h1,h2 { color:#1f3b6f; }
-button { cursor:pointer; border:none; border-radius:6px; padding:6px 12px; transition:0.3s; }
+button { cursor:pointer;border:none;border-radius:6px;padding:6px 12px;transition:0.3s; }
 button:hover { opacity:0.85; }
-input, select { border-radius:6px; border:1px solid #ccc; padding:8px; outline:none; transition:0.3s; }
+input, select { border-radius:6px;border:1px solid #ccc;padding:8px;outline:none;transition:0.3s; }
 input:focus, select:focus { border-color:#1f3b6f; }
 
 /* LOGIN PAGE */
 #loginPage { display:flex; justify-content:center; align-items:center; height:100vh; background:linear-gradient(135deg,#1f3b6f,#4b6cb7); }
-#loginBox { background:white; padding:40px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.2); width:360px; text-align:center; }
+#loginBox { background:white;padding:40px;border-radius:15px;box-shadow:0 10px 25px rgba(0,0,0,0.2);width:360px;text-align:center; }
 #loginBox h2 { margin-bottom:25px; }
 #loginBox input { width:100%; margin-bottom:15px; font-size:14px; }
 #loginBox button { width:100%; background:#1f3b6f; color:white; font-weight:bold; margin-top:5px; }
-#loginBox p.info { font-size:12px; color:#666; margin-top:20px; }
+#loginBox p.info { font-size:12px;color:#666;margin-top:20px; }
 
-/* DASHBOARD */
-#appPage { display:none; padding:20px; }
-#appPage h2 { margin-top:25px; }
+/* DASHBOARD & SIDEBAR */
+#appPage { display:none; display:flex; }
+#sidebar { width:220px; background:#1f3b6f; color:white; min-height:100vh; transition:0.3s; }
+#sidebar.collapsed { width:60px; }
+#sidebar h2 { text-align:center; padding:15px 0; border-bottom:1px solid rgba(255,255,255,0.2); }
+#sidebar ul { list-style:none; padding:0; margin:0; }
+#sidebar ul li { padding:12px 20px; cursor:pointer; transition:0.3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#sidebar ul li:hover { background:#4b6cb7; }
+#sidebar ul li i { margin-right:10px; }
+#mainContent { flex:1; padding:20px; overflow:auto; }
+.hidden { display:none; }
 table { border-collapse:collapse; width:100%; margin-top:10px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:0.3s; }
 th, td { border:1px solid #ddd; padding:10px; font-size:14px; text-align:center; transition:0.3s; }
 th { background:#1f3b6f; color:white; }
 tr:hover { background: #e3f2fd; }
 tr td button { transition: transform 0.2s; }
 tr td button:hover { transform: translateY(-2px); }
-.hidden { display:none; }
 .btn-primary { background:#1f3b6f; color:white; }
 .btn-success { background:#28a745; color:white; }
 .btn-warning { background:#ffc107; color:white; }
 .btn-danger { background:#dc3545; color:white; }
 form { margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; }
 form input, form select { flex:1; min-width:100px; }
+#topBar { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.1); margin-bottom:10px; border-radius:6px; }
+#topBar span { font-weight:bold; }
 </style>
 </head>
 <body>
@@ -46,8 +55,8 @@ form input, form select { flex:1; min-width:100px; }
 <!-- LOGIN PAGE -->
 <div id="loginPage">
   <div id="loginBox">
-    <h2>Login Karyawan</h2>
-    <input id="nik" placeholder="NIK">
+    <h2>Login Karyawan / Pelanggan</h2>
+    <input id="nik" placeholder="NIK / ID Pelanggan">
     <input id="password" type="password" placeholder="Password">
     <button onclick="loginNIK()">Login</button>
     <p id="loginMsg" style="color:red;margin-top:10px;font-size:13px;"></p>
@@ -58,58 +67,148 @@ form input, form select { flex:1; min-width:100px; }
 
 <!-- DASHBOARD -->
 <div id="appPage">
-  <p>Halo, <span id="userName"></span> (<span id="userRole"></span>) 
-    <button onclick="logout()" style="float:right;" class="btn-warning">Logout</button>
-  </p>
-
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel" class="hidden">
-    <h2>Manajemen Karyawan</h2>
-    <form id="formKaryawan">
-      <input id="nikBaru" placeholder="NIK" required>
-      <input id="namaBaru" placeholder="Nama" required>
-      <input id="passBaru" placeholder="Password" required>
-      <select id="roleBaru">
-        <option value="teknisi">Teknisi</option>
-        <option value="admin">Admin</option>
-      </select>
-      <button type="submit" class="btn-primary">Tambah Karyawan</button>
-    </form>
-    <table id="tblKaryawan">
-      <thead>
-        <tr><th>NIK</th><th>Nama</th><th>Role</th><th>Aksi</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <h2>ISP 💫</h2>
+    <ul>
+      <li onclick="showPage('dashboard')">📊 Dashboard</li>
+      <li onclick="showPage('gangguan')">⚠️ Gangguan</li>
+      <li onclick="showPage('pasangBaru')">🆕 Pasang Baru</li>
+      <li onclick="showPage('pelanggan')">👥 Pelanggan</li>
+      <li onclick="showPage('billing')">💳 Billing</li>
+      <li onclick="showPage('kas')">💰 Kas</li>
+      <li onclick="showPage('odp')">🖧 ODP / Mikrotik</li>
+      <li onclick="showPage('material')">📦 Material</li>
+      <li onclick="showPage('paket')">📦 Paket / Tarif</li>
+      <li onclick="showPage('karyawan')">👔 Karyawan</li>
+      <li onclick="showPage('webhook')">⚙️ Webhook</li>
+      <li onclick="showPage('history')">🗂️ Arsip / History</li>
+      <li onclick="logout">🚪 Logout</li>
+    </ul>
   </div>
 
-  <!-- PASANG BARU -->
-  <h2>Pasang Baru</h2>
-  <form id="formPasang">
-    <input id="nama" placeholder="Nama" required>
-    <input id="alamat" placeholder="Alamat" required>
-    <input id="paket" placeholder="Paket" required>
-    <button type="submit" class="btn-primary">Daftar</button>
-  </form>
+  <!-- MAIN CONTENT -->
+  <div id="mainContent">
+    <div id="topBar">
+      <span>Halo, <span id="userName"></span> (<span id="userRole"></span>)</span>
+      <button onclick="logout()" class="btn-warning">Logout</button>
+    </div>
 
-  <table id="tblPasang">
-    <thead>
-      <tr><th>No Internet</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th><th>Aksi</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <!-- PAGE CONTAINERS -->
+    <div id="dashboardPage">
+      <h2>Dashboard</h2>
+      <p>Ringkasan pelanggan, gangguan, kas, billing, TTR, grafik statistik</p>
+      <!-- Tambahkan chart/statistik di sini -->
+    </div>
 
-  <!-- PENGATURAN WEBHOOK -->
-  <h2>Pengaturan</h2>
-  <form id="formWebhook">
-    <input id="waUrl" placeholder="URL Webhook WA" style="flex:3;">
-    <input id="waAuth" placeholder="Auth Header" style="flex:1;">
-    <button type="submit" class="btn-primary">Simpan</button>
-  </form>
+    <div id="gangguanPage" class="hidden">
+      <h2>Gangguan / Tiket Pelanggan</h2>
+      <table id="tblGangguan">
+        <thead><tr><th>ID</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="pasangBaruPage" class="hidden">
+      <h2>Pasang Baru</h2>
+      <form id="formPasang">
+        <input id="nama" placeholder="Nama" required>
+        <input id="alamat" placeholder="Alamat" required>
+        <input id="paket" placeholder="Paket" required>
+        <button type="submit" class="btn-primary">Daftar</button>
+      </form>
+      <table id="tblPasang">
+        <thead><tr><th>No Internet</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="pelangganPage" class="hidden">
+      <h2>Pelanggan</h2>
+      <table id="tblPelanggan">
+        <thead><tr><th>ID</th><th>Nama</th><th>Alamat</th><th>Paket</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="billingPage" class="hidden">
+      <h2>Billing</h2>
+      <table id="tblBilling">
+        <thead><tr><th>No</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="kasPage" class="hidden">
+      <h2>Kas / Keuangan</h2>
+      <table id="tblKas">
+        <thead><tr><th>No</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="odpPage" class="hidden">
+      <h2>ODP / Mikrotik</h2>
+      <table id="tblODP">
+        <thead><tr><th>ODP</th><th>SNONT</th><th>IP</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="materialPage" class="hidden">
+      <h2>Material / Inventory</h2>
+      <table id="tblMaterial">
+        <thead><tr><th>Nama</th><th>Stok</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="paketPage" class="hidden">
+      <h2>Paket / Tarif</h2>
+      <table id="tblPaket">
+        <thead><tr><th>Nama Paket</th><th>Harga</th><th>Kecepatan</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="karyawanPage" class="hidden">
+      <h2>Manajemen Karyawan</h2>
+      <form id="formKaryawan">
+        <input id="nikBaru" placeholder="NIK" required>
+        <input id="namaBaru" placeholder="Nama" required>
+        <input id="passBaru" placeholder="Password" required>
+        <select id="roleBaru">
+          <option value="teknisi">Teknisi</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button type="submit" class="btn-primary">Tambah Karyawan</button>
+      </form>
+      <table id="tblKaryawan">
+        <thead><tr><th>NIK</th><th>Nama</th><th>Role</th><th>Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="webhookPage" class="hidden">
+      <h2>Pengaturan Webhook</h2>
+      <form id="formWebhook">
+        <input id="waUrl" placeholder="URL Webhook WA" style="flex:3;">
+        <input id="waAuth" placeholder="Auth Header" style="flex:1;">
+        <button type="submit" class="btn-primary">Simpan</button>
+      </form>
+    </div>
+
+    <div id="historyPage" class="hidden">
+      <h2>Arsip / History</h2>
+      <p>Riwayat pasang, gangguan, billing, kas, pelanggan non-aktif</p>
+      <!-- Tambahkan tabel history -->
+    </div>
+
+  </div>
 </div>
 
 <script>
-// FIREBASE CONFIG
+// ================= FIREBASE =================
 const firebaseConfig = {
   apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
   authDomain: "dnt-network-7.firebaseapp.com",
@@ -123,66 +222,63 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentUser = null;
 
-// ADMIN DEFAULT
-(async()=>{
-  const adminRef = db.collection('users').doc('admin');
-  const adminDoc = await adminRef.get();
-  if(!adminDoc.exists){
-    await adminRef.set({
-      nama: "Administrator",
-      password: "admin123",
-      role: "admin"
-    });
-    console.log("Admin default dibuat: NIK=admin, password=admin123");
-  }
-})();
-
-// LOGIN
+// ================= LOGIN =================
 async function loginNIK(){
-  const nik=document.getElementById('nik').value.trim().toLowerCase();
-  const pass=document.getElementById('password').value.trim();
+  const nik=document.getElementById('nik').value.toLowerCase();
+  const pass=document.getElementById('password').value;
   const userDoc=await db.collection('users').doc(nik).get();
-  if(!userDoc.exists){ document.getElementById('loginMsg').innerText="NIK tidak ditemukan"; return; }
+  if(!userDoc.exists){ document.getElementById('loginMsg').innerText="ID tidak ditemukan"; return; }
   const data=userDoc.data();
   if(data.password!==pass){ document.getElementById('loginMsg').innerText="Password salah"; return; }
   currentUser={nik:nik,...data};
   document.getElementById('loginPage').style.display='none';
-  document.getElementById('appPage').style.display='block';
+  document.getElementById('appPage').style.display='flex';
   document.getElementById('userName').innerText=data.nama;
   document.getElementById('userRole').innerText=data.role||'-';
-  if(data.role==="admin") document.getElementById('adminPanel').classList.remove('hidden');
-  else document.getElementById('adminPanel').classList.add('hidden');
+  if(data.role==="admin") document.getElementById('karyawanPage').classList.remove('hidden');
+  else document.getElementById('karyawanPage').classList.add('hidden');
   loadKaryawan();
 }
 
+// ================= LOGOUT =================
 function logout(){
   currentUser=null;
   document.getElementById('loginPage').style.display='flex';
   document.getElementById('appPage').style.display='none';
-  document.getElementById('adminPanel').classList.add('hidden');
 }
 
-// TAMBAH KARYAWAN
-document.getElementById('formKaryawan').onsubmit = async e=>{
+// ================= SIDEBAR PAGE SWITCH =================
+function showPage(page){
+  const pages=['dashboard','gangguan','pasangBaru','pelanggan','billing','kas','odp','material','paket','karyawan','webhook','history'];
+  pages.forEach(p=>{
+    const el=document.getElementById(p+'Page');
+    if(el) el.classList.add('hidden');
+  });
+  const active=document.getElementById(page+'Page');
+  if(active) active.classList.remove('hidden');
+}
+
+// ================= TAMBAH & LOAD KARYAWAN =================
+document.getElementById('formKaryawan')?.addEventListener('submit', async e=>{
   e.preventDefault();
-  const nik=document.getElementById('nikBaru').value.trim().toLowerCase();
-  const nama=document.getElementById('namaBaru').value.trim();
-  const pass=document.getElementById('passBaru').value.trim();
+  const nik=document.getElementById('nikBaru').value.toLowerCase();
+  const nama=document.getElementById('namaBaru').value;
+  const pass=document.getElementById('passBaru').value;
   const role=document.getElementById('roleBaru').value;
-  await db.collection('users').doc(nik).set({nama, password:pass, role});
+  await db.collection('users').doc(nik).set({nama,password:pass,role});
   alert("Karyawan ditambahkan");
   e.target.reset();
   loadKaryawan();
-};
+});
 
 async function loadKaryawan(){
-  const snap = await db.collection('users').get();
-  const tb = document.querySelector('#tblKaryawan tbody');
-  tb.innerHTML = '';
+  const snap=await db.collection('users').get();
+  const tb=document.querySelector('#tblKaryawan tbody');
+  tb.innerHTML='';
   snap.forEach(doc=>{
     const d=doc.data();
-    let tr = document.createElement('tr');
-    tr.innerHTML = `<td>${doc.id}</td><td>${d.nama}</td><td>${d.role}</td>
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td>${doc.id}</td><td>${d.nama}</td><td>${d.role}</td>
       <td>
         <button onclick="editKaryawan('${doc.id}','${d.nama}','${d.password}','${d.role}')" class="btn-warning">Edit</button>
         <button onclick="hapusKaryawan('${doc.id}')" class="btn-danger">Hapus</button>
@@ -206,7 +302,7 @@ async function editKaryawan(nik,nama,pass,role){
   loadKaryawan();
 }
 
-// PASANG BARU
+// ================= PASANG BARU =================
 let counterDoc=db.collection('settings').doc('counter');
 async function getNextInternetNo(){
   const res = await db.runTransaction(async tx=>{
@@ -219,7 +315,7 @@ async function getNextInternetNo(){
   return res;
 }
 
-document.getElementById('formPasang').onsubmit = async e=>{
+document.getElementById('formPasang')?.addEventListener('submit', async e=>{
   e.preventDefault();
   if(!currentUser){ alert("Harus login dulu"); return; }
   const no = await getNextInternetNo();
@@ -233,27 +329,27 @@ document.getElementById('formPasang').onsubmit = async e=>{
     createdBy: currentUser.nik
   });
   e.target.reset();
-};
+});
 
-// WEBHOOK
-document.getElementById('formWebhook').onsubmit = async e=>{
+// ================= WEBSOCKET / WEBHOOK =================
+document.getElementById('formWebhook')?.addEventListener('submit', async e=>{
   e.preventDefault();
   await db.collection('settings').doc('waWebhook').set({
     url: document.getElementById('waUrl').value,
     authHeader: document.getElementById('waAuth').value
   });
   alert('Webhook disimpan');
-};
+});
 
-// TABEL PASANG BARU
+// ================= TABEL PASANG BARU =================
 db.collection('pasang_baru').orderBy('created','desc').onSnapshot(snap=>{
-  const tb = document.querySelector('#tblPasang tbody');
+  const tb=document.querySelector('#tblPasang tbody');
+  if(!tb) return;
   tb.innerHTML='';
   snap.forEach(doc=>{
     const d=doc.data();
     let tr=document.createElement('tr');
-    tr.innerHTML=`<td>${d.internetNo}</td><td>${d.nama}</td>
-      <td>${d.alamat}</td><td>${d.paket}</td><td>${d.status}</td>
+    tr.innerHTML=`<td>${d.internetNo}</td><td>${d.nama}</td><td>${d.alamat}</td><td>${d.paket}</td><td>${d.status}</td>
       <td>
         <button onclick="surveyOk('${doc.id}')" class="btn-success">Survey OK</button>
         <button onclick="instalasiOk('${doc.id}')" class="btn-warning">Instalasi OK</button>
