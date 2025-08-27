@@ -1,282 +1,295 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ISP Manager — FINAL (Login Fixed)</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-:root{
-  --bg:#eef3fb; --card:#ffffff; --muted:#6b7280; --sidebar:#0f2b4a; --sidebar2:#164a8a;
-  --accent:#2563eb; --success:#16a34a; --danger:#dc2626; --radius:12px;
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
-body{background:var(--bg);color:#0b1220}
-.header{height:64px;background:#fff;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid rgba(15,23,42,0.06);box-shadow:0 4px 18px rgba(11,18,32,0.03)}
-.hamb{font-size:22px;cursor:pointer;margin-right:12px}
-.brand{font-weight:800;color:var(--sidebar2);letter-spacing:0.2px}
-.app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;height:calc(100vh - 0px)}
-.sidebar{grid-row:1/3;background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));color:#e9f0ff;padding:14px;overflow:auto;border-right:1px solid rgba(255,255,255,0.02);box-shadow: inset -1px 0 0 rgba(255,255,255,0.02)}
-.sidebar .logo{display:flex;align-items:center;gap:10px;height:56px;padding:6px 8px}
-.link{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:#e9f0ff;text-decoration:none;margin-bottom:6px;cursor:pointer;font-weight:600}
-.link:hover{background:rgba(255,255,255,0.04)}
-.link.active{background:rgba(255,255,255,0.06)}
-.main{grid-column:2;background:transparent;padding:22px;overflow:auto}
-.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 10px 30px rgba(15,23,42,0.04)}
-.table-fixed{width:100%;border-collapse:collapse}
-.table-fixed th,.table-fixed td{padding:8px;border:1px solid #eef4ff;font-size:13px}
-.small-muted{color:var(--muted);font-size:13px}
-.btn-xs{padding:6px 10px;font-size:13px;border-radius:8px}
-.status-open{background:var(--success);color:#fff;padding:6px 10px;border-radius:8px}
-.status-pending{background:#f59e0b;color:#fff;padding:6px 10px;border-radius:8px}
-.status-close{background:var(--danger);color:#fff;padding:6px 10px;border-radius:8px}
-.hidden{display:none}
-.pre{background:#fbfdff;border:1px solid #eef6ff;padding:10px;border-radius:10px;white-space:pre-wrap}
-.input-group-compact input, .input-group-compact select{height:40px;border-radius:8px}
-.header .who{font-weight:600;color:#0b1220;margin-left:8px}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ISP Manager — Modern Single File</title>
 
-/* responsive */
-@media(max-width:1000px){
-  .app{grid-template-columns:1fr;grid-template-rows:64px auto 1fr}
-  .sidebar{position:fixed;left:-320px;top:64px;height:calc(100vh - 64px);width:260px;transition:left .22s;z-index:40}
-  .sidebar.show{left:0}
-  .hamb{display:inline-block}
-}
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-/* small visual helpers */
-.kpi {display:flex;gap:10px;align-items:center}
-.kpi .num{font-weight:700;font-size:20px}
-.footer-note{font-size:12px;color:#9aa6c0;margin-top:8px}
-</style>
+  <!-- Icons (Bootstrap icons) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Firebase (compat for simple usage) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --bg: #f6f9ff; --card:#ffffff; --muted:#6b7280; --primary:#2563eb; --sidebar:#07254a; --accent:#06b6d4;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    body{background:var(--bg);color:#0b1220}
+    /* Layout */
+    .app-grid{display:grid;grid-template-columns:280px 1fr;grid-template-rows:64px 1fr;height:100vh;overflow:hidden}
+    .topbar{height:64px;background:#fff;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid rgba(15,23,42,0.06);box-shadow:0 4px 20px rgba(16,24,40,0.03);z-index:20}
+    .sidebar{background:linear-gradient(180deg,var(--sidebar),#0f4a83);color:#e9f0ff;padding:16px;overflow:auto}
+    .main{padding:18px;overflow:auto}
+    .brand{font-weight:800;color:#fff}
+    .link{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:#e9f0ff;text-decoration:none;margin-bottom:6px;cursor:pointer}
+    .link:hover{background:rgba(255,255,255,0.05)}
+    .link.active{background:rgba(255,255,255,0.06)}
+    .card-modern{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 10px 30px rgba(15,23,42,0.04)}
+    .small-muted{color:var(--muted);font-size:13px}
+    .btn-xs{padding:6px 8px;font-size:13px;border-radius:8px}
+    .hidden{display:none}
+    /* login spectacular (mobile first) */
+    .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-panel{width:100%;max-width:520px;border-radius:16px;padding:24px;background:linear-gradient(180deg,#ffffff, #fbfdff);box-shadow:0 30px 80px rgba(20,40,80,0.08);border:1px solid rgba(15,23,42,0.04)}
+    .login-hero{display:flex;align-items:center;gap:12px}
+    .login-hero .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
+    .muted-note{font-size:13px;color:var(--muted)}
+    /* responsive */
+    @media(max-width:1000px){
+      .app-grid{grid-template-columns:1fr;grid-template-rows:64px auto 1fr}
+      .sidebar{position:fixed;left:-320px;top:64px;height:calc(100vh - 64px);width:260px;transition:left .2s;z-index:50}
+      .sidebar.show{left:0}
+    }
+    /* small helpers */
+    .kpi {display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .kpi .num{font-weight:800;font-size:20px}
+  </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div style="display:flex;align-items:center;">
-    <div id="hambBtn" class="hamb">☰</div>
-    <div class="brand">ISP Manager — FINAL</div>
-  </div>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
-    <div id="timeNow" class="small-muted"></div>
-    <div id="whoami" class="small-muted who">Belum login</div>
-    <button id="btnLogout" class="btn btn-outline-danger btn-sm" style="display:none">Logout</button>
+<!-- LOGIN SCREEN (shown when not logged in) -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-panel">
+    <div class="login-hero">
+      <div class="logo">IS</div>
+      <div>
+        <div style="font-weight:800;font-size:18px">ISP Manager — Login</div>
+        <div class="muted-note">Masuk pakai NIK. Responsif & modern.</div>
+      </div>
+      <div style="margin-left:auto;text-align:right" class="small-muted">VSN4 • Dnt Grup</div>
+    </div>
+
+    <form id="loginForm" style="margin-top:16px">
+      <div class="mb-3">
+        <label class="form-label small-muted">NIK</label>
+        <input id="username" type="text" class="form-control form-control-lg" placeholder="Masukkan NIK" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small-muted">Password</label>
+        <input id="password" type="password" class="form-control form-control-lg" placeholder="Kata sandi" required>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button id="btnLogin" class="btn btn-primary btn-lg flex-grow-1">Masuk</button>
+        <button id="btnDemo" type="button" class="btn btn-outline-primary btn-lg">Demo</button>
+      </div>
+
+      <div class="d-flex gap-2 mt-2">
+        <button id="btnSelfTest" type="button" class="btn btn-secondary btn-sm flex-grow-1">Self-Test</button>
+        <button id="btnResetDB" type="button" class="btn btn-outline-danger btn-sm flex-grow-1">Reset DB</button>
+      </div>
+
+      <div id="loginMsg" class="mt-2" style="color:#b91c1c"></div>
+
+      <div class="mt-3 small-muted" style="text-align:center">by Dnt Grup - Starnet • <a href="mailto:dnt.network.lmj@gmail.com">dnt.network.lmj@gmail.com</a></div>
+    </form>
   </div>
 </div>
 
-<!-- LOGIN (full page) -->
-<div id="loginPage" style="min-height:calc(100vh - 64px);display:grid;grid-template-columns:1fr 420px;align-items:center;padding:40px;">
-  <div>
-    <h1 style="margin:0 0 6px">Selamat Datang di ISP Manager</h1>
-    <div class="small-muted">Masuk sebagai admin/teknisi atau klik Isi Demo untuk data uji.</div>
-    <div style="height:18px"></div>
-    <div class="card">
-      <h5 style="margin-bottom:8px">Instruksi cepat</h5>
-      <ul style="margin:0 0 0 18px;padding:0">
-        <li>Akun demo: <b>admin / admin</b></li>
-        <li>Teknisi demo: <b>teknisi / 1234</b></li>
-        <li>Gunakan <b>Self-Test</b> untuk cek alur otomatis</li>
-      </ul>
-      <div class="footer-note">Versi: VSN4 — by Dnt Grup</div>
+<!-- APPLICATION (hidden until login) -->
+<div id="app" class="app-grid hidden">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="hambBtn" style="cursor:pointer;font-size:20px">☰</div>
+      <div style="font-weight:800">ISP Manager — Modern</div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+      <div id="timeNow" class="small-muted"></div>
+      <div id="whoami" class="small-muted">Belum login</div>
+      <button id="btnLogout" class="btn btn-outline-danger btn-sm" style="display:none">Logout</button>
     </div>
   </div>
-  <div>
-    <div class="card">
-      <h5 style="margin-bottom:10px">Login</h5>
-      <div class="mb-2 input-group-compact"><input id="username" class="form-control" placeholder="Username"></div>
-      <div class="mb-2 input-group-compact"><input id="password" type="password" class="form-control" placeholder="Password"></div>
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button id="btnLogin" class="btn btn-primary" style="flex:1">Masuk</button>
-        <button id="btnDemo" class="btn btn-outline-primary" style="flex:1">Isi Demo</button>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button id="btnSelfTest" class="btn btn-secondary" style="flex:1">Cek Fungsional (Self-Test)</button>
-        <button id="btnResetDB" class="btn btn-outline-danger" style="flex:1">Reset DB</button>
-      </div>
-      <div id="loginMsg" style="color:#b91c1c;margin-top:8px"></div>
-    </div>
-  </div>
-</div>
 
-<!-- APP -->
-<div class="app hidden" id="appShell">
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="logo"><div style="width:44px;height:44px;border-radius:10px;background:#fff;color:var(--sidebar2);display:grid;place-items:center;font-weight:800">IS</div><div style="font-weight:800">ISP Panel</div></div>
-    <div class="link" data-page="dashboard" onclick="openPage('dashboard')">📊 Dashboard</div>
-    <div class="link" data-page="pasang" onclick="openPage('pasang')">🆕 Pasang Baru</div>
-    <div class="link" data-page="gangguan" onclick="openPage('gangguan')">⚠️ Gangguan</div>
-    <div class="link" data-page="pelanggan" onclick="openPage('pelanggan')">👥 Pelanggan</div>
-    <div class="link" data-page="billing" onclick="openPage('billing')">💳 Billing</div>
-    <div class="link" data-page="kas" onclick="openPage('kas')">💰 Kas</div>
-    <div class="link" data-page="odp" onclick="openPage('odp')">🖧 ODP</div>
-    <div class="link" data-page="material" onclick="openPage('material')">📦 Material</div>
-    <div class="link" data-page="portal" onclick="openPage('portal')">🌐 Portal Pelanggan</div>
-    <div style="margin-top:12px;color:#cfe3ff;font-size:13px">VSN4 — by Dnt Grup</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="width:44px;height:44px;border-radius:10px;background:#fff;color:var(--sidebar2);display:grid;place-items:center;font-weight:800">IS</div>
+      <div style="font-weight:800">ISP Panel</div>
+    </div>
+    <div class="link" data-page="dashboard" onclick="openPage('dashboard')"><i class="bi bi-speedometer2"></i> Dashboard</div>
+    <div class="link" data-page="pasang" onclick="openPage('pasang')"><i class="bi bi-plus-square"></i> Pasang Baru</div>
+    <div class="link" data-page="gangguan" onclick="openPage('gangguan')"><i class="bi bi-exclamation-triangle"></i> Gangguan</div>
+    <div class="link" data-page="pelanggan" onclick="openPage('pelanggan')"><i class="bi bi-people"></i> Pelanggan</div>
+    <div class="link" data-page="billing" onclick="openPage('billing')"><i class="bi bi-receipt"></i> Billing</div>
+    <div class="link" data-page="kas" onclick="openPage('kas')"><i class="bi bi-cash-stack"></i> Kas</div>
+    <div class="link" data-page="odp" onclick="openPage('odp')"><i class="bi bi-hdd-stack"></i> ODP</div>
+    <div class="link" data-page="material" onclick="openPage('material')"><i class="bi bi-box-seam"></i> Material</div>
+    <div class="link" data-page="portal" onclick="openPage('portal')"><i class="bi bi-globe"></i> Portal Pelanggan</div>
+
+    <div style="margin-top:14px">
+      <button id="btnAddUserOpen" class="btn btn-light btn-sm w-100">+ Tambah User</button>
+    </div>
+    <div style="margin-top:14px;color:#cfe3ff;font-size:13px">VSN4 — by Dnt Grup</div>
   </aside>
 
+  <!-- MAIN -->
   <main class="main">
     <!-- DASHBOARD -->
-    <section id="dashboard" class="card">
+    <section id="dashboard" class="card-modern">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><h4 style="margin:0">Dashboard</h4><div class="small-muted">Ringkasan sistem</div></div>
+        <div>
+          <h4 style="margin:0">Dashboard</h4>
+          <div class="small-muted">Ringkasan sistem</div>
+        </div>
         <div><span id="kpiUser" class="badge bg-light text-dark">-</span></div>
       </div>
-      <div id="dashboardContent" style="margin-top:12px">
-        <div style="display:flex;gap:12px">
-          <div style="flex:1" class="card">
-            <div class="small-muted">Jumlah Pelanggan</div><div id="kpiPelanggan" style="font-weight:700;font-size:22px">0</div>
-          </div>
-          <div style="flex:1" class="card">
-            <div class="small-muted">Gangguan Aktif</div><div id="kpiGangguan" style="font-weight:700;font-size:22px">0</div>
-          </div>
-          <div style="flex:1" class="card">
-            <div class="small-muted">Pendapatan</div><div id="kpiPendapatan" style="font-weight:700;font-size:22px">Rp 0</div>
-          </div>
-          <div style="flex:1" class="card">
-            <div class="small-muted">Kas</div><div id="kpiKas" style="font-weight:700;font-size:22px">Rp 0</div>
-          </div>
+
+      <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
+        <div class="card-modern" style="flex:1;min-width:180px">
+          <div class="small-muted">Jumlah Pelanggan</div><div id="kpiPelanggan" class="num">0</div>
         </div>
+        <div class="card-modern" style="flex:1;min-width:180px">
+          <div class="small-muted">Gangguan Aktif</div><div id="kpiGangguan" class="num">0</div>
+        </div>
+        <div class="card-modern" style="flex:1;min-width:180px">
+          <div class="small-muted">Pendapatan</div><div id="kpiPendapatan" class="num">Rp 0</div>
+        </div>
+        <div class="card-modern" style="flex:1;min-width:180px">
+          <div class="small-muted">Kas</div><div id="kpiKas" class="num">Rp 0</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px" class="card-modern">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Tren Bulanan</strong><div class="small-muted">Tagihan vs Pendapatan</div></div>
+          <div class="small-muted">Data realtime (lokal & firestore)</div>
+        </div>
+        <canvas id="chartMain" style="max-height:300px;margin-top:12px"></canvas>
       </div>
     </section>
 
     <!-- PASANG -->
-    <section id="page-pasang" class="card hidden">
+    <section id="page-pasang" class="card-modern hidden">
       <h4>Pasang Baru</h4>
-      <div class="card mb-2">
-        <div style="display:flex;gap:8px" class="input-group-compact">
-          <input id="p_inputer" class="form-control" placeholder="Inputer (otomatis username)" readonly>
-          <input id="p_nama" class="form-control" placeholder="Nama pelanggan">
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px" class="input-group-compact">
-          <input id="p_alamat" class="form-control" placeholder="Alamat">
-          <input id="p_hp" class="form-control" placeholder="No HP">
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px" class="input-group-compact">
-          <input id="p_tagging" class="form-control" placeholder="Tagging Lokasi">
-          <select id="p_paket" class="form-control"></select>
-          <button class="btn btn-primary" onclick="createPasang()">Daftar</button>
-        </div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <input id="p_inputer" class="form-control" placeholder="Inputer (otomatis username)" readonly style="max-width:220px">
+        <input id="p_nama" class="form-control" placeholder="Nama pelanggan">
+        <input id="p_alamat" class="form-control" placeholder="Alamat">
+        <input id="p_hp" class="form-control" placeholder="No HP">
+        <input id="p_tagging" class="form-control" placeholder="Tagging Lokasi" style="max-width:220px">
+        <select id="p_paket" class="form-control" style="max-width:240px"></select>
+        <button class="btn btn-primary" onclick="createPasang()">Daftar</button>
       </div>
 
-      <table class="table-fixed w-100">
-        <thead><tr><th>No Internet</th><th>Inputer</th><th>Nama</th><th>Alamat</th><th>Tagging</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody id="tblPasang"></tbody>
-      </table>
+      <div style="margin-top:12px" class="card-modern">
+        <h6>Daftar Pasang</h6>
+        <div style="overflow:auto"><table class="table table-sm"><thead><tr><th>No Internet</th><th>Inputer</th><th>Nama</th><th>Alamat</th><th>Tagging</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="tblPasang"></tbody></table></div>
+      </div>
 
-      <div class="card mt-3">
+      <div class="card-modern">
         <h6>Shared Orders (Simulasi WA)</h6>
-        <div id="sharedOrdersList" class="pre">-</div>
+        <div id="sharedOrdersList" class="small-muted">-</div>
       </div>
     </section>
 
     <!-- GANGGUAN -->
-    <section id="page-gangguan" class="card hidden">
+    <section id="page-gangguan" class="card-modern hidden">
       <h4>Gangguan</h4>
-      <div class="card mb-2">
-        <div style="display:flex;gap:8px" class="input-group-compact">
-          <input id="g_noinet" class="form-control" placeholder="No Internet (isi untuk auto-fill)">
-          <input id="g_name" class="form-control" placeholder="Nama Pelanggan">
-          <input id="g_nohp" class="form-control" placeholder="No HP">
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px" class="input-group-compact">
-          <input id="g_alamat" class="form-control" placeholder="Alamat">
-          <select id="g_jenis" class="form-control">
-            <option value="">-- Jenis Gangguan --</option>
-            <option>Putus Koneksi</option><option>Kecepatan Lambat</option><option>ONT Mati</option><option>Intermiten</option><option>Lainnya</option>
-          </select>
-          <select id="g_status" class="form-control">
-            <option>Open</option><option>Progres</option><option>Pending</option><option>Close</option>
-          </select>
-        </div>
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <input id="g_ttr" class="form-control" placeholder="TTR (mis: 2 Jam)">
-          <input id="g_pending_until" class="form-control" placeholder="Jika Pending - tanggal resume (YYYY-MM-DD HH:MM)">
-          <button class="btn btn-primary" onclick="createGangguan()">Buat / Update Tiket</button>
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="g_noinet" class="form-control" placeholder="No Internet (isi untuk auto-fill)" style="max-width:220px">
+        <input id="g_name" class="form-control" placeholder="Nama Pelanggan">
+        <input id="g_nohp" class="form-control" placeholder="No HP" style="max-width:220px">
+        <input id="g_alamat" class="form-control" placeholder="Alamat">
+        <select id="g_jenis" class="form-control" style="max-width:240px">
+          <option value="">-- Jenis Gangguan --</option>
+          <option>Putus Koneksi</option><option>Kecepatan Lambat</option><option>ONT Mati</option><option>Intermiten</option><option>Lainnya</option>
+        </select>
+        <select id="g_status" class="form-control" style="max-width:160px"><option>Open</option><option>Progres</option><option>Pending</option><option>Close</option></select>
+        <input id="g_ttr" class="form-control" placeholder="TTR (mis: 2 Jam)" style="max-width:180px">
+        <input id="g_pending_until" class="form-control" placeholder="Jika Pending - YYYY-MM-DD HH:MM" style="max-width:220px">
+        <button class="btn btn-primary" onclick="createGangguan()">Buat / Update Tiket</button>
       </div>
 
-      <table class="table-fixed w-100">
-        <thead><tr><th>No Internet</th><th>Tiket</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th>Aksi</th></tr></thead>
-        <tbody id="tblGangguan"></tbody>
-      </table>
+      <div style="margin-top:12px" class="card-modern">
+        <h6>Daftar Gangguan</h6>
+        <div style="overflow:auto"><table class="table table-sm"><thead><tr><th>No Internet</th><th>Tiket</th><th>Pelanggan</th><th>Masalah</th><th>Status</th><th>TTR</th><th>Aksi</th></tr></thead><tbody id="tblGangguan"></tbody></table></div>
+      </div>
     </section>
 
     <!-- PELANGGAN -->
-    <section id="page-pelanggan" class="card hidden">
+    <section id="page-pelanggan" class="card-modern hidden">
       <h4>Pelanggan</h4>
-      <div class="card mb-2"><button class="btn btn-primary" onclick="openAddPelanggan()">Tambah Pelanggan</button></div>
-      <table class="table-fixed w-100">
-        <thead><tr><th>No Internet</th><th>Nama</th><th>Status Koneksi</th><th>ODP</th><th>SN ONT</th><th>Tgl Pasang</th><th>Durasi</th><th>Aksi</th></tr></thead>
-        <tbody id="tblPelanggan"></tbody>
-      </table>
+      <div class="mb-2"><button class="btn btn-primary" onclick="openAddPelanggan()">Tambah Pelanggan</button></div>
+      <div class="card-modern">
+        <div style="overflow:auto"><table class="table table-sm"><thead><tr><th>No Internet</th><th>Nama</th><th>Status Koneksi</th><th>ODP</th><th>SN ONT</th><th>Tgl Pasang</th><th>Durasi</th><th>Aksi</th></tr></thead><tbody id="tblPelanggan"></tbody></table></div>
+      </div>
     </section>
 
     <!-- BILLING -->
-    <section id="page-billing" class="card hidden">
+    <section id="page-billing" class="card-modern hidden">
       <h4>Billing</h4>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input id="searchBilling" class="form-control" placeholder="Search by No Internet / SN ONT">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="searchBilling" class="form-control" placeholder="Search by No Internet / SN ONT" style="max-width:320px">
         <button class="btn btn-primary" onclick="searchBilling()">Search</button>
         <button class="btn btn-secondary" onclick="bulkGenerateBilling()">Generate Bulk</button>
         <button class="btn btn-success" onclick="generateForSelected()">Bayar Selected</button>
       </div>
-      <table class="table-fixed w-100">
-        <thead><tr><th><input type="checkbox" id="chkAllBilling" onchange="toggleAllBills(this)"></th><th>No Internet</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody id="tblBilling"></tbody>
-      </table>
+
+      <div class="card-modern mt-2">
+        <table class="table table-sm"><thead><tr><th><input type="checkbox" id="chkAllBilling" onchange="toggleAllBills(this)"></th><th>No Internet</th><th>Pelanggan</th><th>Periode</th><th>Jumlah</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="tblBilling"></tbody></table>
+      </div>
     </section>
 
     <!-- KAS -->
-    <section id="page-kas" class="card hidden">
+    <section id="page-kas" class="card-modern hidden">
       <h4>Kas</h4>
-      <div class="card mb-2">
-        <div style="display:flex;gap:8px">
-          <input id="kas_desc" class="form-control" placeholder="Deskripsi">
-          <input id="kas_masuk" class="form-control" placeholder="Masuk (angka)">
-          <input id="kas_keluar" class="form-control" placeholder="Keluar (angka)">
-          <button class="btn btn-primary" onclick="addKas()">Tambah</button>
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="kas_desc" class="form-control" placeholder="Deskripsi" style="max-width:320px">
+        <input id="kas_masuk" class="form-control" placeholder="Masuk (angka)" style="max-width:180px">
+        <input id="kas_keluar" class="form-control" placeholder="Keluar (angka)" style="max-width:180px">
+        <button class="btn btn-primary" onclick="addKas()">Tambah</button>
       </div>
-      <table class="table-fixed w-100">
-        <thead><tr><th>No</th><th>Waktu</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead>
-        <tbody id="tblKas"></tbody>
-      </table>
+      <div class="card-modern mt-2">
+        <table class="table table-sm"><thead><tr><th>No</th><th>Waktu</th><th>Deskripsi</th><th>Masuk</th><th>Keluar</th><th>Saldo</th></tr></thead><tbody id="tblKas"></tbody></table>
+      </div>
     </section>
 
     <!-- ODP -->
-    <section id="page-odp" class="card hidden">
+    <section id="page-odp" class="card-modern hidden">
       <h4>ODP</h4>
-      <div class="card mb-2">
-        <div style="display:flex;gap:8px">
-          <input id="odp_name" class="form-control" placeholder="NAMA ODP">
-          <input id="odp_kapasitas" class="form-control" placeholder="KAPASITAS">
-          <input id="odp_feeder" class="form-control" placeholder="FEEDER / DIST">
-          <input id="odp_tagging" class="form-control" placeholder="TAGGING LOKASI">
-          <button class="btn btn-primary" onclick="createODP()">Tambah</button>
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="odp_name" class="form-control" placeholder="NAMA ODP" style="max-width:220px">
+        <input id="odp_kapasitas" class="form-control" placeholder="KAPASITAS" style="max-width:160px">
+        <input id="odp_feeder" class="form-control" placeholder="FEEDER / DIST" style="max-width:220px">
+        <input id="odp_tagging" class="form-control" placeholder="TAGGING LOKASI" style="max-width:220px">
+        <button class="btn btn-primary" onclick="createODP()">Tambah</button>
       </div>
-      <table class="table-fixed w-100"><thead><tr><th>Nama ODP</th><th>Kapasitas</th><th>Feeder</th><th>Tagging</th><th>Aksi</th></tr></thead><tbody id="tblODP"></tbody></table>
+      <div class="card-modern mt-2">
+        <table class="table table-sm"><thead><tr><th>Nama ODP</th><th>Kapasitas</th><th>Feeder</th><th>Tagging</th><th>Aksi</th></tr></thead><tbody id="tblODP"></tbody></table>
+      </div>
     </section>
 
     <!-- MATERIAL -->
-    <section id="page-material" class="card hidden">
+    <section id="page-material" class="card-modern hidden">
       <h4>Material</h4>
-      <div class="card mb-2">
-        <div style="display:flex;gap:8px">
-          <input id="m_jenis" class="form-control" placeholder="Jenis">
-          <input id="m_qty" class="form-control" type="number" placeholder="Qty">
-          <select id="m_satuan" class="form-control"><option>mtr</option><option>pcs</option><option>roll</option></select>
-          <button class="btn btn-primary" onclick="createMaterial()">Tambah</button>
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="m_jenis" class="form-control" placeholder="Jenis" style="max-width:260px">
+        <input id="m_qty" class="form-control" type="number" placeholder="Qty" style="max-width:120px">
+        <select id="m_satuan" class="form-control" style="max-width:120px"><option>mtr</option><option>pcs</option><option>roll</option></select>
+        <button class="btn btn-primary" onclick="createMaterial()">Tambah</button>
       </div>
-      <table class="table-fixed w-100"><thead><tr><th>Jenis</th><th>Qty</th><th>Satuan</th><th>Stock</th><th>Log Pemakaian</th><th>Aksi</th></tr></thead><tbody id="tblMaterial"></tbody></table>
+      <div class="card-modern mt-2">
+        <table class="table table-sm"><thead><tr><th>Jenis</th><th>Qty</th><th>Satuan</th><th>Stock</th><th>Log Pemakaian</th><th>Aksi</th></tr></thead><tbody id="tblMaterial"></tbody></table>
+      </div>
     </section>
 
     <!-- PORTAL -->
-    <section id="page-portal" class="card hidden">
+    <section id="page-portal" class="card-modern hidden">
       <h4>Portal Pelanggan</h4>
-      <div class="card">
+      <div class="card-modern">
         <div id="portalInfo" class="small-muted">Hanya menampilkan gangguan & billing milik pelanggan.</div>
         <div style="margin-top:12px">
           <h6>Tagihan (10 terakhir)</h6><div id="portalBillingList"></div>
@@ -289,11 +302,41 @@ body{background:var(--bg);color:#0b1220}
   </main>
 </div>
 
+<!-- Modal: Add User -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah User Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="userForm">
+          <div class="mb-2"><label class="form-label">NIK</label><input id="u_nik" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">Nama</label><input id="u_nama" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">Email</label><input id="u_email" class="form-control" type="email" required></div>
+          <div class="mb-2"><label class="form-label">Password</label><input id="u_password" class="form-control" type="password" required></div>
+          <div class="mb-2"><label class="form-label">Role</label>
+            <select id="u_role" class="form-control"><option value="admin">admin</option><option value="teknisi">teknisi</option><option value="cs">cs</option></select>
+          </div>
+          <div id="userFormMsg" class="small-muted"></div>
+          <div style="text-align:right"><button type="submit" class="btn btn-primary">Buat User</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- toast -->
-<div id="toast" class="toast hidden" style="position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:8px 12px;border-radius:8px;z-index:9999"></div>
+<div id="toast" style="position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:8px 12px;border-radius:8px;z-index:9999;display:none"></div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-/* Single-file app logic (login fixed to username/password fields) with persistent session */
+/* ============================
+   Local DB + original functions preserved
+   ============================ */
 const LS_KEY = 'isp_manager_final_v101';
 const LS_SESSION = 'isp_manager_session_v1';
 function defaultDB(){
@@ -311,69 +354,147 @@ let DB = loadDB();
 
 function uid(prefix='id'){ return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function now(){ return new Date().toISOString(); }
-function toast(msg, t=2200){ const el=document.getElementById('toast'); el.innerText=msg; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), t); console.log('TOAST:',msg); }
+function toast(msg, t=2200){ const el=document.getElementById('toast'); el.innerText=msg; el.style.display='block'; setTimeout(()=> el.style.display='none', t); console.log('TOAST:',msg); }
 function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function hist(type,item,desc){ DB.history.unshift({ ts: now(), type, item, desc }); if(DB.history.length>1000) DB.history.length=1000; saveDB(DB); }
 
-/* auth */
+/* auth state */
 let currentUser = null;
 let portalMode = { page:1 };
 
+/* Firebase init (user provided config) */
+const firebaseConfig = {
+  apiKey: "AIzaSyB-iBpZNC0YZBTAUzir7gJuU9kBQg82moc",
+  authDomain: "dnt-network-7.firebaseapp.com",
+  projectId: "dnt-network-7",
+  storageBucket: "dnt-network-7.firebasestorage.app",
+  messagingSenderId: "761179668371",
+  appId: "1:761179668371:web:7d1468d0298041d4783266",
+  measurementId: "G-CD3EQ350R4"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 /* UI wiring */
-document.getElementById('hambBtn').addEventListener('click', ()=> { document.getElementById('sidebar').classList.toggle('show'); });
-document.getElementById('btnLogin').addEventListener('click', doLogin);
-document.getElementById('btnDemo').addEventListener('click', fillDemo);
+document.getElementById('hambBtn').addEventListener('click', ()=> document.getElementById('sidebar').classList.toggle('show'));
+document.getElementById('btnDemo').addEventListener('click', ()=>{ document.getElementById('username').value='admin'; document.getElementById('password').value='admin'; });
 document.getElementById('btnResetDB').addEventListener('click', ()=>{ if(confirm('Reset DB? Semua data akan hilang')){ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_SESSION); DB = loadDB(); location.reload(); }});
 document.getElementById('btnSelfTest').addEventListener('click', runSelfTest);
-document.getElementById('btnLogout').addEventListener('click', ()=>{ logout(); });
+document.getElementById('btnLogout').addEventListener('click', ()=> logout());
+document.getElementById('btnAddUserOpen').addEventListener('click', ()=> new bootstrap.Modal(document.getElementById('addUserModal')).show());
 
-function fillDemo(){ document.getElementById('username').value='admin'; document.getElementById('password').value='admin'; }
-function doLogin(){
+/* Login: NIK -> Firestore lookup -> signInWithEmailAndPassword, fallback to local DB */
+async function doLogin(){
   const id = document.getElementById('username').value.trim();
   const pass = document.getElementById('password').value || '';
   const msgEl = document.getElementById('loginMsg'); msgEl.innerText='';
-  if(!id || !pass){ msgEl.innerText='Isi ID & Password'; return; }
+  if(!id || !pass){ msgEl.innerText='Isi NIK & Password'; return; }
+
+  try {
+    const q = await db.collection('users').where('nik','==',id).limit(1).get();
+    if(!q.empty){
+      const u = q.docs[0].data();
+      if(!u.email){ msgEl.innerText='User Firestore tidak memiliki email.'; return; }
+      try{
+        const uc = await auth.signInWithEmailAndPassword(u.email, pass);
+        currentUser = { nik: u.nik || id, nama: u.nama || u.email, role: u.role || 'user', uid: uc.user.uid, email: u.email };
+        afterLogin();
+        return;
+      }catch(e){
+        msgEl.innerText = 'Login Firebase gagal: ' + e.message;
+        return;
+      }
+    }
+  } catch(e){
+    console.warn('Firestore lookup failed, fallback local', e);
+  }
+
+  // fallback local
   if(DB.users[id] && DB.users[id].password === pass){
-    currentUser = {...DB.users[id]}; afterLogin(); return;
+    currentUser = {...DB.users[id]};
+    afterLogin(); return;
   }
   const pel = Object.values(DB.pelanggan).find(p => p.no === id);
-  if(pel && pel.password === pass){
-    currentUser = { nik: pel.id, nama: pel.nama, role:'pelanggan', pelangganId:pel.id, no: pel.no }; afterLogin(); return;
-  }
-  msgEl.innerText='ID / password tidak cocok';
+  if(pel && pel.password === pass){ currentUser = { nik: pel.id, nama: pel.nama, role:'pelanggan', pelangganId:pel.id, no: pel.no }; afterLogin(); return; }
+
+  msgEl.innerText='NIK / password tidak cocok';
 }
 
+/* After successful login: persist session, show app */
 function afterLogin(){
-  // persist session
-  try{
-    localStorage.setItem(LS_SESSION, JSON.stringify({ id: currentUser.nik || currentUser.pelangganId || currentUser.no, role: currentUser.role }));
-  }catch(e){ console.warn('session save failed',e); }
-  toast('Login sukses: '+ (currentUser.nama || currentUser.nik));
-  document.getElementById('loginPage').style.display='none';
-  document.getElementById('appShell').classList.remove('hidden');
-  document.getElementById('appShell').style.display='grid';
+  try{ localStorage.setItem(LS_SESSION, JSON.stringify({ id: currentUser.nik || currentUser.uid || currentUser.pelangganId || currentUser.no, role: currentUser.role })); }catch(e){}
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').classList.remove('hidden');
   document.getElementById('btnLogout').style.display='inline-block';
   document.getElementById('whoami').innerText = (currentUser.nama || currentUser.nik) + ' (' + (currentUser.role || '-') + ')';
   document.getElementById('p_inputer').value = currentUser.nama || currentUser.nik;
+  // hide add user for non-admin
+  if(currentUser.role !== 'admin'){ document.getElementById('btnAddUserOpen').style.display='none'; } else { document.getElementById('btnAddUserOpen').style.display='block'; }
   renderAll();
   openPage('dashboard');
+  toast('Login sukses: ' + (currentUser.nama || currentUser.nik));
 }
+
+/* Logout */
 function logout(){
   currentUser = null;
+  try{ auth.signOut(); }catch(e){}
   localStorage.removeItem(LS_SESSION);
-  document.getElementById('loginPage').style.display='grid';
-  document.getElementById('appShell').classList.add('hidden');
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').classList.add('hidden');
   document.getElementById('btnLogout').style.display='none';
   document.getElementById('whoami').innerText = 'Belum login';
   toast('Logout');
 }
 
+/* Bind login button and enter key */
+document.getElementById('btnLogin').addEventListener('click', function(e){ e.preventDefault(); doLogin(); });
+document.getElementById('password').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+
+/* Add user (modal): create Auth user + firestore doc + local DB */
+document.getElementById('userForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const nik = document.getElementById('u_nik').value.trim();
+  const nama = document.getElementById('u_nama').value.trim();
+  const email = document.getElementById('u_email').value.trim();
+  const password = document.getElementById('u_password').value;
+  const role = document.getElementById('u_role').value;
+  const msgEl = document.getElementById('userFormMsg'); msgEl.innerText='';
+
+  if(!nik || !email || !password){ msgEl.innerText='Lengkapi NIK, Email, Password'; return; }
+
+  try{
+    const uc = await auth.createUserWithEmailAndPassword(email, password);
+    const uid = uc.user.uid;
+    await db.collection('users').doc(uid).set({ nik, nama, email, role, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    // local DB entry keyed by nik
+    DB.users[nik] = { nik, nama, password, role, email };
+    saveDB(DB);
+    msgEl.innerText = 'User berhasil dibuat.';
+    document.getElementById('userForm').reset();
+    const modalEl = document.getElementById('addUserModal');
+    const modalObj = bootstrap.Modal.getInstance(modalEl);
+    if(modalObj) modalObj.hide();
+    toast('User baru dibuat: ' + nama);
+  }catch(err){
+    console.error(err);
+    msgEl.innerText = 'Gagal: ' + err.message;
+  }
+});
+
+/* ============================
+   The rest: CRUD functions preserved and active
+   (pasang, gangguan, pelanggan, billing, kas, odp, material, shared orders)
+   ============================ */
+
 /* NAV & render */
 function openPage(page){
   const mapping = { dashboard: 'dashboard', pasang: 'page-pasang', gangguan: 'page-gangguan', pelanggan: 'page-pelanggan', billing: 'page-billing', kas: 'page-kas', odp: 'page-odp', material: 'page-material', portal: 'page-portal' };
-  document.querySelectorAll('section.card').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
   const id = mapping[page] || 'dashboard';
-  document.getElementById(id).classList.remove('hidden');
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('hidden');
   document.querySelectorAll('.sidebar .link').forEach(a=>a.classList.remove('active'));
   const link = Array.from(document.querySelectorAll('.sidebar .link')).find(l=> l.getAttribute('data-page') === page);
   if(link) link.classList.add('active');
@@ -393,13 +514,48 @@ function openPage(page){
 /* render all */
 function renderAll(){ renderDashboard(); renderPasang(); renderGangguan(); renderPelanggan(); renderBilling(); renderKas(); renderODP(); renderMaterial(); renderSharedOrders(); renderPortal(); }
 
-/* Dashboard */
+/* Dashboard + Chart */
+let mainChart = null;
 function renderDashboard(){
   document.getElementById('kpiPelanggan').innerText = Object.keys(DB.pelanggan).length;
   document.getElementById('kpiGangguan').innerText = Object.values(DB.gangguan).filter(g=> g.tiket && !['Close','Closed','Selesai'].includes(g.status)).length;
   document.getElementById('kpiPendapatan').innerText = 'Rp ' + Object.values(DB.billing).reduce((s,b)=> s + (Number(b.jumlah)||0),0).toLocaleString('id-ID');
   document.getElementById('kpiKas').innerText = 'Rp ' + calcKasSaldo().toLocaleString('id-ID');
   document.getElementById('kpiUser').innerText = (currentUser?currentUser.nama:'-');
+
+  // Chart data: months (last 6) - compute billing sum and count
+  const labels = [];
+  const billsSeries = [];
+  const incomeSeries = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    const month = d.toISOString().slice(0,7);
+    labels.push(month);
+    const bills = Object.values(DB.billing).filter(b=> (b.periode||'').startsWith(month));
+    billsSeries.push(bills.length);
+    incomeSeries.push(bills.reduce((s,b)=> s + (Number(b.jumlah)||0),0));
+  }
+  const ctx = document.getElementById('chartMain').getContext('2d');
+  if(mainChart) mainChart.destroy();
+  mainChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Tagihan (jumlah)', data: billsSeries, yAxisID: 'A', borderRadius:6, barThickness:18 },
+        { label: 'Pendapatan (Rp)', data: incomeSeries, yAxisID: 'B', type: 'line', tension:0.3, pointRadius:4 }
+      ]
+    },
+    options: {
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        A:{ position:'left', title:{display:true,text:'Jumlah Tagihan'} },
+        B:{ position:'right', title:{display:true,text:'Rp'}, grid:{display:false}, ticks:{callback:(v)=> Number(v).toLocaleString('id-ID')} }
+      },
+      plugins:{legend:{position:'top'}}
+    }
+  });
 }
 
 /* Pasang */
@@ -423,7 +579,6 @@ function createPasang(){
   DB.pasang[id] = { id, no_inet, inputer: currentUser?currentUser.nama:'-', nama, alamat, hp, tagging, paketId, status:'Menunggu', createdAt: now() };
   hist('pasang.create', id, `Pasang ${no_inet}`);
   saveDB(DB); renderPasang(); toast('Pasang baru dibuat: '+no_inet);
-  // clear inputs
   document.getElementById('p_nama').value=''; document.getElementById('p_alamat').value=''; document.getElementById('p_hp').value=''; document.getElementById('p_tagging').value='';
 }
 function renderPasang(){
@@ -435,7 +590,7 @@ function renderPasang(){
     tr.innerHTML = `<td>${p.no_inet}</td><td>${escapeHtml(p.inputer||'-')}</td><td>${escapeHtml(p.nama)}</td><td>${escapeHtml(p.alamat)}</td><td>${escapeHtml(p.tagging||'-')}</td><td>${escapeHtml(paketName)}</td><td>${p.status||'-'}</td>
       <td>
         <button class="btn btn-xs btn-secondary" onclick="setPasangStatus('${p.id}','Menunggu')">Menunggu</button>
-        <button class="btn btn-xs btn-primary" onclick="shareOrder('${p.id}')">Share Order</button>
+        <button class="btn btn-xs btn-primary" onclick="shareOrder('${p.id}')">Share</button>
         <button class="btn btn-xs btn-success" onclick="setPasangStatus('${p.id}','Progres')">Progres</button>
         <button class="btn btn-xs btn-info" onclick="activatePasang('${p.id}')">Active</button>
         <button class="btn btn-xs btn-dark" onclick="setPasangStatus('${p.id}','Cancel')">Cancel</button>
@@ -456,13 +611,12 @@ function shareOrder(pasangId){
 function activatePasang(id){
   if(!DB.pasang[id]) return;
   DB.pasang[id].status = 'Active';
-  // create pelanggan record
   const pelId = uid('pel_'); DB.pelanggan[pelId] = { id:pelId, no: DB.pasang[id].no_inet, nama: DB.pasang[id].nama, hp: DB.pasang[id].hp, alamat: DB.pasang[id].alamat, paketId: DB.pasang[id].paketId, statusKoneksi:'Active', tglPasang: now(), sn:'SN'+Math.random().toString(36).slice(2,8), odp:'ODP-1', log:[] };
   hist('pasang.activate', id, `Activated and created pelanggan ${DB.pasang[id].no_inet}`);
   saveDB(DB); renderPasang(); renderPelanggan(); toast('Pasang di-activate dan pelanggan dibuat');
 }
 
-/* Shared Orders UI */
+/* Shared Orders */
 function renderSharedOrders(){
   const el = document.getElementById('sharedOrdersList'); el.innerHTML = '';
   const arr = Object.values(DB.sharedOrders).sort((a,b)=> (b.sentAt||'').localeCompare(a.sentAt||''));
@@ -514,7 +668,6 @@ function createGangguan(){
   hist('gangguan.create', tiket, `Created by ${currentUser?currentUser.nik:'-'} status:${status}`);
   saveDB(DB); renderGangguan(); toast('Tiket dibuat: '+tiket);
   if(status === 'Pending' && pending_until) schedulePendingResume(tiket, pending_until);
-  // clear fields
   document.getElementById('g_noinet').value=''; document.getElementById('g_name').value=''; document.getElementById('g_nohp').value=''; document.getElementById('g_alamat').value=''; document.getElementById('g_ttr').value=''; document.getElementById('g_pending_until').value='';
 }
 function renderGangguan(){
@@ -523,7 +676,7 @@ function renderGangguan(){
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${escapeHtml(g.no_inet)}</td><td>${escapeHtml(g.tiket)}</td><td>${escapeHtml(g.pelanggan)}</td><td>${escapeHtml(g.jenis)}</td><td>${escapeHtml(g.status)}</td><td>${escapeHtml(g.ttr||'-')}</td>
       <td>
-        <button class="btn btn-xs btn-primary" onclick="shareGangguan('${g.tiket}')">Kirim ke Teknisi</button>
+        <button class="btn btn-xs btn-primary" onclick="shareGangguan('${g.tiket}')">Kirim</button>
         <button class="btn btn-xs btn-success" onclick="setGangguanStatus('${g.tiket}','Progres')">Progres</button>
         <button class="btn btn-xs btn-warning" onclick="promptPending('${g.tiket}')">Pending</button>
         <button class="btn btn-xs btn-danger" onclick="setGangguanStatus('${g.tiket}','Close')">Close</button>
@@ -542,7 +695,6 @@ function setGangguanStatus(tiket, status){
   hist('gangguan.status', tiket, `status->${status}`); saveDB(DB); renderGangguan();
 }
 function promptPending(tiket){
-  // keep simple: ask for reason + optional resume
   const reason = prompt('Alasan pending (singkat):') || '';
   const resume = prompt('Kapan progres kembali dimulai? (YYYY-MM-DD HH:MM) kosong jika manual:') || '';
   DB.gangguan[tiket].status = 'Pending';
@@ -557,7 +709,6 @@ function schedulePendingResume(tiket, resumeStr){
   if(isNaN(ts)) return;
   const diff = ts.getTime() - Date.now();
   if(diff <= 0){ setGangguanStatus(tiket,'Progres'); return; }
-  // limit max timeout to 24 hours per timeout call to be safer on browser sleep
   setTimeout(()=> {
     if(DB.gangguan[tiket] && DB.gangguan[tiket].status === 'Pending'){
       DB.gangguan[tiket].status = 'Progres';
@@ -571,7 +722,6 @@ function schedulePendingResume(tiket, resumeStr){
 
 /* Pelanggan */
 function openAddPelanggan(){
-  // provide inline simple form (no long prompts)
   const nama = prompt('Nama pelanggan'); if(!nama) return;
   const hp = prompt('No HP') || ''; const alamat = prompt('Alamat') || ''; const paketId = prompt('Paket (ID)') || '';
   const id = uid('pel_');
@@ -608,7 +758,7 @@ function searchBilling(){
     const tr = document.createElement('tr'); tr.innerHTML = `<td><input type="checkbox" class="chkBill" data-id="${b.id}"></td><td>${escapeHtml(b.no_inet||'-')}</td><td>${escapeHtml(b.pelanggan||'-')}</td><td>${b.periode||'-'}</td><td>Rp ${Number(b.jumlah||0).toLocaleString('id-ID')}</td><td>${b.status||'Belum Bayar'}</td><td><button class="btn btn-xs btn-success" onclick="payBilling('${b.id}')">Bayar</button></td>`; document.getElementById('tblBilling').appendChild(tr);
   });
 }
-function bulkGenerateBilling(){ Object.values(DB.pelanggan).slice(0,6).forEach((p,i)=>{ const id = uid('bill_'); DB.billing[id] = { id, no_inet: p.no || ('1906' + i), pelanggan: p.nama, periode: (new Date()).toISOString().slice(0,7), jumlah: 150000, status:'Belum Bayar', createdAt: now() }; }); saveDB(DB); renderBilling(); toast('Billing dummy dibuat'); }
+function bulkGenerateBilling(){ Object.values(DB.pelanggan).slice(0,6).forEach((p,i)=>{ const id = uid('bill_'); DB.billing[id] = { id, no_inet: p.no || ('1906' + i), pelanggan: p.nama, periode: (new Date()).toISOString().slice(0,7), jumlah:150000, status:'Belum Bayar', createdAt: now() }; }); saveDB(DB); renderBilling(); toast('Billing dummy dibuat'); }
 function generateForSelected(){
   const checks = Array.from(document.querySelectorAll('.chkBill:checked')).map(c=>c.dataset.id);
   if(checks.length===0) return alert('Pilih minimal 1 billing');
@@ -683,35 +833,44 @@ function runSelfTest(){
   setTimeout(()=>{ toast('Self-test selesai. Cek Pasang Baru, Shared Orders, Gangguan, Billing.'); }, 2000);
 }
 
-/* init */
+/* Init: try restore session */
 (function init(){
   if(!DB.users) { DB = defaultDB(); saveDB(DB); }
   if(Object.keys(DB.paket).length === 0){ const p1 = uid('pkg_'); DB.paket[p1] = { id:p1, name:'Home 10Mbps', price:120000 }; const p2 = uid('pkg_'); DB.paket[p2] = { id:p2, name:'Pro 30Mbps', price:250000 }; saveDB(DB); }
-  document.getElementById('appShell').classList.add('hidden');
-  document.getElementById('loginPage').style.display = 'grid';
+  // show login or app based on session restore
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').classList.add('hidden');
   setInterval(()=> document.getElementById('timeNow').innerText = new Date().toLocaleString(), 1000);
-  document.getElementById('password').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
   renderAll();
 
-  // Try restore session
   try{
     const raw = localStorage.getItem(LS_SESSION);
     if(raw){
       const sess = JSON.parse(raw);
       if(sess && sess.id && sess.role){
-        // try restore user from DB.users or pelanggan
         if(sess.role === 'pelanggan'){
           const pel = Object.values(DB.pelanggan).find(p => p.id === sess.id || p.no === sess.id);
           if(pel){ currentUser = { nik: pel.id, nama: pel.nama, role:'pelanggan', pelangganId:pel.id, no: pel.no }; afterLogin(); return; }
         } else {
-          const user = DB.users[sess.id];
-          if(user){ currentUser = {...user}; afterLogin(); return; }
+          // try firestore lookup
+          db.collection('users').where('nik','==',sess.id).limit(1).get().then(q=>{
+            if(!q.empty){
+              const u = q.docs[0].data();
+              currentUser = { nik: u.nik || sess.id, nama: u.nama || u.email, role: u.role || 'user', email: u.email };
+              afterLogin();
+            } else {
+              const local = DB.users[sess.id];
+              if(local){ currentUser = {...local}; afterLogin(); }
+            }
+          }).catch(e=>{
+            console.warn('session restore failed', e);
+            const local = DB.users[sess.id];
+            if(local){ currentUser = {...local}; afterLogin(); }
+          });
         }
-        // if not found: clear session
-        localStorage.removeItem(LS_SESSION);
       }
     }
-  }catch(e){ console.warn('session restore failed',e); localStorage.removeItem(LS_SESSION); }
+  }catch(e){ console.warn('session restore error', e); localStorage.removeItem(LS_SESSION); }
 })();
 </script>
 </body>
