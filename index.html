@@ -4,56 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ISP Manager - Final Fix</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <style>
-    body { margin:0; font-family: Arial, sans-serif; background:#f4f6f9; }
-    header { background:#2d3748; color:#fff; padding:10px; display:flex; align-items:center; }
-    header h1 { flex:1; font-size:18px; }
-    .hamburger { font-size:24px; cursor:pointer; }
-    .sidebar { width:250px; background:#1a202c; color:#fff; height:100vh; position:fixed; top:0; left:-260px; transition:0.3s; overflow-y:auto; }
+    body { background:#f4f6f9; }
+    .sidebar { height:100vh; width:250px; position:fixed; top:0; left:-260px; background:#1a202c; color:#fff; transition:0.3s; overflow-y:auto; }
     .sidebar.active { left:0; }
-    .sidebar a { display:block; padding:12px; color:#fff; text-decoration:none; }
+    .sidebar a { color:#fff; display:block; padding:12px; text-decoration:none; }
     .sidebar a:hover { background:#2d3748; }
-    .content { margin-left:0; padding:20px; transition:0.3s; }
+    .content { margin-left:0; transition:0.3s; padding:20px; }
     .content.active { margin-left:250px; }
-    .card { background:#fff; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    header { background:#2d3748; color:#fff; padding:10px; display:flex; align-items:center; }
+    .hamburger { font-size:24px; cursor:pointer; margin-right:15px; }
+    .card { border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px; }
     .hidden { display:none; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    table { width:100%; border-collapse:collapse; }
     th,td { border:1px solid #ccc; padding:8px; font-size:14px; }
     th { background:#edf2f7; }
-    .btn { padding:5px 10px; border:none; border-radius:5px; cursor:pointer; margin:2px; }
-    .btn-green { background:#38a169; color:#fff; }
-    .btn-red { background:#e53e3e; color:#fff; }
-    .btn-yellow { background:#d69e2e; color:#fff; }
-    .btn-blue { background:#3182ce; color:#fff; }
-    .status-open { color:#fff; background:#38a169; padding:3px 6px; border-radius:5px; }
-    .status-close { color:#fff; background:#e53e3e; padding:3px 6px; border-radius:5px; }
-    .status-pending { color:#fff; background:#d69e2e; padding:3px 6px; border-radius:5px; }
+    .btn-sm { margin:1px; }
+    .status-open { background:#38a169; color:#fff; padding:3px 6px; border-radius:5px; }
+    .status-close { background:#e53e3e; color:#fff; padding:3px 6px; border-radius:5px; }
+    .status-pending { background:#d69e2e; color:#fff; padding:3px 6px; border-radius:5px; }
   </style>
 </head>
 <body>
 
 <!-- LOGIN PAGE -->
-<div id="loginPage">
-  <div style="display:flex;justify-content:center;align-items:center;height:100vh;">
-    <div class="card" style="width:300px;">
-      <h2 style="text-align:center;">Login ISP Manager</h2>
-      <input type="text" id="username" placeholder="Username" style="width:100%;padding:10px;margin:10px 0;">
-      <input type="password" id="password" placeholder="Password" style="width:100%;padding:10px;margin:10px 0;">
-      <button class="btn btn-blue" onclick="login()">Login</button>
-    </div>
+<div id="loginPage" class="d-flex justify-content-center align-items-center" style="height:100vh;">
+  <div class="card p-4" style="width:320px;">
+    <h4 class="text-center mb-3">Login ISP Manager</h4>
+    <input type="text" id="username" class="form-control mb-2" placeholder="Username">
+    <input type="password" id="password" class="form-control mb-3" placeholder="Password">
+    <button class="btn btn-primary w-100" onclick="login()">Login</button>
   </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- DASHBOARD PAGE -->
 <div id="dashboardPage" class="hidden">
   <header>
     <span class="hamburger" onclick="toggleSidebar()">☰</span>
-    <h1>ISP Manager Dashboard</h1>
+    <h5>ISP Manager Dashboard</h5>
   </header>
+
+  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <a href="#" onclick="showPage('dashboardHome')">Dashboard</a>
-    <a href="#" onclick="showPage('gangguanPage')">Gangguan</a>
     <a href="#" onclick="showPage('pasangBaruPage')">Pasang Baru</a>
+    <a href="#" onclick="showPage('gangguanPage')">Gangguan</a>
     <a href="#" onclick="showPage('pelangganPage')">Pelanggan</a>
     <a href="#" onclick="showPage('billingPage')">Billing</a>
     <a href="#" onclick="showPage('kasPage')">Kas</a>
@@ -61,41 +57,27 @@
     <a href="#" onclick="showPage('materialPage')">Material</a>
     <a href="#" onclick="showPage('portalPage')">Portal Pelanggan</a>
   </div>
+
+  <!-- Content -->
   <div class="content" id="content">
+
     <!-- Dashboard Home -->
     <div id="dashboardHome" class="page">
-      <div class="card"><h3>Ringkasan Jaringan</h3><p>Grafik & KPI ditampilkan di sini.</p></div>
-      <div class="card"><h3>Feedback</h3><p>Rating pelanggan & catatan teknisi.</p></div>
-    </div>
-
-    <!-- GANGGUAN PAGE -->
-    <div id="gangguanPage" class="page hidden">
-      <div class="card">
-        <h3>Data Gangguan</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>No Internet</th>
-              <th>Nama Pelanggan</th>
-              <th>No HP</th>
-              <th>Alamat</th>
-              <th>Jenis Gangguan</th>
-              <th>Status</th>
-              <th>TTR</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="gangguanBody"></tbody>
-        </table>
-        <button class="btn btn-blue" onclick="addGangguan()">+ Tambah Gangguan</button>
+      <div class="card p-3">
+        <h5>Ringkasan Jaringan</h5>
+        <p>Grafik, statistik & KPI di sini.</p>
+      </div>
+      <div class="card p-3">
+        <h5>Feedback</h5>
+        <p>Rating teknisi & catatan pelanggan.</p>
       </div>
     </div>
 
-    <!-- PASANG BARU PAGE -->
+    <!-- PASANG BARU -->
     <div id="pasangBaruPage" class="page hidden">
-      <div class="card">
-        <h3>Pasang Baru</h3>
-        <table>
+      <div class="card p-3">
+        <h5>Pasang Baru</h5>
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th>Inputer</th>
@@ -110,15 +92,38 @@
           </thead>
           <tbody id="pasangBody"></tbody>
         </table>
-        <button class="btn btn-blue" onclick="addPasang()">+ Tambah Pelanggan Baru</button>
+        <button class="btn btn-primary" onclick="addPasang()">+ Tambah Pelanggan Baru</button>
       </div>
     </div>
 
-    <!-- PELANGGAN PAGE -->
+    <!-- GANGGUAN -->
+    <div id="gangguanPage" class="page hidden">
+      <div class="card p-3">
+        <h5>Data Gangguan</h5>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>No Internet</th>
+              <th>Nama</th>
+              <th>No HP</th>
+              <th>Alamat</th>
+              <th>Jenis Gangguan</th>
+              <th>Status</th>
+              <th>TTR</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="gangguanBody"></tbody>
+        </table>
+        <button class="btn btn-primary" onclick="addGangguan()">+ Tambah Gangguan</button>
+      </div>
+    </div>
+
+    <!-- PELANGGAN -->
     <div id="pelangganPage" class="page hidden">
-      <div class="card">
-        <h3>Data Pelanggan</h3>
-        <table>
+      <div class="card p-3">
+        <h5>Data Pelanggan</h5>
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th>No Internet</th>
@@ -135,13 +140,13 @@
       </div>
     </div>
 
-    <!-- BILLING PAGE -->
+    <!-- BILLING -->
     <div id="billingPage" class="page hidden">
-      <div class="card">
-        <h3>Billing</h3>
-        <input type="text" id="searchBilling" placeholder="Cari No Internet / SN ONT">
-        <button class="btn btn-blue" onclick="generateBilling()">Generate Billing</button>
-        <table>
+      <div class="card p-3">
+        <h5>Billing</h5>
+        <input type="text" id="searchBilling" class="form-control mb-2" placeholder="Cari No Internet / SN ONT">
+        <button class="btn btn-success mb-2" onclick="generateBilling()">Generate Billing</button>
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th>No Internet</th>
@@ -155,11 +160,11 @@
       </div>
     </div>
 
-    <!-- KAS PAGE -->
+    <!-- KAS -->
     <div id="kasPage" class="page hidden">
-      <div class="card">
-        <h3>Kas</h3>
-        <table>
+      <div class="card p-3">
+        <h5>Kas</h5>
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th>Tanggal</th>
@@ -174,11 +179,11 @@
       </div>
     </div>
 
-    <!-- ODP PAGE -->
+    <!-- ODP -->
     <div id="odpPage" class="page hidden">
-      <div class="card">
-        <h3>ODP</h3>
-        <table>
+      <div class="card p-3">
+        <h5>ODP</h5>
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th>Nama ODP</th>
@@ -193,11 +198,11 @@
       </div>
     </div>
 
-    <!-- MATERIAL PAGE -->
+    <!-- MATERIAL -->
     <div id="materialPage" class="page hidden">
-      <div class="card">
-        <h3>Material</h3>
-        <table>
+      <div class="card p-3">
+        <h5>Material</h5>
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th>Jenis</th>
@@ -214,139 +219,101 @@
 
     <!-- PORTAL PELANGGAN -->
     <div id="portalPage" class="page hidden">
-      <div class="card">
-        <h3>Portal Pelanggan</h3>
-        <p>Menampilkan hanya gangguan & billing pelanggan login ini.</p>
+      <div class="card p-3">
+        <h5>Portal Pelanggan</h5>
+        <p>History billing & gangguan pelanggan ini.</p>
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
-let currentUser = "";
-let gangguanData = [];
-let pasangData = [];
+let currentUser="";
+let gangguanData=[];
+let pasangData=[];
 
-// === LOGIN FUNCTION ===
-function login() {
-  let user = document.getElementById("username").value;
-  let pass = document.getElementById("password").value;
-  if(user && pass){
-    currentUser = user;
+function login(){
+  let u=document.getElementById("username").value;
+  let p=document.getElementById("password").value;
+  if(u && p){
+    currentUser=u;
     document.getElementById("loginPage").classList.add("hidden");
     document.getElementById("dashboardPage").classList.remove("hidden");
-    showPage('dashboardHome');
-  } else {
-    alert("Isi username & password!");
-  }
+    showPage("dashboardHome");
+  } else { alert("Isi username & password!"); }
 }
-
-// === TOGGLE SIDEBAR ===
 function toggleSidebar(){
   document.getElementById("sidebar").classList.toggle("active");
   document.getElementById("content").classList.toggle("active");
 }
-
-// === PAGE SWITCH ===
-function showPage(pageId){
-  let pages = document.getElementsByClassName("page");
-  for(let i=0;i<pages.length;i++){ pages[i].classList.add("hidden"); }
-  document.getElementById(pageId).classList.remove("hidden");
+function showPage(id){
+  document.querySelectorAll(".page").forEach(pg=>pg.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
 }
 
-// === GANGGUAN FUNCTIONS ===
+// === GANGGUAN ===
 function renderGangguan(){
-  let tbody = document.getElementById("gangguanBody");
-  tbody.innerHTML = "";
+  let tbody=document.getElementById("gangguanBody");
+  tbody.innerHTML="";
   gangguanData.forEach((g,i)=>{
-    tbody.innerHTML += `
+    tbody.innerHTML+=`
       <tr>
-        <td>${g.noInternet}</td>
-        <td>${g.nama}</td>
-        <td>${g.hp}</td>
-        <td>${g.alamat}</td>
-        <td>${g.jenis}</td>
-        <td><span class="status-${g.status}">${g.status}</span></td>
+        <td>${g.noInternet}</td><td>${g.nama}</td><td>${g.hp}</td><td>${g.alamat}</td>
+        <td>${g.jenis}</td><td><span class="status-${g.status}">${g.status}</span></td>
         <td>${g.ttr}</td>
         <td>
-          <button class="btn btn-blue" onclick="sendToTeknisi(${i})">Kirim WA Teknisi</button>
-          <button class="btn btn-green" onclick="updateStatus(${i},'open')">Progres</button>
-          <button class="btn btn-yellow" onclick="updateStatus(${i},'pending')">Pending</button>
-          <button class="btn btn-red" onclick="updateStatus(${i},'close')">Close</button>
+          <button class="btn btn-sm btn-primary" onclick="sendToTeknisi(${i})">Kirim ke Teknisi</button>
+          <button class="btn btn-sm btn-success" onclick="updateStatus(${i},'open')">Progres</button>
+          <button class="btn btn-sm btn-warning" onclick="updateStatus(${i},'pending')">Pending</button>
+          <button class="btn btn-sm btn-danger" onclick="updateStatus(${i},'close')">Close</button>
         </td>
       </tr>`;
   });
 }
-
 function addGangguan(){
-  let noInternet = prompt("Masukkan No Internet:");
-  let nama = prompt("Masukkan Nama Pelanggan:");
-  let hp = prompt("Masukkan No HP:");
-  let alamat = prompt("Masukkan Alamat:");
-  let jenis = prompt("Masukkan Jenis Gangguan:");
-  let g = {noInternet,nama,hp,alamat,jenis,status:"open",ttr:"0 Jam"};
-  gangguanData.push(g);
-  renderGangguan();
+  let g={noInternet:prompt("No Internet:"),nama:prompt("Nama:"),hp:prompt("HP:"),alamat:prompt("Alamat:"),jenis:prompt("Jenis Gangguan:"),status:"open",ttr:"0 jam"};
+  gangguanData.push(g); renderGangguan();
 }
-
-function updateStatus(i,status){
-  gangguanData[i].status = status;
-  renderGangguan();
-}
-
+function updateStatus(i,s){ gangguanData[i].status=s; renderGangguan(); }
 function sendToTeknisi(i){
-  let action = prompt("Teknisi: Ketik 'terima' untuk ambil tiket, 'tolak' untuk menolak:");
-  if(action=="terima"){ gangguanData[i].status = "open"; }
-  else if(action=="tolak"){ gangguanData[i].status = "pending"; }
+  let a=prompt("Teknisi: ketik 'terima' atau 'tolak'");
+  if(a=="terima"){ gangguanData[i].status="open"; alert("Teknisi terima tiket"); }
+  else if(a=="tolak"){ gangguanData[i].status="pending"; alert("Teknisi tolak tiket"); }
   renderGangguan();
 }
 
 // === PASANG BARU ===
 function renderPasang(){
-  let tbody = document.getElementById("pasangBody");
-  tbody.innerHTML = "";
+  let tbody=document.getElementById("pasangBody"); tbody.innerHTML="";
   pasangData.forEach((p,i)=>{
-    tbody.innerHTML += `
+    tbody.innerHTML+=`
       <tr>
-        <td>${p.inputer}</td>
-        <td>${p.nama}</td>
-        <td>${p.alamat}</td>
-        <td>${p.hp}</td>
-        <td>${p.tagging}</td>
-        <td>${p.paket}</td>
+        <td>${p.inputer}</td><td>${p.nama}</td><td>${p.alamat}</td><td>${p.hp}</td>
+        <td>${p.tagging}</td><td>${p.paket}</td>
         <td><span class="status-${p.status}">${p.status}</span></td>
         <td>
-          <button class="btn btn-blue" onclick="shareOrder(${i})">Share Order</button>
-          <button class="btn btn-green" onclick="updatePasang(${i},'progres')">Progres</button>
-          <button class="btn btn-green" onclick="updatePasang(${i},'active')">Active</button>
-          <button class="btn btn-red" onclick="updatePasang(${i},'cancel')">Cancel</button>
+          <button class="btn btn-sm btn-primary" onclick="shareOrder(${i})">Share Order</button>
+          <button class="btn btn-sm btn-success" onclick="updatePasang(${i},'progres')">Progres</button>
+          <button class="btn btn-sm btn-info" onclick="updatePasang(${i},'active')">Active</button>
+          <button class="btn btn-sm btn-dark" onclick="updatePasang(${i},'cancel')">Cancel</button>
         </td>
       </tr>`;
   });
 }
-
 function addPasang(){
-  let nama = prompt("Nama:");
-  let alamat = prompt("Alamat:");
-  let hp = prompt("No HP:");
-  let tagging = prompt("Tagging Lokasi:");
-  let paket = prompt("Paket:");
-  let p = {inputer:currentUser,nama,alamat,hp,tagging,paket,status:"menunggu"};
-  pasangData.push(p);
-  renderPasang();
+  let p={inputer:currentUser,nama:prompt("Nama:"),alamat:prompt("Alamat:"),hp:prompt("HP:"),tagging:prompt("Tagging Lokasi:"),paket:prompt("Paket:"),status:"menunggu"};
+  pasangData.push(p); renderPasang();
 }
-
-function updatePasang(i,status){
-  pasangData[i].status = status;
-  renderPasang();
-}
-
+function updatePasang(i,s){ pasangData[i].status=s; renderPasang(); }
 function shareOrder(i){
-  let action = prompt("Teknisi: Ketik 'terima' untuk ambil order, 'tolak' untuk menolak:");
-  if(action=="terima"){ pasangData[i].status = "progres"; }
-  else if(action=="tolak"){ pasangData[i].status = "cancel"; }
+  let a=prompt("Teknisi: ketik 'terima' atau 'tolak'");
+  if(a=="terima"){ pasangData[i].status="progres"; alert("Teknisi ambil order"); }
+  else if(a=="tolak"){ pasangData[i].status="cancel"; alert("Teknisi tolak order"); }
   renderPasang();
 }
+
+// Billing, Pelanggan, Kas, ODP, Material masih dummy untuk struktur
 </script>
 </body>
 </html>
