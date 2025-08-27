@@ -468,6 +468,44 @@ function logout(){
   toast('Logout');
 }
 
+// Restore session on refresh
+window.addEventListener('load', async () => {
+  try {
+    const saved = localStorage.getItem(LS_SESSION);
+    if (saved) {
+      const ses = JSON.parse(saved);
+      if (auth) {
+        auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            // cek Firestore user
+            try {
+              const q = await dbfire.collection('users').where('nik', '==', ses.id).limit(1).get();
+              if (!q.empty) {
+                const u = q.docs[0].data();
+                currentUser = { nik: u.nik, nama: u.nama || u.email, role: u.role || 'user', uid: user.uid, email: u.email };
+                afterLogin();
+                return;
+              }
+            } catch(e){ console.warn("Restore Firestore gagal", e); }
+          }
+        });
+      } else {
+        // fallback local DB
+        if (DB.users[ses.id]) {
+          currentUser = {...DB.users[ses.id]};
+          afterLogin();
+        } else {
+          const pel = Object.values(DB.pelanggan).find(p => p.id === ses.id || p.no === ses.id);
+          if (pel) {
+            currentUser = { nik: pel.id, nama: pel.nama, role:'pelanggan', pelangganId: pel.id, no: pel.no };
+            afterLogin();
+          }
+        }
+      }
+    }
+  } catch(e){ console.warn("Restore session gagal", e); }
+});
+  
 /* Bind login button and Enter key */
 document.getElementById('btnLogin').addEventListener('click', function(e){ e.preventDefault(); doLogin(); });
 document.getElementById('password').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
