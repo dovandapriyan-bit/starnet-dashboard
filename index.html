@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ISP Manager — FINAL FULL</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<title>ISP Manager — FINAL (Login Fixed)</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 :root{
@@ -71,7 +70,7 @@ body{background:var(--bg);color:#0b1220}
       <h5>Instruksi</h5>
       <ul>
         <li>Akun demo: <b>admin / admin</b></li>
-        <li>Teknisi demo: <b>tec1 / pass</b></li>
+        <li>Teknisi demo: <b>teknisi / 1234</b></li>
         <li>Gunakan tombol "Self-Test" untuk cek alur otomatis</li>
       </ul>
     </div>
@@ -79,8 +78,8 @@ body{background:var(--bg);color:#0b1220}
   <div>
     <div class="card">
       <h5>Login</h5>
-      <div class="mb-2"><input id="login_id" class="form-control" placeholder="Username / NIK / No Internet"></div>
-      <div class="mb-2"><input id="login_pass" type="password" class="form-control" placeholder="Password"></div>
+      <div class="mb-2"><input id="username" class="form-control" placeholder="Username"></div>
+      <div class="mb-2"><input id="password" type="password" class="form-control" placeholder="Password"></div>
       <div style="display:flex;gap:8px">
         <button id="btnLogin" class="btn btn-primary" style="flex:1">Masuk</button>
         <button id="btnDemo" class="btn btn-outline-primary" style="flex:1">Isi Demo</button>
@@ -118,7 +117,6 @@ body{background:var(--bg);color:#0b1220}
         <div><span id="kpiUser" class="badge bg-light text-dark">-</span></div>
       </div>
       <div id="dashboardContent" style="margin-top:12px">
-        <!-- KPI and charts -->
         <div style="display:flex;gap:12px">
           <div style="flex:1" class="card">
             <div class="small-muted">Jumlah Pelanggan</div><div id="kpiPelanggan" style="font-weight:700;font-size:22px">0</div>
@@ -136,7 +134,7 @@ body{background:var(--bg);color:#0b1220}
       </div>
     </section>
 
-    <!-- PASANG BARU -->
+    <!-- PASANG -->
     <section id="page-pasang" class="card hidden">
       <h4>Pasang Baru</h4>
       <div class="card mb-2">
@@ -289,16 +287,13 @@ body{background:var(--bg);color:#0b1220}
 <div id="toast" class="toast hidden" style="position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:8px 12px;border-radius:8px;z-index:9999"></div>
 
 <script>
-/*
-  FULL single-file app logic.
-  Data persisted in localStorage key: isp_manager_final_v100
-*/
-const LS_KEY = 'isp_manager_final_v100';
+/* Single-file app logic (login fixed to username/password fields) */
+const LS_KEY = 'isp_manager_final_v101';
 function defaultDB(){
   return {
     users: {
       'admin': { nik:'admin', nama:'Admin', password:'admin', role:'admin' },
-      'tec1': { nik:'tec1', nama:'Teknisi Satu', password:'pass', role:'teknisi' }
+      'teknisi': { nik:'teknisi', nama:'Teknisi', password:'1234', role:'teknisi' }
     },
     paket: {}, pelanggan: {}, pasang: {}, gangguan: {}, billing: {}, kas: {}, odp: {}, material: {}, sharedOrders: {}, history: [], feedback: []
   };
@@ -307,7 +302,6 @@ function loadDB(){ try{ const raw = localStorage.getItem(LS_KEY); if(!raw){ cons
 function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); DB = db; }
 let DB = loadDB();
 
-/* helpers */
 function uid(prefix='id'){ return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function now(){ return new Date().toISOString(); }
 function toast(msg, t=2200){ const el=document.getElementById('toast'); el.innerText=msg; el.classList.remove('hidden'); setTimeout(()=> el.classList.add('hidden'), t); console.log('TOAST:',msg); }
@@ -326,23 +320,22 @@ document.getElementById('btnResetDB').addEventListener('click', ()=>{ if(confirm
 document.getElementById('btnSelfTest').addEventListener('click', runSelfTest);
 document.getElementById('btnLogout').addEventListener('click', ()=>{ logout(); });
 
-/* login */
-function fillDemo(){ document.getElementById('login_id').value='admin'; document.getElementById('login_pass').value='admin'; }
+function fillDemo(){ document.getElementById('username').value='admin'; document.getElementById('password').value='admin'; }
 function doLogin(){
-  const id = document.getElementById('login_id').value.trim();
-  const pass = document.getElementById('login_pass').value || '';
+  const id = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value || '';
   const msgEl = document.getElementById('loginMsg'); msgEl.innerText='';
   if(!id || !pass){ msgEl.innerText='Isi ID & Password'; return; }
   if(DB.users[id] && DB.users[id].password === pass){
     currentUser = {...DB.users[id]}; afterLogin(); return;
   }
-  // pelanggan login by no internet
   const pel = Object.values(DB.pelanggan).find(p => p.no === id);
   if(pel && pel.password === pass){
     currentUser = { nik: pel.id, nama: pel.nama, role:'pelanggan', pelangganId:pel.id, no: pel.no }; afterLogin(); return;
   }
   msgEl.innerText='ID / password tidak cocok';
 }
+
 function afterLogin(){
   toast('Login sukses: '+ (currentUser.nama || currentUser.nik));
   document.getElementById('loginPage').style.display='none';
@@ -365,20 +358,13 @@ function logout(){
 
 /* NAV & render */
 function openPage(page){
-  const mapping = {
-    dashboard: 'dashboard', pasang: 'page-pasang', gangguan: 'page-gangguan', pelanggan: 'page-pelanggan',
-    billing: 'page-billing', kas: 'page-kas', odp: 'page-odp', material: 'page-material', portal: 'page-portal'
-  };
-  // hide all page sections
+  const mapping = { dashboard: 'dashboard', pasang: 'page-pasang', gangguan: 'page-gangguan', pelanggan: 'page-pelanggan', billing: 'page-billing', kas: 'page-kas', odp: 'page-odp', material: 'page-material', portal: 'page-portal' };
   document.querySelectorAll('section.card').forEach(s=>s.classList.add('hidden'));
-  // show requested
   const id = mapping[page] || 'dashboard';
   document.getElementById(id).classList.remove('hidden');
-  // sidebar active
   document.querySelectorAll('.sidebar .link').forEach(a=>a.classList.remove('active'));
   const link = Array.from(document.querySelectorAll('.sidebar .link')).find(l=> l.getAttribute('data-page') === page);
   if(link) link.classList.add('active');
-  // render page
   switch(page){
     case 'dashboard': renderDashboard(); break;
     case 'pasang': renderPasang(); break;
@@ -392,29 +378,19 @@ function openPage(page){
   }
 }
 
-/* RENDER ALL */
-function renderAll(){
-  renderDashboard(); renderPasang(); renderGangguan(); renderPelanggan(); renderBilling(); renderKas(); renderODP(); renderMaterial(); renderSharedOrders(); renderPortal();
-}
+/* render all */
+function renderAll(){ renderDashboard(); renderPasang(); renderGangguan(); renderPelanggan(); renderBilling(); renderKas(); renderODP(); renderMaterial(); renderSharedOrders(); renderPortal(); }
 
-/* ---------------------------------------
-   Dashboard
-----------------------------------------*/
+/* Dashboard */
 function renderDashboard(){
-  const kpP = document.getElementById('kpiPelanggan');
-  const kpG = document.getElementById('kpiGangguan');
-  const kpRev = document.getElementById('kpiPendapatan');
-  const kpKas = document.getElementById('kpiKas');
-  kpP.innerText = Object.keys(DB.pelanggan).length;
-  kpG.innerText = Object.values(DB.gangguan).filter(g=> g.tiket && !['Close','Closed','Selesai'].includes(g.status)).length;
-  kpRev.innerText = 'Rp ' + Object.values(DB.billing).reduce((s,b)=> s + (Number(b.jumlah)||0),0).toLocaleString('id-ID');
-  kpKas.innerText = 'Rp ' + calcKasSaldo().toLocaleString('id-ID');
+  document.getElementById('kpiPelanggan').innerText = Object.keys(DB.pelanggan).length;
+  document.getElementById('kpiGangguan').innerText = Object.values(DB.gangguan).filter(g=> g.tiket && !['Close','Closed','Selesai'].includes(g.status)).length;
+  document.getElementById('kpiPendapatan').innerText = 'Rp ' + Object.values(DB.billing).reduce((s,b)=> s + (Number(b.jumlah)||0),0).toLocaleString('id-ID');
+  document.getElementById('kpiKas').innerText = 'Rp ' + calcKasSaldo().toLocaleString('id-ID');
   document.getElementById('kpiUser').innerText = (currentUser?currentUser.nama:'-');
 }
 
-/* ---------------------------------------
-   Pasang Baru
-----------------------------------------*/
+/* Pasang */
 function populatePaketSelect(){
   const sel = document.getElementById('p_paket'); sel.innerHTML = '';
   const defaultOpt = document.createElement('option'); defaultOpt.value=''; defaultOpt.textContent='-- Pilih Paket --'; sel.appendChild(defaultOpt);
@@ -463,6 +439,35 @@ function shareOrder(pasangId){
   hist('share.create', sid, `Share pasang ${p.no_inet}`);
   saveDB(DB); renderSharedOrders(); toast('Order dibagikan ke teknisi (simulasi WA)');
 }
+function activatePasang(id){
+  if(!DB.pasang[id]) return;
+  DB.pasang[id].status = 'Active';
+  // create pelanggan record
+  const pelId = uid('pel_'); DB.pelanggan[pelId] = { id:pelId, no: DB.pasang[id].no_inet, nama: DB.pasang[id].nama, hp: DB.pasang[id].hp, alamat: DB.pasang[id].alamat, paketId: DB.pasang[id].paketId, statusKoneksi:'Active', tglPasang: now(), sn:'SN'+Math.random().toString(36).slice(2,8), odp:'ODP-1', log:[] };
+  hist('pasang.activate', id, `Activated and created pelanggan ${DB.pasang[id].no_inet}`);
+  saveDB(DB); renderPasang(); renderPelanggan(); toast('Pasang di-activate dan pelanggan dibuat');
+}
+
+/* Shared Orders UI */
+function renderSharedOrders(){
+  const el = document.getElementById('sharedOrdersList'); el.innerHTML = '';
+  const arr = Object.values(DB.sharedOrders).sort((a,b)=> (b.sentAt||'').localeCompare(a.sentAt||''));
+  if(arr.length===0) { el.innerText='(kosong)'; return; }
+  arr.forEach(s=>{
+    const wrapper = document.createElement('div'); wrapper.style.padding='8px'; wrapper.style.borderBottom='1px solid #eef2f7';
+    let title = s.kind==='pasang' ? (DB.pasang[s.targetId]?.no_inet || 'Pasang:' + s.targetId) : (DB.gangguan[s.targetId]?.tiket || 'Gangguan:' + s.targetId);
+    wrapper.innerHTML = `<b>${escapeHtml(title)}</b> — <span class="small-muted">${escapeHtml(s.status)}</span>`;
+    const btnWrap = document.createElement('div'); btnWrap.style.float='right';
+    if(s.status === 'shared'){
+      const terima = document.createElement('button'); terima.className='btn btn-xs btn-success'; terima.innerText='Terima'; terima.onclick = ()=> acceptShared(s.id);
+      const tolak = document.createElement('button'); tolak.className='btn btn-xs btn-danger'; tolak.innerText='Tolak'; tolak.onclick = ()=> rejectShared(s.id);
+      btnWrap.appendChild(terima); btnWrap.appendChild(tolak);
+    } else {
+      btnWrap.innerHTML = `<span class="small-muted">${escapeHtml(s.status)}</span>`;
+    }
+    wrapper.appendChild(btnWrap); el.appendChild(wrapper);
+  });
+}
 function acceptShared(sharedId){
   const s = DB.sharedOrders[sharedId]; if(!s) return;
   s.status='accepted'; s.acceptedBy = currentUser?currentUser.nik:'-'; s.acceptAt = now();
@@ -479,29 +484,8 @@ function rejectShared(sharedId){
   hist('share.reject', sharedId, `Rejected by ${s.rejectedBy}`); saveDB(DB); renderSharedOrders(); renderPasang(); renderGangguan();
   toast('Shared order ditolak');
 }
-function renderSharedOrders(){
-  const el = document.getElementById('sharedOrdersList'); el.innerHTML = '';
-  const arr = Object.values(DB.sharedOrders).sort((a,b)=> (b.sentAt||'').localeCompare(a.sentAt||''));
-  if(arr.length===0) { el.innerText='(kosong)'; return; }
-  arr.forEach(s=>{
-    const wrapper = document.createElement('div'); wrapper.style.padding='8px'; wrapper.style.borderBottom='1px solid #eef2f7';
-    let title = s.kind==='pasang' ? (DB.pasang[s.targetId]?.no_inet || 'Pasang:' + s.targetId) : (DB.gangguan[s.targetId]?.tiket || 'Gangguan:' + s.targetId);
-    wrapper.innerHTML = `<b>${escapeHtml(title)}</b> — <span class="small-muted">${escapeHtml(s.status)}</span>`;
-    const btnWrap = document.createElement('div'); btnWrap.style.float='right';
-    if(s.status === 'shared'){
-      const terima = document.createElement('button'); terima.className='btn btn-xs btn-success'; terima.innerText='Terima'; terima.onclick = ()=> acceptShared(s.id);
-      const tolak = document.createElement('button'); tolak.className='btn btn-xs btn-danger'; tolak.innerText='Tolak'; tolak.onclick = ()=> { const reason = prompt('Alasan tolak')?>; rejectShared(s.id); };
-      btnWrap.appendChild(terima); btnWrap.appendChild(tolak);
-    } else {
-      btnWrap.innerHTML = `<span class="small-muted">${escapeHtml(s.status)}</span>`;
-    }
-    wrapper.appendChild(btnWrap); el.appendChild(wrapper);
-  });
-}
 
-/* ---------------------------------------
-   Gangguan
-----------------------------------------*/
+/* Gangguan */
 function createGangguan(){
   const no = document.getElementById('g_noinet').value.trim();
   const nama = document.getElementById('g_name').value.trim();
@@ -567,9 +551,7 @@ function schedulePendingResume(tiket, resumeStr){
   }, Math.min(diff, 1000*60*60*24));
 }
 
-/* ---------------------------------------
-   Pelanggan
-----------------------------------------*/
+/* Pelanggan */
 function openAddPelanggan(){
   const nama = prompt('Nama pelanggan'); if(!nama) return;
   const hp = prompt('No HP') || ''; const alamat = prompt('Alamat') || ''; const paketId = prompt('Paket (ID)') || '';
@@ -589,9 +571,7 @@ function renderPelanggan(){
 }
 function setPelangganConn(id, state){ if(!DB.pelanggan[id]) return; DB.pelanggan[id].statusKoneksi = state; hist('pelanggan.conn', id, state); saveDB(DB); renderPelanggan(); }
 
-/* ---------------------------------------
-   Billing
-----------------------------------------*/
+/* Billing */
 function renderBilling(){
   const tb = document.getElementById('tblBilling'); tb.innerHTML='';
   Object.values(DB.billing).sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||'')).forEach(b=>{
@@ -620,9 +600,7 @@ function payBilling(id){ if(!DB.billing[id]) return; DB.billing[id].status='Luna
 function printBilling(id){ const b = DB.billing[id]; if(!b) return; const w = window.open('','_blank','width=600,height=400'); w.document.write(`<h3>Struk Pembayaran</h3><div>No Internet: ${escapeHtml(b.no_inet)}</div><div>Pelanggan: ${escapeHtml(b.pelanggan)}</div><div>Periode: ${b.periode}</div><div>Jumlah: Rp ${Number(b.jumlah).toLocaleString('id-ID')}</div>`); w.document.close(); }
 function sendWABilling(id){ const b = DB.billing[id]; if(!b) return; toast('Simulasi kirim WA ke ' + (b.nohp || b.pelanggan || 'nomor pelanggan')); }
 
-/* ---------------------------------------
-   Kas
-----------------------------------------*/
+/* Kas */
 function addKas(){
   const desc = document.getElementById('kas_desc').value.trim();
   const masuk = Number(document.getElementById('kas_masuk').value) || 0;
@@ -635,23 +613,17 @@ function addKas(){
 function renderKas(){ const tb=document.getElementById('tblKas'); tb.innerHTML=''; Object.values(DB.kas).forEach((k,idx)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${idx+1}</td><td>${new Date(k.waktu).toLocaleString()}</td><td>${escapeHtml(k.desc)}</td><td>${k.masuk||0}</td><td>${k.keluar||0}</td><td>${(k.saldo||0).toLocaleString('id-ID')}</td>`; tb.appendChild(tr); }); }
 function calcKasSaldo(){ return Object.values(DB.kas).reduce((s,k)=> s + (Number(k.masuk)||0) - (Number(k.keluar)||0), 0); }
 
-/* ---------------------------------------
-   ODP
-----------------------------------------*/
+/* ODP */
 function createODP(){ const name=document.getElementById('odp_name').value.trim(); const kapasitas=document.getElementById('odp_kapasitas').value.trim(); const feeder=document.getElementById('odp_feeder').value.trim(); const tagging=document.getElementById('odp_tagging').value.trim(); if(!name) return toast('Nama ODP wajib'); const id=uid('odp_'); DB.odp[id]={id,name,kapasitas,feeder,tagging}; hist('odp.create', id, name); saveDB(DB); document.getElementById('odp_name').value=''; renderODP(); toast('ODP ditambahkan'); }
 function renderODP(){ const tb=document.getElementById('tblODP'); tb.innerHTML=''; Object.values(DB.odp).forEach(o=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(o.name)}</td><td>${escapeHtml(o.kapasitas)}</td><td>${escapeHtml(o.feeder)}</td><td>${escapeHtml(o.tagging||'-')}</td><td><button class="btn btn-xs btn-danger" onclick="deleteODP('${o.id}')">Hapus</button></td>`; tb.appendChild(tr); }); }
 function deleteODP(id){ if(confirm('Hapus ODP?')){ delete DB.odp[id]; hist('odp.delete', id, 'Deleted'); saveDB(DB); renderODP(); } }
 
-/* ---------------------------------------
-   Material
-----------------------------------------*/
+/* Material */
 function createMaterial(){ const jenis=document.getElementById('m_jenis').value.trim(); const qty=Number(document.getElementById('m_qty').value)||0; const satuan=document.getElementById('m_satuan').value||'pcs'; if(!jenis) return toast('Jenis material wajib'); const id=uid('mat_'); DB.material[id] = { id, jenis, qty, satuan, stock:qty, log:[] }; hist('material.create', id, jenis); saveDB(DB); document.getElementById('m_jenis').value=''; document.getElementById('m_qty').value=''; renderMaterial(); toast('Material ditambahkan'); }
 function renderMaterial(){ const tb=document.getElementById('tblMaterial'); tb.innerHTML=''; Object.values(DB.material).forEach(m=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${escapeHtml(m.jenis)}</td><td>${m.qty}</td><td>${escapeHtml(m.satuan)}</td><td>${m.stock}</td><td>${(m.log||[]).slice(-3).join('<br>')}</td><td><button class="btn btn-xs btn-danger" onclick="deleteMaterial('${m.id}')">Hapus</button></td>`; tb.appendChild(tr); }); }
 function deleteMaterial(id){ if(confirm('Hapus material?')){ delete DB.material[id]; hist('material.delete', id, 'Deleted'); saveDB(DB); renderMaterial(); } }
 
-/* ---------------------------------------
-   Portal Pelanggan
-----------------------------------------*/
+/* Portal */
 function renderPortal(){
   const elBilling = document.getElementById('portalBillingList'); const elGang = document.getElementById('portalGangguanList');
   if(!currentUser || currentUser.role !== 'pelanggan'){ elBilling.innerHTML='<div>Login sebagai pelanggan</div>'; elGang.innerHTML='-'; return; }
@@ -665,9 +637,7 @@ function renderPortal(){
 function portalNext(){ portalMode.page++; renderPortal(); }
 function portalPrev(){ if(portalMode.page>1) portalMode.page--; renderPortal(); }
 
-/* ---------------------------------------
-   Util functions
-----------------------------------------*/
+/* utils */
 function nextInternetNo(){
   const vals = Object.values(DB.pasang).map(p=>p.no_inet).concat(Object.values(DB.pelanggan).map(p=>p.no)).filter(Boolean);
   if(vals.length===0) return '1906140001';
@@ -678,48 +648,30 @@ function calcDurationDays(iso){
   if(!iso) return '-'; const diff = Date.now() - new Date(iso).getTime(); const days = Math.floor(diff / (1000*60*60*24)); return days + ' hari';
 }
 
-/* ---------------------------------------
-   Self-test (simulate flows)
-----------------------------------------*/
+/* Self-test */
 function runSelfTest(){
   toast('Menjalankan self-test: membuat data contoh dan simulasi alur...');
   DB = defaultDB();
-  // paket
   const pkg1 = uid('pkg_'); DB.paket[pkg1] = { id: pkg1, name: 'Home 10Mbps', price: 120000 };
   const pkg2 = uid('pkg_'); DB.paket[pkg2] = { id: pkg2, name: 'Pro 30Mbps', price: 250000 };
-  // pasang
   const pid = uid('pasang_'); DB.pasang[pid] = { id:pid, no_inet: nextInternetNo(), inputer:'admin', nama:'Budi', alamat:'Jl Demo 1', hp:'0812345678', tagging:'RT01', paketId:pkg1, status:'Menunggu', createdAt: now() };
-  // pelanggan created on activate simulation later
-  // gangguan
   const gid = uid('TC'); DB.gangguan[gid] = { tiket:gid, no_inet: DB.pasang[pid].no_inet, pelanggan:'Budi', nohp:'0812345678', alamat:'Jl Demo 1', jenis:'Putus Koneksi', status:'Open', ttr:'--', createdAt: now() };
-  // billing
   const bid = uid('bill_'); DB.billing[bid] = { id:bid, no_inet:DB.pasang[pid].no_inet, pelanggan:'Budi', periode:(new Date()).toISOString().slice(0,7), jumlah:120000, status:'Belum Bayar', createdAt: now() };
-  // shared order simulate
   const sid = uid('share_'); DB.sharedOrders[sid] = { id:sid, kind:'pasang', targetId: pid, status:'shared', sentAt: now(), by: 'admin' };
-  saveDB(DB);
-  renderAll();
-  setTimeout(()=>{ // teknisi accept
-    DB.sharedOrders[sid].status='accepted'; DB.sharedOrders[sid].acceptedBy='tec1'; DB.pasang[pid].status='Progres'; saveDB(DB); renderSharedOrders(); renderPasang(); toast('Self-test: teknisi menerima order (simulasi)'); }, 800);
+  saveDB(DB); renderAll();
+  setTimeout(()=>{ DB.sharedOrders[sid].status='accepted'; DB.sharedOrders[sid].acceptedBy='teknisi'; DB.pasang[pid].status='Progres'; saveDB(DB); renderSharedOrders(); renderPasang(); toast('Self-test: teknisi menerima order (simulasi)'); }, 800);
   setTimeout(()=>{ DB.gangguan[gid].status='Progres'; saveDB(DB); renderGangguan(); toast('Self-test: gangguan di-progres (simulasi)'); }, 1400);
   setTimeout(()=>{ toast('Self-test selesai. Cek Pasang Baru, Shared Orders, Gangguan, Billing.'); }, 2000);
 }
 
-/* ---------------------------------------
-   Init on load
-----------------------------------------*/
+/* init */
 (function init(){
-  // ensure maps exist
-  if(!DB.users) DB = defaultDB(), saveDB(DB);
-  // fill pakets if none
+  if(!DB.users) { DB = defaultDB(); saveDB(DB); }
   if(Object.keys(DB.paket).length === 0){ const p1 = uid('pkg_'); DB.paket[p1] = { id:p1, name:'Home 10Mbps', price:120000 }; const p2 = uid('pkg_'); DB.paket[p2] = { id:p2, name:'Pro 30Mbps', price:250000 }; saveDB(DB); }
-  // UI initial states
   document.getElementById('appShell').classList.add('hidden');
   document.getElementById('loginPage').style.display = 'grid';
-  // time
   setInterval(()=> document.getElementById('timeNow').innerText = new Date().toLocaleString(), 1000);
-  // keyboard login
-  document.getElementById('login_pass').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
-  // initial render
+  document.getElementById('password').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
   renderAll();
 })();
 </script>
