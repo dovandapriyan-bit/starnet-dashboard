@@ -7,42 +7,47 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 :root{
-  --bg:#f3f5fa; --card:#fff; --muted:#6b7280; --sidebar:#153362; --sidebar2:#1e3a8a;
-  --accent:#3b82f6; --success:#16a34a; --danger:#ef4444; --radius:10px;
+  --bg:#eef3fb; --card:#ffffff; --muted:#6b7280; --sidebar:#0f2b4a; --sidebar2:#164a8a;
+  --accent:#2563eb; --success:#16a34a; --danger:#dc2626; --radius:12px;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
 body{background:var(--bg);color:#0b1220}
-.header{height:64px;background:#fff;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #eef2f7}
+.header{height:64px;background:#fff;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid rgba(15,23,42,0.06);box-shadow:0 4px 18px rgba(11,18,32,0.03)}
 .hamb{font-size:22px;cursor:pointer;margin-right:12px}
-.brand{font-weight:700;color:var(--sidebar2)}
+.brand{font-weight:800;color:var(--sidebar2);letter-spacing:0.2px}
 .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;height:calc(100vh - 0px)}
-.sidebar{grid-row:1/3;background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));color:#e9f0ff;padding:12px;overflow:auto}
+.sidebar{grid-row:1/3;background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));color:#e9f0ff;padding:14px;overflow:auto;border-right:1px solid rgba(255,255,255,0.02);box-shadow: inset -1px 0 0 rgba(255,255,255,0.02)}
 .sidebar .logo{display:flex;align-items:center;gap:10px;height:56px;padding:6px 8px}
-.link{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:#e9f0ff;text-decoration:none;margin-bottom:6px;cursor:pointer}
-.link:hover{background:rgba(255,255,255,0.05)}
-.link.active{background:rgba(255,255,255,0.08)}
-.main{grid-column:2;background:transparent;padding:18px;overflow:auto}
-.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 8px 30px rgba(15,23,42,0.04)}
+.link{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;color:#e9f0ff;text-decoration:none;margin-bottom:6px;cursor:pointer;font-weight:600}
+.link:hover{background:rgba(255,255,255,0.04)}
+.link.active{background:rgba(255,255,255,0.06)}
+.main{grid-column:2;background:transparent;padding:22px;overflow:auto}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 10px 30px rgba(15,23,42,0.04)}
 .table-fixed{width:100%;border-collapse:collapse}
-.table-fixed th,.table-fixed td{padding:8px;border:1px solid #eef2f7}
+.table-fixed th,.table-fixed td{padding:8px;border:1px solid #eef4ff;font-size:13px}
 .small-muted{color:var(--muted);font-size:13px}
-.btn-xs{padding:4px 8px;font-size:13px;border-radius:6px}
-.status-open{background:var(--success);color:#fff;padding:4px 8px;border-radius:6px}
-.status-pending{background:#f59e0b;color:#fff;padding:4px 8px;border-radius:6px}
-.status-close{background:var(--danger);color:#fff;padding:4px 8px;border-radius:6px}
-.status-menunggu{background:#6b7280;color:#fff;padding:4px 8px;border-radius:6px}
-.status-progres{background:#2563eb;color:#fff;padding:4px 8px;border-radius:6px}
-.status-active{background:#16a34a;color:#fff;padding:4px 8px;border-radius:6px}
-.status-cancel{background:#000;color:#fff;padding:4px 8px;border-radius:6px}
+.btn-xs{padding:6px 10px;font-size:13px;border-radius:8px}
+.status-open{background:var(--success);color:#fff;padding:6px 10px;border-radius:8px}
+.status-pending{background:#f59e0b;color:#fff;padding:6px 10px;border-radius:8px}
+.status-close{background:var(--danger);color:#fff;padding:6px 10px;border-radius:8px}
 .hidden{display:none}
-.pre{background:#fbfdff;border:1px solid #eef6ff;padding:8px;border-radius:8px;white-space:pre-wrap}
+.pre{background:#fbfdff;border:1px solid #eef6ff;padding:10px;border-radius:10px;white-space:pre-wrap}
+.input-group-compact input, .input-group-compact select{height:40px;border-radius:8px}
+.header .who{font-weight:600;color:#0b1220;margin-left:8px}
+
+/* responsive */
 @media(max-width:1000px){
   .app{grid-template-columns:1fr;grid-template-rows:64px auto 1fr}
-  .sidebar{position:fixed;left:-320px;top:64px;height:calc(100vh - 64px);width:260px;transition:left .2s;z-index:40}
+  .sidebar{position:fixed;left:-320px;top:64px;height:calc(100vh - 64px);width:260px;transition:left .22s;z-index:40}
   .sidebar.show{left:0}
   .hamb{display:inline-block}
 }
+
+/* small visual helpers */
+.kpi {display:flex;gap:10px;align-items:center}
+.kpi .num{font-weight:700;font-size:20px}
+.footer-note{font-size:12px;color:#9aa6c0;margin-top:8px}
 </style>
 </head>
 <body>
@@ -53,9 +58,9 @@ body{background:var(--bg);color:#0b1220}
     <div id="hambBtn" class="hamb">☰</div>
     <div class="brand">ISP Manager — FINAL</div>
   </div>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+  <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
     <div id="timeNow" class="small-muted"></div>
-    <div id="whoami" class="small-muted">Belum login</div>
+    <div id="whoami" class="small-muted who">Belum login</div>
     <button id="btnLogout" class="btn btn-outline-danger btn-sm" style="display:none">Logout</button>
   </div>
 </div>
@@ -67,24 +72,25 @@ body{background:var(--bg);color:#0b1220}
     <div class="small-muted">Masuk sebagai admin/teknisi atau klik Isi Demo untuk data uji.</div>
     <div style="height:18px"></div>
     <div class="card">
-      <h5>Instruksi</h5>
-      <ul>
+      <h5 style="margin-bottom:8px">Instruksi cepat</h5>
+      <ul style="margin:0 0 0 18px;padding:0">
         <li>Akun demo: <b>admin / admin</b></li>
         <li>Teknisi demo: <b>teknisi / 1234</b></li>
-        <li>Gunakan tombol "Self-Test" untuk cek alur otomatis</li>
+        <li>Gunakan <b>Self-Test</b> untuk cek alur otomatis</li>
       </ul>
+      <div class="footer-note">Versi: VSN4 — by Dnt Grup</div>
     </div>
   </div>
   <div>
     <div class="card">
-      <h5>Login</h5>
-      <div class="mb-2"><input id="username" class="form-control" placeholder="Username"></div>
-      <div class="mb-2"><input id="password" type="password" class="form-control" placeholder="Password"></div>
-      <div style="display:flex;gap:8px">
+      <h5 style="margin-bottom:10px">Login</h5>
+      <div class="mb-2 input-group-compact"><input id="username" class="form-control" placeholder="Username"></div>
+      <div class="mb-2 input-group-compact"><input id="password" type="password" class="form-control" placeholder="Password"></div>
+      <div style="display:flex;gap:8px;margin-top:6px">
         <button id="btnLogin" class="btn btn-primary" style="flex:1">Masuk</button>
         <button id="btnDemo" class="btn btn-outline-primary" style="flex:1">Isi Demo</button>
       </div>
-      <div style="margin-top:8px;display:flex;gap:8px">
+      <div style="margin-top:10px;display:flex;gap:8px">
         <button id="btnSelfTest" class="btn btn-secondary" style="flex:1">Cek Fungsional (Self-Test)</button>
         <button id="btnResetDB" class="btn btn-outline-danger" style="flex:1">Reset DB</button>
       </div>
@@ -96,7 +102,7 @@ body{background:var(--bg);color:#0b1220}
 <!-- APP -->
 <div class="app hidden" id="appShell">
   <aside class="sidebar" id="sidebar">
-    <div class="logo"><div style="width:40px;height:40px;border-radius:8px;background:#fff;color:var(--sidebar2);display:grid;place-items:center;font-weight:700">IS</div><div style="font-weight:700">ISP Panel</div></div>
+    <div class="logo"><div style="width:44px;height:44px;border-radius:10px;background:#fff;color:var(--sidebar2);display:grid;place-items:center;font-weight:800">IS</div><div style="font-weight:800">ISP Panel</div></div>
     <div class="link" data-page="dashboard" onclick="openPage('dashboard')">📊 Dashboard</div>
     <div class="link" data-page="pasang" onclick="openPage('pasang')">🆕 Pasang Baru</div>
     <div class="link" data-page="gangguan" onclick="openPage('gangguan')">⚠️ Gangguan</div>
@@ -138,15 +144,15 @@ body{background:var(--bg);color:#0b1220}
     <section id="page-pasang" class="card hidden">
       <h4>Pasang Baru</h4>
       <div class="card mb-2">
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px" class="input-group-compact">
           <input id="p_inputer" class="form-control" placeholder="Inputer (otomatis username)" readonly>
           <input id="p_nama" class="form-control" placeholder="Nama pelanggan">
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
+        <div style="display:flex;gap:8px;margin-top:8px" class="input-group-compact">
           <input id="p_alamat" class="form-control" placeholder="Alamat">
           <input id="p_hp" class="form-control" placeholder="No HP">
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
+        <div style="display:flex;gap:8px;margin-top:8px" class="input-group-compact">
           <input id="p_tagging" class="form-control" placeholder="Tagging Lokasi">
           <select id="p_paket" class="form-control"></select>
           <button class="btn btn-primary" onclick="createPasang()">Daftar</button>
@@ -168,12 +174,12 @@ body{background:var(--bg);color:#0b1220}
     <section id="page-gangguan" class="card hidden">
       <h4>Gangguan</h4>
       <div class="card mb-2">
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px" class="input-group-compact">
           <input id="g_noinet" class="form-control" placeholder="No Internet (isi untuk auto-fill)">
           <input id="g_name" class="form-control" placeholder="Nama Pelanggan">
           <input id="g_nohp" class="form-control" placeholder="No HP">
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
+        <div style="display:flex;gap:8px;margin-top:8px" class="input-group-compact">
           <input id="g_alamat" class="form-control" placeholder="Alamat">
           <select id="g_jenis" class="form-control">
             <option value="">-- Jenis Gangguan --</option>
@@ -287,8 +293,9 @@ body{background:var(--bg);color:#0b1220}
 <div id="toast" class="toast hidden" style="position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:8px 12px;border-radius:8px;z-index:9999"></div>
 
 <script>
-/* Single-file app logic (login fixed to username/password fields) */
+/* Single-file app logic (login fixed to username/password fields) with persistent session */
 const LS_KEY = 'isp_manager_final_v101';
+const LS_SESSION = 'isp_manager_session_v1';
 function defaultDB(){
   return {
     users: {
@@ -316,7 +323,7 @@ let portalMode = { page:1 };
 document.getElementById('hambBtn').addEventListener('click', ()=> { document.getElementById('sidebar').classList.toggle('show'); });
 document.getElementById('btnLogin').addEventListener('click', doLogin);
 document.getElementById('btnDemo').addEventListener('click', fillDemo);
-document.getElementById('btnResetDB').addEventListener('click', ()=>{ if(confirm('Reset DB? Semua data akan hilang')){ localStorage.removeItem(LS_KEY); DB = loadDB(); location.reload(); }});
+document.getElementById('btnResetDB').addEventListener('click', ()=>{ if(confirm('Reset DB? Semua data akan hilang')){ localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_SESSION); DB = loadDB(); location.reload(); }});
 document.getElementById('btnSelfTest').addEventListener('click', runSelfTest);
 document.getElementById('btnLogout').addEventListener('click', ()=>{ logout(); });
 
@@ -337,6 +344,10 @@ function doLogin(){
 }
 
 function afterLogin(){
+  // persist session
+  try{
+    localStorage.setItem(LS_SESSION, JSON.stringify({ id: currentUser.nik || currentUser.pelangganId || currentUser.no, role: currentUser.role }));
+  }catch(e){ console.warn('session save failed',e); }
   toast('Login sukses: '+ (currentUser.nama || currentUser.nik));
   document.getElementById('loginPage').style.display='none';
   document.getElementById('appShell').classList.remove('hidden');
@@ -349,6 +360,7 @@ function afterLogin(){
 }
 function logout(){
   currentUser = null;
+  localStorage.removeItem(LS_SESSION);
   document.getElementById('loginPage').style.display='grid';
   document.getElementById('appShell').classList.add('hidden');
   document.getElementById('btnLogout').style.display='none';
@@ -411,6 +423,8 @@ function createPasang(){
   DB.pasang[id] = { id, no_inet, inputer: currentUser?currentUser.nama:'-', nama, alamat, hp, tagging, paketId, status:'Menunggu', createdAt: now() };
   hist('pasang.create', id, `Pasang ${no_inet}`);
   saveDB(DB); renderPasang(); toast('Pasang baru dibuat: '+no_inet);
+  // clear inputs
+  document.getElementById('p_nama').value=''; document.getElementById('p_alamat').value=''; document.getElementById('p_hp').value=''; document.getElementById('p_tagging').value='';
 }
 function renderPasang(){
   populatePaketSelect();
@@ -500,6 +514,8 @@ function createGangguan(){
   hist('gangguan.create', tiket, `Created by ${currentUser?currentUser.nik:'-'} status:${status}`);
   saveDB(DB); renderGangguan(); toast('Tiket dibuat: '+tiket);
   if(status === 'Pending' && pending_until) schedulePendingResume(tiket, pending_until);
+  // clear fields
+  document.getElementById('g_noinet').value=''; document.getElementById('g_name').value=''; document.getElementById('g_nohp').value=''; document.getElementById('g_alamat').value=''; document.getElementById('g_ttr').value=''; document.getElementById('g_pending_until').value='';
 }
 function renderGangguan(){
   const tbl = document.getElementById('tblGangguan'); tbl.innerHTML = '';
@@ -526,6 +542,7 @@ function setGangguanStatus(tiket, status){
   hist('gangguan.status', tiket, `status->${status}`); saveDB(DB); renderGangguan();
 }
 function promptPending(tiket){
+  // keep simple: ask for reason + optional resume
   const reason = prompt('Alasan pending (singkat):') || '';
   const resume = prompt('Kapan progres kembali dimulai? (YYYY-MM-DD HH:MM) kosong jika manual:') || '';
   DB.gangguan[tiket].status = 'Pending';
@@ -540,6 +557,7 @@ function schedulePendingResume(tiket, resumeStr){
   if(isNaN(ts)) return;
   const diff = ts.getTime() - Date.now();
   if(diff <= 0){ setGangguanStatus(tiket,'Progres'); return; }
+  // limit max timeout to 24 hours per timeout call to be safer on browser sleep
   setTimeout(()=> {
     if(DB.gangguan[tiket] && DB.gangguan[tiket].status === 'Pending'){
       DB.gangguan[tiket].status = 'Progres';
@@ -553,6 +571,7 @@ function schedulePendingResume(tiket, resumeStr){
 
 /* Pelanggan */
 function openAddPelanggan(){
+  // provide inline simple form (no long prompts)
   const nama = prompt('Nama pelanggan'); if(!nama) return;
   const hp = prompt('No HP') || ''; const alamat = prompt('Alamat') || ''; const paketId = prompt('Paket (ID)') || '';
   const id = uid('pel_');
@@ -673,6 +692,26 @@ function runSelfTest(){
   setInterval(()=> document.getElementById('timeNow').innerText = new Date().toLocaleString(), 1000);
   document.getElementById('password').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
   renderAll();
+
+  // Try restore session
+  try{
+    const raw = localStorage.getItem(LS_SESSION);
+    if(raw){
+      const sess = JSON.parse(raw);
+      if(sess && sess.id && sess.role){
+        // try restore user from DB.users or pelanggan
+        if(sess.role === 'pelanggan'){
+          const pel = Object.values(DB.pelanggan).find(p => p.id === sess.id || p.no === sess.id);
+          if(pel){ currentUser = { nik: pel.id, nama: pel.nama, role:'pelanggan', pelangganId:pel.id, no: pel.no }; afterLogin(); return; }
+        } else {
+          const user = DB.users[sess.id];
+          if(user){ currentUser = {...user}; afterLogin(); return; }
+        }
+        // if not found: clear session
+        localStorage.removeItem(LS_SESSION);
+      }
+    }
+  }catch(e){ console.warn('session restore failed',e); localStorage.removeItem(LS_SESSION); }
 })();
 </script>
 </body>
