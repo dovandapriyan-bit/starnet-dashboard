@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starnet💫 - Sistem Manajemen ISP</title>
+    <title>Starnet💫 - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -666,6 +666,7 @@
             font-size: 1.4rem;
             font-weight: 600;
             color: var(--primary);
+            flex: 1;
         }
         
         .close-modal {
@@ -673,6 +674,8 @@
             cursor: pointer;
             color: var(--gray);
             transition: var(--transition);
+            background: none;
+            border: none;
         }
         
         .close-modal:hover {
@@ -782,19 +785,6 @@
             gap: 0.5rem;
         }
         
-        /* Telegram Integration */
-        .telegram-card {
-            border-left: 4px solid #0088cc;
-        }
-        
-        .telegram-header {
-            background: rgba(0, 136, 204, 0.05);
-        }
-        
-        .telegram-icon {
-            color: #0088cc;
-        }
-        
         /* Mobile Menu */
         .mobile-menu {
             display: none;
@@ -821,6 +811,7 @@
             font-size: 0.8rem;
             color: var(--gray);
             transition: var(--transition);
+            cursor: pointer;
         }
         
         .mobile-menu-item.active {
@@ -852,10 +843,12 @@
             
             .sidebar.open {
                 transform: translateX(0);
+                z-index: 1100;
             }
             
             .main-content {
                 margin-left: 0;
+                width: 100%;
             }
             
             .toggle-sidebar {
@@ -867,6 +860,22 @@
             }
             
             .mobile-menu {
+                display: block;
+            }
+            
+            /* Overlay when sidebar is open */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 900;
+            }
+            
+            .sidebar.open + .sidebar-overlay {
                 display: block;
             }
         }
@@ -1124,26 +1133,6 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-
-        /* Print styles */
-        @media print {
-            .sidebar, .header, .mobile-menu, .btn, .action-buttons {
-                display: none !important;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .content {
-                padding: 0;
-            }
-            
-            .card {
-                box-shadow: none;
-                border: 1px solid #ddd;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1201,6 +1190,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Sidebar overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
         
         <!-- Main Content -->
         <div class="main-content">
@@ -1319,7 +1311,7 @@
                         <div class="activity-card">
                             <div class="card-header">
                                 <h3>Aktivitas Terbaru</h3>
-                                <button class="btn btn-primary">
+                                <button class="btn btn-primary" id="viewAllActivities">
                                     <i class="fas fa-list"></i> Lihat Semua
                                 </button>
                             </div>
@@ -1385,7 +1377,7 @@
                         <div class="activity-card">
                             <div class="card-header">
                                 <h3>Gangguan Terbaru</h3>
-                                <button class="btn btn-primary">
+                                <button class="btn btn-primary" id="viewAllOutages">
                                     <i class="fas fa-list"></i> Lihat Semua
                                 </button>
                             </div>
@@ -1509,22 +1501,25 @@
     </div>
 
     <script>
+        // Data storage
+        let customers = [
+            { id: '1906140001', name: 'Budi Santoso', package: 'Home 50Mbps', status: 'active', joinDate: '10 Mar 2023' },
+            { id: '1906140002', name: 'Siti Rahayu', package: 'Business 100Mbps', status: 'active', joinDate: '09 Mar 2023' },
+            { id: '1906140003', name: 'Agus Prasetyo', package: 'Home 30Mbps', status: 'pending', joinDate: '12 Mar 2023' }
+        ];
+        
         // Toggle sidebar functionality
         const sidebar = document.getElementById('sidebar');
         const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
         
         toggleSidebarBtn.addEventListener('click', function() {
             sidebar.classList.toggle('open');
         });
         
         // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            if (window.innerWidth <= 992 && 
-                !sidebar.contains(event.target) && 
-                !toggleSidebarBtn.contains(event.target) &&
-                sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-            }
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
         });
         
         // Navigation functionality
@@ -1545,11 +1540,14 @@
             
             // Show the selected page
             const pageId = page + '-page';
-            document.getElementById(pageId).classList.add('active');
-            
-            // Update page title
-            const pageTitle = menuItem ? menuItem.querySelector('span').textContent : page;
-            document.querySelector('.header h3').textContent = `Starnet💫 - ${pageTitle}`;
+            const pageElement = document.getElementById(pageId);
+            if (pageElement) {
+                pageElement.classList.add('active');
+                
+                // Update page title
+                const pageTitle = menuItem ? menuItem.querySelector('span').textContent : page;
+                document.querySelector('.header h3').textContent = `Starnet💫 - ${pageTitle}`;
+            }
             
             // Close sidebar on mobile after selection
             if (window.innerWidth <= 992) {
@@ -1577,6 +1575,15 @@
             if (confirm('Apakah Anda yakin ingin logout?')) {
                 alert('Logout berhasil!');
             }
+        });
+        
+        // View all buttons functionality
+        document.getElementById('viewAllActivities').addEventListener('click', function() {
+            navigateTo('tickets');
+        });
+        
+        document.getElementById('viewAllOutages').addEventListener('click', function() {
+            navigateTo('tickets');
         });
         
         // Initialize Charts
